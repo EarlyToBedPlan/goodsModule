@@ -2,7 +2,9 @@ package cn.edu.xmu.groupon.config;
 
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 
 /**
  * @author Feiyan Liu
@@ -10,6 +12,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  */
 @SpringBootApplication(scanBasePackages = {"cn.edu.xmu.ooad","cn.edu.xmu.groupon"})
 @MapperScan("cn/edu/xmu/grouopon/mapper")
+@EnableAutoConfiguration(exclude = {DataSourceAutoConfiguration.class})
 
 public class GrouponServiceApplication {
     public static void main(String[] args) {

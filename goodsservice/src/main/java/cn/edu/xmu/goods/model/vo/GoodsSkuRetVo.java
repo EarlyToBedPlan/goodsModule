@@ -51,6 +51,7 @@ public class GoodsSkuRetVo {
     @ApiModelProperty(value = "Spu")
     private GoodsSpu goodsSpu;
 
+    //price goodsSpu未初始化
     public GoodsSkuRetVo(GoodsSku goodsSku){
         this.configuration = goodsSku.getConfiguration();
         this.detail = goodsSku.getDetail();

@@ -1,9 +1,12 @@
 package cn.edu.xmu.goods.model.vo;
 
+import cn.edu.xmu.goods.model.bo.Brand;
+import cn.edu.xmu.goods.model.bo.GoodsCategory;
 import cn.edu.xmu.goods.model.bo.GoodsSpu;
 import cn.edu.xmu.goods.model.bo.SpecItems;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import io.swagger.models.auth.In;
 import lombok.Data;
 import javax.validation.constraints.NotBlank;
 
@@ -27,14 +30,14 @@ public class GoodsSpuRetVo {
     private Long id;
     @ApiModelProperty(value = "Spu名称")
     private String name;
-    @ApiModelProperty(value = "品牌id")
-    private Long brandId;
-    @ApiModelProperty(value = "种类id")
-    private Long categoryId;
+    @ApiModelProperty(value = "品牌")
+    private Brand brand;
+    @ApiModelProperty(value = "种类")
+    private GoodsCategory category;
     @ApiModelProperty(value = "运费模板id")
     private Long freightId;
-    @ApiModelProperty(value = "店铺id")
-    private Long shopId;
+    @ApiModelProperty(value = "店铺")
+    private ShopSimpleRetVo shop;
     @ApiModelProperty(value = "商品条码")
     private String goodsSn;
     @ApiModelProperty(value = "商品细节")
@@ -45,6 +48,8 @@ public class GoodsSpuRetVo {
     private Byte state;
     @ApiModelProperty(value = "规格")
     private List<SpecItems> spec;
+    @ApiModelProperty(value = "Sku")
+    private List<GoodsSkuSimpleRetVo> sku;
     @ApiModelProperty(value = "是否被逻辑删除")
     private Byte disabled;
     @ApiModelProperty(value = "创建时间")
@@ -60,10 +65,10 @@ public class GoodsSpuRetVo {
      * createdBy Yancheng Lai 2020/12/01 19:30
      * modifiedBy Yancheng Lai 2020/12/01 19:30
      */
-
+    //brand category shop sku未初始化
     public GoodsSpuRetVo(GoodsSpu goodsSpu){
-        this.brandId = goodsSpu.getBrandId();
-        this.categoryId = goodsSpu.getCategoryId();
+        //this.brandId = goodsSpu.getBrandId();
+        //this.categoryId = goodsSpu.getCategoryId();
         this.detail = goodsSpu.getDetail();
         this.disabled = goodsSpu.getDisabled();
         this.freightId = goodsSpu.getFreightId();
@@ -72,7 +77,7 @@ public class GoodsSpuRetVo {
         this.goodsSn = goodsSpu.getGoodsSn();
         this.id = goodsSpu.getId();
         this.imageUrl = goodsSpu.getImageUrl();
-        this.shopId = goodsSpu.getShopId();
+        //this.shopId = goodsSpu.getShopId();
         this.name = goodsSpu.getName();
         this.state = goodsSpu.getState();
         this.spec = (List<SpecItems>) JacksonUtil.toNode(goodsSpu.getSpec());

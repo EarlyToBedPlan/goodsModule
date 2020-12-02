@@ -16,15 +16,32 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Dumping data for table `comment`
+-- Dumping data for table `coupon`
 --
 
-LOCK TABLES `comment` WRITE;
-/*!40000 ALTER TABLE `comment` DISABLE KEYS */;
-/*!40000 ALTER TABLE `comment` ENABLE KEYS */;
+LOCK TABLES `coupon` WRITE;
+/*!40000 ALTER TABLE `coupon` DISABLE KEYS */;
+/*!40000 ALTER TABLE `coupon` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Dumping data for table `coupon_activity`
+--
+
+LOCK TABLES `coupon_activity` WRITE;
+/*!40000 ALTER TABLE `coupon_activity` DISABLE KEYS */;
+/*!40000 ALTER TABLE `coupon_activity` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Dumping data for table `coupon_spu`
+--
+
+LOCK TABLES `coupon_spu` WRITE;
+/*!40000 ALTER TABLE `coupon_spu` DISABLE KEYS */;
+/*!40000 ALTER TABLE `coupon_spu` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
-
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
 /*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;

@@ -43,31 +43,32 @@ public class GoodsSpuDao {
     private GoodsSpuPoMapper goodsSpuPoMapper;
 
     /**
-    * @Description:  查询GoodsSpu以id
+    * @Description:  查询GoodsSpuPo以id
     * @Param: [id]
     * @return: GoodsSpu
     * @Author: Yancheng Lai
     * @Date: 2020/12/1 22:18
     */
-    public ReturnObject<GoodsSpu> getGoodsSpuById(Long id) {
+    public ReturnObject<GoodsSpuPo> getGoodsSpuPoById(Long id) {
+        //以后改成selectbyprimarykey
+
         GoodsSpuPoExample example = new GoodsSpuPoExample();
         GoodsSpuPoExample.Criteria criteria = example.createCriteria();
         criteria.andIdEqualTo(id);
-        List<GoodsSpuPo> spus = null;
+        List<GoodsSpuPo> goodsSpuPos = null;
         try {
-            spus = goodsSpuPoMapper.selectByExample(example);
+            goodsSpuPos = goodsSpuPoMapper.selectByExample(example);
         } catch (DataAccessException e) {
-            StringBuilder message = new StringBuilder().append("getUserByName: ").append(e.getMessage());
+            StringBuilder message = new StringBuilder().append("getGoodsSpuPoById: ").append(e.getMessage());
             logger.error(message.toString());
         }
-
-        if (null == spus || spus.isEmpty()) {
+        if (null == goodsSpuPos || goodsSpuPos.isEmpty()) {
             return new ReturnObject<>();
         } else {
-            GoodsSpu goodsSpu = new GoodsSpu(spus.get(0));
-            return new ReturnObject<>(goodsSpu);
+                return new ReturnObject<>(new GoodsSpuPo(goodsSpuPos.get(0)));
             }
-    }
+        }
+
 
 
 

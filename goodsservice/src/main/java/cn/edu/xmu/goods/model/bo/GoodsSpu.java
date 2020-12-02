@@ -67,7 +67,7 @@ public class GoodsSpu implements VoObject, Serializable {
     }
 
     @Override
-    public Object createVo() {
+    public GoodsSpuRetVo createVo() {
         return new GoodsSpuRetVo(this);
     }
 
