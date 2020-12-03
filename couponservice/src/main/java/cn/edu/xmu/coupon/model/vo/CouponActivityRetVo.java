@@ -2,10 +2,7 @@ package cn.edu.xmu.coupon.model.vo;
 
 import cn.edu.xmu.coupon.model.bo.CouponActivity;
 import cn.edu.xmu.ooad.model.VoObject;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import org.hibernate.validator.constraints.Range;
 
 import java.time.LocalDateTime;
 
@@ -15,39 +12,40 @@ import java.time.LocalDateTime;
  */
 @Data
 public class CouponActivityRetVo implements VoObject {
-    //还有商店 创建者 修改者 创建时间 修改时间没有写好
+    //还有商店 没有写好
     Long id;
     String name;
     byte state;
-    ShopRetVo shop;
+    // ShopRetVo shop;
     int quantity;
     byte quantityType;
     byte validTerm;
     String imageUrl;
-    String beginTime;
-    String endTime;
-    String couponTime;
+    LocalDateTime beginTime;
+    LocalDateTime endTime;
+    LocalDateTime couponTime;
     String strategy;
-    UserRetVo creator;
+    UserRetVo createdBy;
     UserRetVo modifiedBy;
-    LocalDateTime gmtCreate;
+    //  LocalDateTime gmtCreate;
     LocalDateTime gmtModified;
 
     public CouponActivityRetVo(CouponActivity couponActivity) {
         this.id = couponActivity.getId();
+        this.state = couponActivity.getState();
         this.name = couponActivity.getName();
         this.quantity = couponActivity.getQuantity();
         this.quantityType = couponActivity.getQuantityType();
         this.validTerm = couponActivity.getValidTerm();
         this.imageUrl = couponActivity.getImg();
-        this.beginTime = couponActivity.getBeginTime().toString();
-        this.endTime = couponActivity.getEndTime().toString();
-        this.couponTime = couponActivity.getCouponTime().toString();
+        this.beginTime = couponActivity.getBeginTime();
+        this.endTime = couponActivity.getEndTime();
+        this.couponTime = couponActivity.getCouponTime();
         this.strategy = couponActivity.getStrategy();
-        this.creator=couponActivity.getCreator();
-        this.modifiedBy=couponActivity.getModifiedBy();
-        this.gmtCreate=couponActivity.getGmtCreate();
-        this.gmtModified=couponActivity.getGmtModified();
+        this.createdBy = couponActivity.getCreatedBy();
+        this.modifiedBy = couponActivity.getModifiedBy();
+        //this.gmtCreate=couponActivity.getGmtCreated();
+        this.gmtModified = couponActivity.getGmtModified();
     }
 
     @Override

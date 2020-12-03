@@ -2,8 +2,8 @@ package cn.edu.xmu.coupon.controller;
 
 import cn.edu.xmu.coupon.CouponServiceApplication;
 import cn.edu.xmu.ooad.util.JwtHelper;
-import org.junit.Before;
-import org.junit.Test;
+import org.json.JSONException;
+import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,24 +34,55 @@ public class CouponControllerTest {
     private WebApplicationContext wac;
     private static final Logger logger = LoggerFactory.getLogger(CouponServiceApplication.class);
 
-    @Before
-    public void setup(){
-        mvc = MockMvcBuilders.webAppContextSetup(wac).build();  //构建MockMVC
-    }
+    /**
+     * @description:成功读取活动详情
+     * @author: Feiyan Liu
+     * @date: Created at 2020/12/3 0:23
+     */
     @Test
-    public void getCouponActivityById() throws Exception {
+    public void getCouponActivityById1() throws Exception {
        String token=creatTestToken(1L, 0L, 100);
-        String responseString = this.mvc.perform(get("/coupon/shops/1/couponactivities/1").header("authorization",token))
+        String responseString = this.mvc.perform(get("/coupon/shops/0/couponactivities/1").header("authorization",token))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        String expectedResponse = "{\"errno\":0,\"data\":{\"id\":1,\"name\":\"年终大促\",\"state\":1,\"quantity\":0,\"quantityType\":1,\"validTerm\":0,\"imageUrl\":\"img\",\"beginTime\":\"2020-12-02T17:36:52\",\"endTime\":\"2020-12-05T17:36:52\",\"couponTime\":\"2020-12-05T21:06:53\",\"strategy\":\"1\",\"createdBy\":{\"id\":1,\"name\":\"哈哈哈\"},\"modifiedBy\":{\"id\":1,\"name\":\"哈哈\"},\"gmtModified\":null},\"errmsg\":\"成功\"}";
+        //String expectedResponse="{\"errno\":0,\"errmsg\":\"成功\"}";
+        JSONAssert.assertEquals(expectedResponse, responseString, true);
+    }
+    /**
+     * @description:活动id不存在 读取活动详情失败
+     * @author: Feiyan Liu
+     * @date: Created at 2020/12/3 0:23
+     */
+    @Test
+    public void getCouponActivityById2() throws Exception {
+        String token=creatTestToken(1L, 0L, 100);
+        String responseString = this.mvc.perform(get("/coupon/shops/0/couponactivities/100").header("authorization",token))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType("application/json;charset=UTF-8"))
                 .andReturn().getResponse().getContentAsString();
-
-        String expectedResponse = "{\"errno\":0,\"data\":{\"total\":18,\"pages\":2,\"pageSize\":10,\"page\":1,\"list\":[{\"id\":2,\"name\":\"查看任意用户信息\",\"url\":\"/adminusers/{id}\",\"requestType\":0,\"gmtCreate\":\"2020-11-01T09:52:20\",\"gmtModified\":\"2020-11-02T21:51:45\"},{\"id\":3,\"name\":\"修改任意用户信息\",\"url\":\"/adminusers/{id}\",\"requestType\":2,\"gmtCreate\":\"2020-11-01T09:53:03\",\"gmtModified\":\"2020-11-02T21:51:45\"},{\"id\":4,\"name\":\"删除用户\",\"url\":\"/adminusers/{id}\",\"requestType\":3,\"gmtCreate\":\"2020-11-01T09:53:36\",\"gmtModified\":\"2020-11-02T21:51:45\"},{\"id\":5,\"name\":\"恢复用户\",\"url\":\"/adminusers/{id}/release\",\"requestType\":2,\"gmtCreate\":\"2020-11-01T09:59:24\",\"gmtModified\":\"2020-11-02T21:51:45\"},{\"id\":6,\"name\":\"禁止用户登录\",\"url\":\"/adminusers/{id}/forbid\",\"requestType\":2,\"gmtCreate\":\"2020-11-01T10:02:32\",\"gmtModified\":\"2020-11-02T21:51:45\"},{\"id\":7,\"name\":\"赋予用户角色\",\"url\":\"/adminusers/{id}/roles/{id}\",\"requestType\":1,\"gmtCreate\":\"2020-11-01T10:02:35\",\"gmtModified\":\"2020-11-02T21:51:45\"},{\"id\":8,\"name\":\"取消用户角色\",\"url\":\"/adminusers/{id}/roles/{id}\",\"requestType\":3,\"gmtCreate\":\"2020-11-01T10:03:16\",\"gmtModified\":\"2020-11-02T21:51:45\"},{\"id\":9,\"name\":\"新增角色\",\"url\":\"/roles\",\"requestType\":1,\"gmtCreate\":\"2020-11-01T10:04:09\",\"gmtModified\":\"2020-11-02T21:51:45\"},{\"id\":10,\"name\":\"删除角色\",\"url\":\"/roles/{id}\",\"requestType\":3,\"gmtCreate\":\"2020-11-01T10:04:42\",\"gmtModified\":\"2020-11-02T21:51:45\"},{\"id\":11,\"name\":\"修改角色信息\",\"url\":\"/roles/{id}\",\"requestType\":2,\"gmtCreate\":\"2020-11-01T10:05:20\",\"gmtModified\":\"2020-11-02T21:51:45\"}]},\"errmsg\":\"成功\"}";
+        String expectedResponse = "{\"errno\":504,\"errmsg\":\"操作的资源id不存在\"}";
         JSONAssert.assertEquals(expectedResponse, responseString, true);
+
     }
     private final String creatTestToken(Long userId, Long departId, int expireTime) {
         String token = new JwtHelper().createToken(userId, departId, expireTime);
         logger.debug(token);
         return token;
     }
+    /**
+     * @description:shopId和departId不符合 无权限读取活动详情
+     * @author: Feiyan Liu
+     * @date: Created at 2020/12/3 0:23
+     */
+    @Test
+    public void getCouponActivityById3() throws Exception {
+        String token=creatTestToken(1L, 11L, 100);
+        String responseString = this.mvc.perform(get("/coupon/shops/22/couponactivities/10").header("authorization",token))
+                .andExpect(status().isForbidden())
+                .andReturn().getResponse().getContentAsString();
+        String expectedResponse = "{\"errno\":503,\"errmsg\":\"departId不匹配\"}";
+        JSONAssert.assertEquals(expectedResponse, responseString, true);
+    }
+
 }

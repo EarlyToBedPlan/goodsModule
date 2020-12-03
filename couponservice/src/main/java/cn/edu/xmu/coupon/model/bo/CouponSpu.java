@@ -1,6 +1,5 @@
 package cn.edu.xmu.coupon.model.bo;
 
-import cn.edu.xmu.coupon.model.po.CouponActivityPo;
 import cn.edu.xmu.coupon.model.po.CouponSpuPo;
 import cn.edu.xmu.coupon.model.vo.CouponSpuSimpleRetVo;
 import cn.edu.xmu.coupon.model.vo.CouponSpuVo;
@@ -15,7 +14,6 @@ import java.time.LocalDateTime;
  */
 @Data
 public class CouponSpu implements VoObject {
-
     Long id;
     Long activityId;
     Long spuId;
@@ -34,14 +32,13 @@ public class CouponSpu implements VoObject {
 
     ;
 
-
     @Override
     public Object createVo() {
         return new CouponSpuVo(this);
     }
 
     @Override
-    public Object createSimpleVo() {
+    public VoObject createSimpleVo() {
         return new CouponSpuSimpleRetVo(this);
     }
 
@@ -52,6 +49,4 @@ public class CouponSpu implements VoObject {
         po.setSpuId(this.spuId);
         return po;
     }
-
-
 }

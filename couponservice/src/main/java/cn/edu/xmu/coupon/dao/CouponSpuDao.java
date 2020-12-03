@@ -1,4 +1,3 @@
-
 package cn.edu.xmu.coupon.dao;
 
 import cn.edu.xmu.coupon.mapper.CouponSpuPoMapper;
@@ -7,7 +6,6 @@ import cn.edu.xmu.coupon.model.po.CouponSpuPo;
 import cn.edu.xmu.coupon.model.po.CouponSpuPoExample;
 import cn.edu.xmu.ooad.util.ResponseCode;
 import cn.edu.xmu.ooad.util.ReturnObject;
-import org.apache.ibatis.annotations.Mapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -22,11 +20,10 @@ import java.util.List;
  * @date Created at 2020/12/2 10:51
  */
 @Repository
-@Mapper
 public class CouponSpuDao implements InitializingBean {
+    private static final Logger logger = LoggerFactory.getLogger(CouponActivityDao.class);
     @Autowired
     private CouponSpuPoMapper couponSpuMapper;
-    private static final Logger logger = LoggerFactory.getLogger(CouponActivityDao.class);
     /**
      * 是否初始化，生成signature和加密
      */
@@ -35,7 +32,6 @@ public class CouponSpuDao implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-
     }
 
     /**
@@ -83,7 +79,7 @@ public class CouponSpuDao implements InitializingBean {
             if (couponSpuPos.isEmpty()) {
                 logger.debug("getCouponSpuByActivityId: Not Found");
             }
-            logger.debug("getCouponSpuByActivityId: retCouponSpu" + couponSpuPos);
+            else logger.debug("getCouponSpuByActivityId: retCouponSpu" + couponSpuPos);
         } catch (Exception e) {
             logger.error("发生了严重的服务器内部错误：" + e.getMessage());
         }
@@ -132,8 +128,5 @@ public class CouponSpuDao implements InitializingBean {
             logger.error("发生了严重的服务器内部错误：" + e.getMessage());
         }
         return returnObject;
-
     }
-
 }
-

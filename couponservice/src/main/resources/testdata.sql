@@ -30,6 +30,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `coupon_activity` WRITE;
 /*!40000 ALTER TABLE `coupon_activity` DISABLE KEYS */;
+INSERT INTO `coupon_activity` VALUES(1,"年终大促","2020-12-02 17:36:52","2020-12-05 17:36:52","2020-12-02 17:36:52","2",1,0,0,"pic","买一送一".1,1,"1","1",1);
 /*!40000 ALTER TABLE `coupon_activity` ENABLE KEYS */;
 UNLOCK TABLES;
 

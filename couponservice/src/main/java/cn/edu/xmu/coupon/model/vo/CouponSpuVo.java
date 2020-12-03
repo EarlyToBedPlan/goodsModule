@@ -1,11 +1,8 @@
 package cn.edu.xmu.coupon.model.vo;
 
-import cn.edu.xmu.coupon.model.bo.CouponActivity;
 import cn.edu.xmu.coupon.model.bo.CouponSpu;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-
-import java.time.LocalDateTime;
 
 /**
  * @author Feiyan Liu
@@ -17,10 +14,8 @@ public class CouponSpuVo {
     Long id;
     String name;
 
-
-    public CouponSpuVo (CouponSpu couponSpu) {
-        this.id=couponSpu.getId();
-        this.name=couponSpu.getName();
+    public CouponSpuVo(CouponSpu couponSpu) {
+        this.id = couponSpu.getId();
+        this.name = couponSpu.getName();
     }
-
 }
