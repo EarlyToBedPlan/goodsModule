@@ -47,7 +47,7 @@ public class GoodsSkuSimpleRetVo {
         this.inventory = goodSku.getInventory();
         this.name = goodSku.getName();
         this.originalPrice = goodSku.getOriginalPrice();
-        this.price = goodSku.getPrice();
+        //this.price = goodSku.getPrice();
         this.skuSn = goodSku.getSkuSn();
     }
 }

@@ -1,7 +1,6 @@
 package cn.edu.xmu.coupon.service;
 
 import cn.edu.xmu.coupon.dao.CouponActivityDao;
-import cn.edu.xmu.coupon.dao.CouponSpuDao;
 import cn.edu.xmu.coupon.model.bo.CouponActivity;
 import cn.edu.xmu.coupon.model.bo.CouponSpu;
 import cn.edu.xmu.coupon.model.po.CouponActivityPo;
@@ -12,7 +11,6 @@ import cn.edu.xmu.ooad.model.VoObject;
 import cn.edu.xmu.ooad.util.ImgHelper;
 import cn.edu.xmu.ooad.util.ResponseCode;
 import cn.edu.xmu.ooad.util.ReturnObject;
-import cn.edu.xmu.ooad.util.encript.AES;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.slf4j.Logger;

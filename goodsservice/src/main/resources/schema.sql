@@ -20,10 +20,10 @@
 -- Table structure for table `float_price`
 --
 
-DROP TABLE IF EXISTS `float_price`;
+DROP TABLE IF EXISTS `good_float_price`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `float_price` (
+CREATE TABLE `good_float_price` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `goods_sku_id` bigint(20) DEFAULT NULL,
   `activity_price` bigint(10) DEFAULT NULL,
@@ -44,10 +44,10 @@ CREATE TABLE `float_price` (
 -- Table structure for table `goods_category`
 --
 
-DROP TABLE IF EXISTS `goods_category`;
+DROP TABLE IF EXISTS ` good_goods_category`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `goods_category` (
+CREATE TABLE ` good_goods_category` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `name` varchar(64) DEFAULT NULL,
   `pid` bigint(20) DEFAULT NULL,
@@ -62,10 +62,10 @@ CREATE TABLE `goods_category` (
 -- Table structure for table `goods_sku`
 --
 
-DROP TABLE IF EXISTS `goods_sku`;
+DROP TABLE IF EXISTS `good_goods_sku`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `goods_sku` (
+CREATE TABLE `good_goods_sku` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `goods_spu_id` bigint(20) DEFAULT NULL,
   `sku_sn` varchar(128) DEFAULT NULL,
@@ -87,10 +87,10 @@ CREATE TABLE `goods_sku` (
 -- Table structure for table `goods_spu`
 --
 
-DROP TABLE IF EXISTS `goods_spu`;
+DROP TABLE IF EXISTS `good_goods_spu`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `goods_spu` (
+CREATE TABLE `good_goods_spu` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `name` varchar(128) DEFAULT NULL,
   `brand_id` bigint(20) DEFAULT NULL,
@@ -109,8 +109,23 @@ CREATE TABLE `goods_spu` (
 ) ENGINE=InnoDB AUTO_INCREMENT=680 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Table structure for table `goods_brand`
+--
 
-
+DROP TABLE IF EXISTS `good_brand`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `brand` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `name` varchar(64) DEFAULT NULL,
+  `detail` varchar(500) DEFAULT NULL,
+  `image_url` varchar(255) DEFAULT NULL,
+  `gmt_create` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `gmt_modified` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=120 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

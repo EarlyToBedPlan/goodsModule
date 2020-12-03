@@ -17,7 +17,6 @@
         <module>couponservice</module>
         <module>commentservice</module>
         <module>grouponservice</module>
-        <module>commentservice</module>
     </modules>
     <name>goods</name>
     <description>the goods module of oomall</description>

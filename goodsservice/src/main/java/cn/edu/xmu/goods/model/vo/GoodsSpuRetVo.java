@@ -57,7 +57,7 @@ public class GoodsSpuRetVo {
     @ApiModelProperty(value = "编辑时间")
     private LocalDateTime gmtModified;
     /**
-     * 用Role对象建立Vo对象
+     * 用Bo le对象建立Vo对象
      *
      * @author 24320182203216 Yancheng Lai
      * @param goodsSpu

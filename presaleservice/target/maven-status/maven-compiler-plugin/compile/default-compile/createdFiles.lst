@@ -1,0 +1,7 @@
+cn\edu\xmu\presale\model\po\PreSalePoExample$GeneratedCriteria.class
+cn\edu\xmu\presale\PreSaleServiceApplication.class
+cn\edu\xmu\presale\mapper\PreSalePoMapper.class
+cn\edu\xmu\presale\model\po\PreSalePo.class
+cn\edu\xmu\presale\model\po\PreSalePoExample$Criteria.class
+cn\edu\xmu\presale\model\po\PreSalePoExample.class
+cn\edu\xmu\presale\model\po\PreSalePoExample$Criterion.class

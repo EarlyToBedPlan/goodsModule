@@ -2,7 +2,9 @@ package cn.edu.xmu.goods.dao;
 
 import cn.edu.xmu.goods.mapper.GoodsSkuPoMapper;
 import cn.edu.xmu.goods.mapper.GoodsSpuPoMapper;
+import cn.edu.xmu.goods.model.bo.GoodsSku;
 import cn.edu.xmu.goods.model.bo.GoodsSpu;
+import cn.edu.xmu.goods.model.bo.Shop;
 import cn.edu.xmu.goods.model.po.GoodsSkuPo;
 import cn.edu.xmu.goods.model.po.GoodsSkuPoExample;
 import cn.edu.xmu.goods.model.po.GoodsSpuPo;
@@ -68,8 +70,121 @@ public class GoodsSpuDao {
                 return new ReturnObject<>(new GoodsSpuPo(goodsSpuPos.get(0)));
             }
         }
+    /**
+    * @Description: 新增SPU
+    * @Param: [goodsSpu]
+    * @return: cn.edu.xmu.ooad.util.ReturnObject<cn.edu.xmu.ooad.model.VoObject>
+    * @Author: Yancheng Lai
+    * @Date: 2020/12/3 19:50
+    */
+    public ReturnObject<VoObject> insertGoodsSpu(GoodsSpu goodsSpu) {
+        GoodsSpuPo goodsSpuPo = goodsSpu.getGoodsSpuPo();
+        ReturnObject<VoObject> retObj = null;
+        try{
+            int ret = goodsSpuPoMapper.insertSelective(goodsSpuPo);
+            if (ret == 0) {
+                retObj = new ReturnObject<VoObject>(ResponseCode.RESOURCE_ID_NOTEXIST, String.format("Insert false：" + goodsSpuPo.getName()));
+            } else {
+                retObj = new ReturnObject<VoObject>(goodsSpu);
+            }
+        }
+        catch (DataAccessException e) {
+            retObj = new ReturnObject<VoObject>(ResponseCode.INTERNAL_SERVER_ERR, String.format("Database Eoor: %s", e.getMessage()));
+        }
+        return retObj;
+    }
+    /**
+    * @Description: 用skuid查询SPU
+    * @Param: [id]
+    * @return: cn.edu.xmu.ooad.util.ReturnObject<cn.edu.xmu.goods.model.po.GoodsSpuPo>
+    * @Author: Yancheng Lai
+    * @Date: 2020/12/3 19:50
+    */
+    public ReturnObject<GoodsSpuPo> getGoodsSpuPoBySkuId(Long id) {
+
+        GoodsSpuPoExample example = new GoodsSpuPoExample();
+        GoodsSpuPoExample.Criteria criteria = example.createCriteria();
+        criteria.andIdEqualTo(id);
+        List<GoodsSpuPo> goodsSpuPos = null;
+        try {
+            goodsSpuPos = goodsSpuPoMapper.selectByExample(example);
+        } catch (DataAccessException e) {
+            StringBuilder message = new StringBuilder().append("getGoodsSpuPoById: ").append(e.getMessage());
+            logger.error(message.toString());
+        }
+        if (null == goodsSpuPos || goodsSpuPos.isEmpty()) {
+            return new ReturnObject<>();
+        } else {
+            return new ReturnObject<>(new GoodsSpuPo(goodsSpuPos.get(0)));
+        }
+    }
+    /**
+    * @Description: 查询SPUId是否在商店内
+    * @Param: [shopId, spuId]
+    * @return: boolean
+    * @Author: Yancheng Lai
+    * @Date: 2020/12/3 19:55
+    */
+    public boolean checkSpuId(Long shopId, Long spuId) {
+        GoodsSpuPo goodsSpuPo = goodsSpuPoMapper.selectByPrimaryKey(spuId);
+        if (goodsSpuPo == null) {
+            return false;
+        }
+        if (goodsSpuPo.getShopId() != shopId){
+            return false;
+        }
+        return true;
+    }
+
+    public ReturnObject<VoObject> updateSpu(GoodsSpu goodsSpu){
+        GoodsSpuPo po = goodsSpuPoMapper.selectByPrimaryKey(goodsSpu.getId());
+        GoodsSpuPo newPo = new GoodsSpuPo( goodsSpu.getGoodsSpuPo());
+
+        goodsSpuPoMapper.updateByPrimaryKeySelective(newPo);
+        return new ReturnObject<VoObject>();
+    }
 
 
+    public ReturnObject<VoObject> revokeSpu(Long shopId, Long id){
+        GoodsSpuPoExample goodsSpuPoExample =  new GoodsSpuPoExample();
+        GoodsSpuPoExample.Criteria criteria = goodsSpuPoExample.createCriteria();
+        criteria.andIdEqualTo(id);
+        GoodsSpuPo goodsSpuPo = goodsSpuPoMapper.selectByPrimaryKey(id);
 
+        //shopid或spuid不存在
+        if ( goodsSpuPo == null) {
+            return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
+        }
 
+        try {
+            int state = goodsSkuPoMapper.deleteByPrimaryKey(id);
+            if (state == 0){
+                return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
+            }
+        } catch (DataAccessException e) {
+            return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR,
+                    String.format("Database Exception：%s", e.getMessage()));
+        } catch (Exception e) {
+            return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR,
+                    String.format("Unknown Exception：%s", e.getMessage()));
+        }
+
+        return new ReturnObject<>();
+    }
+
+    public ReturnObject<VoObject> updateSpuOnShelves(Long id){
+        GoodsSpuPo po = goodsSpuPoMapper.selectByPrimaryKey(id);
+        po.setState((byte)0);
+
+        goodsSpuPoMapper.updateByPrimaryKeySelective(po);
+        return new ReturnObject<VoObject>();
+    }
+
+    public ReturnObject<VoObject> updateSpuOffShelves(Long id){
+        GoodsSpuPo po = goodsSpuPoMapper.selectByPrimaryKey(id);
+        po.setState((byte)0);
+
+        goodsSpuPoMapper.updateByPrimaryKeySelective(po);
+        return new ReturnObject<VoObject>();
+    }
 }

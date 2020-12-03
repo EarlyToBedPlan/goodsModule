@@ -16,7 +16,7 @@ import lombok.Data;
 @ApiModel(description = "品牌简略视图对象")
 public class BrandSimpleRetVo {
     @ApiModelProperty(value = "id")
-    private Integer id;
+    private Long id;
     @ApiModelProperty(value = "名称")
     private String name;
     @ApiModelProperty(value = "图片url")
