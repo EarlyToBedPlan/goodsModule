@@ -25,8 +25,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * 团购服务
  * @author LJP_3424
- * @create 2020-12-02 21:06
+ * @create 2020-11-30 01:06
  */
 @Api(value = "团购活动", tags = "groupon")
 @RestController
@@ -43,7 +44,6 @@ public class GrouponController {
 
     /**
      * 查询团购活动所有状态
-     *
      * @return Object
      * createdBy: LJP_3424
      */
@@ -63,9 +63,13 @@ public class GrouponController {
 
 
     /**
-     * @param id
-     * @description:查看所有团购活动
-     * @return: java.lang.Object
+     * @description:查看所有团购活动(条件筛选)
+     * @param shopId 店铺id
+     * @param timeline 时间
+     * @param spuId 商品ID
+     * @param page 页码
+     * @param pageSize 页面大小
+     * @return: Object
      * @author: LJP_3424
      */
     @ApiOperation(value = "筛选查询所有团购活动")
@@ -93,7 +97,12 @@ public class GrouponController {
     }
 
     /**
-     * @param id
+     * @param state 商品状态
+     * @param spuId 商品ID
+     * @param beginTime 起止时间
+     * @param endTime 结束时间
+     * @param page 页码
+     * @param pageSize 页面大小
      * @description:查看所有团购(包括下线的)
      * @return: java.lang.Object
      * @author: LJP_3424
@@ -119,8 +128,8 @@ public class GrouponController {
     }
 
     /**
-     * @param id
-     * @description:查看团购活动
+     * @param state 活动状态
+     * @description: 查看指定商品的历史团购活动
      * @return: java.lang.Object
      * @author: LJP_3424
      */
@@ -156,8 +165,7 @@ public class GrouponController {
 
     /**
      * 新增团购活动
-     *
-     * @param vo 角色视图
+     * @param vo 活动视图
      * @author LJP_3424
      */
     @ApiOperation(value = "新增团购活动", produces = "application/json")

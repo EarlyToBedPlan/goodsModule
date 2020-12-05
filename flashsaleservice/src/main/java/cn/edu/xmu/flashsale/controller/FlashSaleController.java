@@ -40,12 +40,14 @@ public class FlashSaleController {
     @Autowired
     private HttpServletResponse httpServletResponse;
 
-    /**
-     * @param id
-     * @description:查看秒杀活动
-     * @return: java.lang.Object
-     * @author: LJP_3424
-     */
+/**
+ * @Description: 查询某一时段秒杀活动详情 
+ *
+ * @param id  
+ * @return: java.lang.Object 
+ * @Author: LJP_3424
+ * @Date: 2020/12/6 0:59
+ */
     @ApiOperation(value = "查询某一时段秒杀活动详情")
     @ApiImplicitParams({
             @ApiImplicitParam(paramType = "header", dataType = "String", name = "authorization", value = "Token", required = true),
@@ -71,12 +73,16 @@ public class FlashSaleController {
         }
     }
 
-    /**
-     * 新增秒杀活动
-     *
-     * @param vo 角色视图
-     * @author LJP_3424
-     */
+/**
+ * @Description: 新增秒杀活动 
+ *
+ * @param id 
+ * @param vo 
+ * @param bindingResult 
+ * @return: java.lang.Object 
+ * @Author: LJP_3424
+ * @Date: 2020/12/6 0:59
+ */
     @ApiOperation(value = "新增秒杀活动", produces = "application/json")
     @ApiResponses({
             @ApiResponse(code = 0, message = "成功")
@@ -97,13 +103,14 @@ public class FlashSaleController {
         } else return ResponseUtil.fail(returnObject.getCode());
     }
 
-    /**
-     * @param id
-     * @description:查看当前时间段秒杀活动
-     * @return: java.lang.Object
-     * @author: LJP_3424
-     */
-    @ApiOperation(value = "获取当前时间段时段秒杀活动详情")
+/**
+ * @Description: 获取当前时间段秒杀活动详情 
+ * 
+ * @return: java.lang.Object 
+ * @Author: LJP_3424
+ * @Date: 2020/12/6 1:00
+ */
+    @ApiOperation(value = "获取当前时间段秒杀活动详情")
     @ApiImplicitParams({
             @ApiImplicitParam(paramType = "header", dataType = "String", name = "authorization", value = "Token", required = true),
             @ApiImplicitParam(name = "id", value = "商品id", required = true, dataType = "Integer", paramType = "path"),
@@ -126,11 +133,16 @@ public class FlashSaleController {
         }
     }
 
-    /**
-     * 修改活动
-     *
-     * @author LJP_3424
-     */
+/**
+ * @Description: 修改秒杀活动信息 
+ *
+ * @param id 
+ * @param vo 
+ * @param bindingResult 
+ * @return: java.lang.Object 
+ * @Author: LJP_3424
+ * @Date: 2020/12/6 1:00
+ */
     @ApiOperation(value = "修改秒杀活动", produces = "application/json")
     @ApiImplicitParams({
             @ApiImplicitParam(paramType = "header", dataType = "String", name = "authorization", value = "Token", required = true),
@@ -160,11 +172,16 @@ public class FlashSaleController {
         }
     }
 
-    /**
-     * 秒杀活动添加SKU
-     *
-     * @author LJP_3424
-     */
+/**
+ * @Description: 向秒杀活动添加SKU 
+ *
+ * @param id 
+ * @param vo 
+ * @param bindingResult 
+ * @return: java.lang.Object 
+ * @Author: LJP_3424
+ * @Date: 2020/12/6 1:00
+ */
     @ApiOperation(value = "秒杀活动添加SKU", produces = "application/json")
     @ApiImplicitParams({
             @ApiImplicitParam(paramType = "header", dataType = "String", name = "authorization", value = "Token", required = true),
@@ -195,12 +212,16 @@ public class FlashSaleController {
     }
 
 
-    /**
-     * @param id
-     * @description:获取秒杀活动商品
-     * @return: java.lang.Object
-     * @author: LJP_3424
-     */
+/**
+ * @Description: 获取秒杀活动商品 
+ *
+ * @param id 
+ * @param page 
+ * @param pageSize 
+ * @return: java.lang.Object 
+ * @Author: LJP_3424
+ * @Date: 2020/12/6 1:06
+ */
     @ApiOperation(value = "获取秒杀活动商品")
     @ApiImplicitParams({
             @ApiImplicitParam(paramType = "query", name = "id", value = "秒杀活动id", required = false, dataType = "Integer"),

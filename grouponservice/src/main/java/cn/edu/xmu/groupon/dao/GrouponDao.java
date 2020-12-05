@@ -41,6 +41,14 @@ public class GrouponDao implements InitializingBean {
 
     private static final Logger logger = LoggerFactory.getLogger(GrouponDao.class);
 
+
+    /**
+     *
+     * @param goodsSpuId
+     * @param beginTime
+     * @param endTime
+     * @return
+     */
     public boolean getGrouponInActivities(Long goodsSpuId, LocalDateTime beginTime, LocalDateTime endTime) {
         GrouponPoExample example = new GrouponPoExample();
         GrouponPoExample.Criteria criteria1 = example.createCriteria();
@@ -63,14 +71,13 @@ public class GrouponDao implements InitializingBean {
     }
 
 
+
     /**
-     * 分页查询所有团购信息
-     *
-     * @param pageNum  页数
-     * @param pageSize 每页大小
-     * @return ReturnObject<List> 活动列表
-     * @author LJP_3424
-     */
+        * @Description: 分页筛选查询团购活动
+        * @return: cn.edu.xmu.ooad.util.ReturnObject<com.github.pagehelper.PageInfo<cn.edu.xmu.ooad.model.VoObject>>
+        * @Author: LJP_3424
+        * @Date: 2020/12/5 23:19
+    */
     public ReturnObject<PageInfo<VoObject>> selectAllGroupon(Long shopId, Byte timeline, Long spuId, Integer pageNum, Integer pageSize) {
         GrouponPoExample example = new GrouponPoExample();
         GrouponPoExample.Criteria criteria = example.createCriteria();
@@ -121,13 +128,11 @@ public class GrouponDao implements InitializingBean {
     }
 
     /**
-     * 分页查询所有团购信息
-     *
-     * @param pageNum  页数
-     * @param pageSize 每页大小
-     * @return ReturnObject<List> 活动列表
-     * @author LJP_3424
-     */
+        * @Description: 分页查询团购活动
+        * @return: cn.edu.xmu.ooad.util.ReturnObject<com.github.pagehelper.PageInfo<cn.edu.xmu.ooad.model.VoObject>>
+        * @Author: LJP_3424
+        * @Date: 2020/12/5 23:20
+    */
     public ReturnObject<PageInfo<VoObject>> selectGroupon(Long shopId, Byte state, Long spuId, LocalDateTime beginTime, LocalDateTime endTime, Integer pageNum, Integer pageSize) {
         GrouponPoExample example = new GrouponPoExample();
         GrouponPoExample.Criteria criteria = example.createCriteria();
@@ -160,7 +165,13 @@ public class GrouponDao implements InitializingBean {
         }
     }
 
-
+    /**
+        * @Description: 根绝ID查询团购活动
+        * @Param: No such property: code for class: Script1
+        * @return: cn.edu.xmu.ooad.util.ReturnObject<java.util.List>
+        * @Author: LJP_3424
+        * @Date: 2020/12/5 23:21
+    */
     public ReturnObject<List> getGrouponById(Long shopId, Long id, Byte state) {
         GrouponPo grouponPo;
         GrouponPoExample example = new GrouponPoExample();
@@ -179,12 +190,11 @@ public class GrouponDao implements InitializingBean {
     }
 
     /**
-     * 由vo创建newGroupon后插入
-     *
-     * @param vo vo对象
-     * @return ReturnObject
-     * createdBy: LJP_3424
-     */
+        * @Description: vo创建Po后插入
+        * @return: cn.edu.xmu.ooad.util.ReturnObject<java.util.List>
+        * @Author: LJP_3424
+        * @Date: 2020/12/5 23:22
+    */
     public ReturnObject<List> insertNewGroupon(NewGrouponVo vo, Long shopId, Long id) {
         //logger.debug(String.valueOf(bloomFilter.includeByBloomFilter("mobileBloomFilter","FAED5EEF1C8562B02110BCA3F9165CBE")));
         //by default,email/mobile are both needed
@@ -206,10 +216,11 @@ public class GrouponDao implements InitializingBean {
     }
 
     /**
-     * 修改一个团购活动信息
-     *
-     * @author LJP_3424
-     */
+        * @Description: 修改团购活动信息
+        * @return: cn.edu.xmu.ooad.util.ReturnObject<cn.edu.xmu.ooad.model.VoObject>
+        * @Author: LJP_3424
+        * @Date: 2020/12/5 23:22
+    */
     public ReturnObject<VoObject> updateGroupon(NewGrouponVo grouponVo, Long shopId, Long id) {
         GrouponPo po = grouponPoMapper.selectByPrimaryKey(id);
         if (po.getBeginTime().compareTo(LocalDateTime.now()) < 0 && po.getEndTime().compareTo(LocalDateTime.now()) > 0) {
@@ -235,7 +246,12 @@ public class GrouponDao implements InitializingBean {
         }
         return retObj;
     }
-
+    /**
+        * @Description:更改团购活动状态来逻辑删除团购活动
+        * @return: cn.edu.xmu.ooad.util.ReturnObject<java.lang.Object>
+        * @Author: LJP_3424
+        * @Date: 2020/12/5 23:22
+    */
     public ReturnObject<Object> changeGrouponState(Long shopId, Long id) {
         GrouponPo po = grouponPoMapper.selectByPrimaryKey(id);
         if (po == null) {

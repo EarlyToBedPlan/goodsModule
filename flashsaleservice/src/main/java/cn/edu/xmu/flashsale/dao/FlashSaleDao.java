@@ -4,7 +4,6 @@ import cn.edu.xmu.flashsale.mapper.FlashSaleItemPoMapper;
 import cn.edu.xmu.flashsale.mapper.FlashSalePoMapper;
 import cn.edu.xmu.flashsale.mapper.TimeSegmentPoMapper;
 import cn.edu.xmu.flashsale.model.bo.FlashSale;
-import cn.edu.xmu.flashsale.model.bo.FlashSaleItem;
 import cn.edu.xmu.flashsale.model.bo.FlashSaleRetItem;
 import cn.edu.xmu.flashsale.model.po.*;
 import cn.edu.xmu.flashsale.model.vo.*;
@@ -13,7 +12,6 @@ import cn.edu.xmu.ooad.util.ResponseCode;
 import cn.edu.xmu.ooad.util.ReturnObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import org.apache.tomcat.jni.Local;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -50,7 +48,14 @@ public class FlashSaleDao implements InitializingBean {
 
     }
 
-
+/**
+ * @Description: 未提供SPU-->SKUS接口,因此先暂时写一个临时函数
+ *
+ * @param goodsSpuId
+ * @return: java.util.List<java.lang.Long>
+ * @Author: LJP_3424
+ * @Date: 2020/12/6 1:01
+ */
     private List<Long> goodsSpuIdsToSkuIds(Long goodsSpuId) {
         List<Long> longs = new ArrayList<Long>();
         longs.add(1003L);
@@ -59,6 +64,16 @@ public class FlashSaleDao implements InitializingBean {
         return longs;
     }
 
+/**
+ * @Description: 通过SPU获取集合内SKU是否参与秒杀活动
+ *
+ * @param goodsSpuId
+ * @param beginTime
+ * @param endTime
+ * @return: boolean
+ * @Author: LJP_3424
+ * @Date: 2020/12/6 1:02
+ */
     public boolean getFlashSaleInActivities(Long goodsSpuId, LocalDateTime beginTime, LocalDateTime endTime) {
         // 等待接口
         List<Long> goodsSkuIds = goodsSpuIdsToSkuIds(goodsSpuId);
@@ -93,7 +108,13 @@ public class FlashSaleDao implements InitializingBean {
         }
         return false;
     }
-
+/*
+*
+ * @Description:
+ *
+ * @return: void
+ * @Author: LJP_3424
+ * @Date: 2020/12/6 1:02
     public void insertTimeSegment() {
         TimeSegmentPo timeSegmentPo = new TimeSegmentPo();
         LocalDateTime beginTime = LocalDateTime.of(2020, 1, 1, 0, 0, 0);
@@ -110,7 +131,14 @@ public class FlashSaleDao implements InitializingBean {
             }
         }
     }
-
+*/
+/**
+ * @Description: 获取当前时段的秒杀活动
+ * @param localDateTime
+ * @return: cn.edu.xmu.ooad.util.ReturnObject<java.util.List>
+ * @Author: LJP_3424
+ * @Date: 2020/12/6 1:03
+ */
     public ReturnObject<List> getCurrentFlashSale(LocalDateTime localDateTime) {
 
         TimeSegmentPoExample timeSegmentPoExample = new TimeSegmentPoExample();
@@ -125,6 +153,14 @@ public class FlashSaleDao implements InitializingBean {
         }
     }
 
+/**
+ * @Description: 通过商品SKUID 获取商品历史秒杀信息
+ *
+ * @param id
+ * @return: cn.edu.xmu.ooad.util.ReturnObject<java.util.List>
+ * @Author: LJP_3424
+ * @Date: 2020/12/6 1:03
+ */
     public ReturnObject<List> getFlashSaleById(Long id) {
         FlashSalePoExample example = new FlashSalePoExample();
         FlashSalePoExample.Criteria criteria = example.createCriteria();
@@ -150,13 +186,15 @@ public class FlashSaleDao implements InitializingBean {
     }
 
 
-    /**
-     * 由vo创建newUser检查重复后插入
-     *
-     * @param vo vo对象
-     * @return ReturnObject
-     * createdBy: LJP_3424
-     */
+/**
+ * @Description: 通过Vo验证时段冲突后创建新的秒杀
+ *
+ * @param vo
+ * @param id
+ * @return: cn.edu.xmu.ooad.util.ReturnObject<java.util.List>
+ * @Author: LJP_3424
+ * @Date: 2020/12/6 1:04
+ */
     public ReturnObject<List> createNewFlashSaleByVo(NewFlashSaleVo vo, Long id) {
         //logger.debug(String.valueOf(bloomFilter.includeByBloomFilter("mobileBloomFilter","FAED5EEF1C8562B02110BCA3F9165CBE")));
         //by default,email/mobile are both needed
@@ -177,12 +215,15 @@ public class FlashSaleDao implements InitializingBean {
             return new ReturnObject(ResponseCode.INTERNAL_SERVER_ERR);
         }
     }
-
-    /**
-     * 修改一个秒杀活动信息
-     *
-     * @author LJP_3424
-     */
+/**
+ * @Description: 修改秒杀信息
+ *
+ * @param flashSaleVo
+ * @param id
+ * @return: cn.edu.xmu.ooad.util.ReturnObject<cn.edu.xmu.ooad.model.VoObject>
+ * @Author: LJP_3424
+ * @Date: 2020/12/6 1:04
+ */
     public ReturnObject<VoObject> updateFlashSale(NewFlashSaleVo flashSaleVo, Long id) {
         FlashSalePo po = flashSalePoMapper.selectByPrimaryKey(id);
         if (po == null) return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
@@ -207,11 +248,14 @@ public class FlashSaleDao implements InitializingBean {
         return retObj;
     }
 
-    /**
-     * 修改一个秒杀活动信息
-     *
-     * @author LJP_3424
-     */
+ /**
+  * @Description:  向秒杀活动中添加SKU
+  *
+  * @param null
+  * @return:
+  * @Author: LJP_3424
+  * @Date: 2020/12/6 1:05
+  */
     public ReturnObject<List> insertSkuIntoFlashSale(NewFlashSaleItemVo newFlashSaleItemVo, Long id) {
         Integer flashMaxSize = 5;
         FlashSaleItemPoExample flashSaleItemPoExample = new FlashSaleItemPoExample();
@@ -248,14 +292,16 @@ public class FlashSaleDao implements InitializingBean {
     }
 
 
-    /**
-     * 分页查询所有秒杀信息
-     *
-     * @param pageNum  页数
-     * @param pageSize 每页大小
-     * @return ReturnObject<List> 活动列表
-     * @author LJP_3424
-     */
+/**
+ * @Description: 分页查询所有秒杀信息
+ *
+ * @param id
+ * @param pageNum
+ * @param pageSize
+ * @return: cn.edu.xmu.ooad.util.ReturnObject<com.github.pagehelper.PageInfo<cn.edu.xmu.ooad.model.VoObject>>
+ * @Author: LJP_3424
+ * @Date: 2020/12/6 1:05
+ */
 
     public ReturnObject<PageInfo<VoObject>> selectAllFlashSale(Long id, Integer pageNum, Integer pageSize) {
         FlashSaleItemPoExample flashSaleItemPoExample = new FlashSaleItemPoExample();

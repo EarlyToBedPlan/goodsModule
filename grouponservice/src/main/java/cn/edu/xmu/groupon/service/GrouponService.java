@@ -70,7 +70,14 @@ public class GrouponService {
             return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
         }
     }
-
+    
+    /**
+        * @Description: 向dao层传入vo来插入新活动
+        * @Param: No such property: code for class: Script1 
+        * @return: cn.edu.xmu.ooad.util.ReturnObject 
+        * @Author: LJP_3424
+        * @Date: 2020/12/5 23:24
+    */
     @Transactional
     public ReturnObject createNewGroupon(NewGrouponVo vo, Long shopId, Long id) {
         ReturnObject returnObject = grouponDao.insertNewGroupon(vo, shopId, id);
@@ -78,16 +85,25 @@ public class GrouponService {
     }
 
     /**
-     * 修改活动
-     *
-     * @author LJP_3424
-     */
+        * @Description: 传入VO更新团购活动信息
+        * @Param: No such property: code for class: Script1 
+        * @return: cn.edu.xmu.ooad.util.ReturnObject 
+        * @Author: LJP_3424
+        * @Date: 2020/12/5 23:24
+    */
     @Transactional
     public ReturnObject updateGroupon(NewGrouponVo newGrouponVo, Long shopId, Long id) {
         ReturnObject<VoObject> retObj = grouponDao.updateGroupon(newGrouponVo, shopId, id);
         return retObj;
     }
-
+    
+    /**
+        * @Description: 删除团购活动
+        * @Param: No such property: code for class: Script1 
+        * @return: cn.edu.xmu.ooad.util.ReturnObject<java.lang.Object> 
+        * @Author: LJP_3424
+        * @Date: 2020/12/5 1:06
+    */
     @Transactional
     public ReturnObject<Object> deleteGroupon(Long shopId, Long id) {
         return grouponDao.changeGrouponState(shopId, id);
