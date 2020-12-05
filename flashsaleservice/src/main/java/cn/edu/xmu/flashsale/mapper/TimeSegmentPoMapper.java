@@ -2,6 +2,7 @@ package cn.edu.xmu.flashsale.mapper;
 
 import cn.edu.xmu.flashsale.model.po.TimeSegmentPo;
 import cn.edu.xmu.flashsale.model.po.TimeSegmentPoExample;
+
 import java.util.List;
 
 public interface TimeSegmentPoMapper {

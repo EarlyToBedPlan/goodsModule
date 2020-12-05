@@ -1,15 +1,34 @@
-package cn.edu.xmu.flashsale.model.bo;
+package cn.edu.xmu.flashsale.model.vo;
 
 import cn.edu.xmu.flashsale.model.po.FlashSaleItemPo;
-import cn.edu.xmu.ooad.model.VoObject;
 
 import java.time.LocalDateTime;
 
 /**
  * @author LJP_3424
- * @create 2020-12-03 17:34
+ * @create 2020-12-04 10:49
  */
-public class FlashSaleItem implements VoObject {
+public class FlashSaleItemSimpleVo {
+    private Long id;
+
+    public FlashSaleItemSimpleVo(FlashSaleItemVo vo) {
+        this.id = vo.getId();
+        this.gmtCreated = vo.getGmtCreated();
+        this.gmtModified = vo.getGmtModified();
+        this.price = vo.getPrice();
+        this.quantity = vo.getQuantity();
+    }
+
+    public FlashSaleItemSimpleVo(FlashSaleItemPo po) {
+        this.id = po.getId();
+        this.gmtCreated = po.getGmtCreated();
+        this.gmtModified = po.getGmtModified();
+        this.price = po.getPrice();
+        this.quantity = po.getQuantity();
+    }
+
+    //缺少一个 goodsSKuVo
+    //private GoodsSkuVo goodsSkuVo = new goodsSkuVo();
 
     public Long getId() {
         return id;
@@ -17,22 +36,6 @@ public class FlashSaleItem implements VoObject {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public Long getSaleId() {
-        return saleId;
-    }
-
-    public void setSaleId(Long saleId) {
-        this.saleId = saleId;
-    }
-
-    public Long getGoodsSkuId() {
-        return goodsSkuId;
-    }
-
-    public void setGoodsSkuId(Long goodsSkuId) {
-        this.goodsSkuId = goodsSkuId;
     }
 
     public Long getPrice() {
@@ -67,12 +70,6 @@ public class FlashSaleItem implements VoObject {
         this.gmtModified = gmtModified;
     }
 
-    private Long id;
-
-    private Long saleId;
-
-    private Long goodsSkuId;
-
     private Long price;
 
     private Integer quantity;
@@ -80,20 +77,4 @@ public class FlashSaleItem implements VoObject {
     private LocalDateTime gmtCreated;
 
     private LocalDateTime gmtModified;
-
-    @Override
-    public Object createVo() {
-        return null;
-    }
-
-    public FlashSaleItem(FlashSaleItemPo flashSaleItemPo) {
-        id = flashSaleItemPo.getId();
-
-
-    }
-
-    @Override
-    public Object createSimpleVo() {
-        return null;
-    }
 }

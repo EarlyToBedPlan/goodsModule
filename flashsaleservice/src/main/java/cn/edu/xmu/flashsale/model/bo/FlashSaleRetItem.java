@@ -1,15 +1,42 @@
 package cn.edu.xmu.flashsale.model.bo;
 
 import cn.edu.xmu.flashsale.model.po.FlashSaleItemPo;
+import cn.edu.xmu.flashsale.model.vo.FlashSaleItemSimpleVo;
+import cn.edu.xmu.flashsale.model.vo.FlashSaleItemVo;
+import cn.edu.xmu.flashsale.model.vo.FlashSaleRetItemVo;
+import cn.edu.xmu.flashsale.model.vo.FlashSaleVo;
 import cn.edu.xmu.ooad.model.VoObject;
 
 import java.time.LocalDateTime;
 
 /**
  * @author LJP_3424
- * @create 2020-12-03 17:34
+ * @create 2020-12-04 12:08
  */
-public class FlashSaleItem implements VoObject {
+public class FlashSaleRetItem implements VoObject {
+
+    //private GoodsSkuItemVo goodsSkuItemVo;
+
+    private Long id;
+
+    private Long goodsSkuId;
+
+    private Long price;
+
+    private Integer quantity;
+
+    private LocalDateTime gmtCreated;
+
+    private LocalDateTime gmtModified;
+
+    public FlashSaleRetItem(FlashSaleItemPo po) {
+        id = po.getId();
+        goodsSkuId = po.getGoodsSkuId();
+        price = po.getPrice();
+        quantity = po.getQuantity();
+        gmtCreated = po.getGmtCreated();
+        gmtModified = po.getGmtModified();
+    }
 
     public Long getId() {
         return id;
@@ -17,14 +44,6 @@ public class FlashSaleItem implements VoObject {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public Long getSaleId() {
-        return saleId;
-    }
-
-    public void setSaleId(Long saleId) {
-        this.saleId = saleId;
     }
 
     public Long getGoodsSkuId() {
@@ -67,29 +86,9 @@ public class FlashSaleItem implements VoObject {
         this.gmtModified = gmtModified;
     }
 
-    private Long id;
-
-    private Long saleId;
-
-    private Long goodsSkuId;
-
-    private Long price;
-
-    private Integer quantity;
-
-    private LocalDateTime gmtCreated;
-
-    private LocalDateTime gmtModified;
-
     @Override
     public Object createVo() {
-        return null;
-    }
-
-    public FlashSaleItem(FlashSaleItemPo flashSaleItemPo) {
-        id = flashSaleItemPo.getId();
-
-
+        return new FlashSaleRetItemVo(this);
     }
 
     @Override

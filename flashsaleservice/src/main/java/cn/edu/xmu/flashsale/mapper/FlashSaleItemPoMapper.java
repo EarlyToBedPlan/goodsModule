@@ -2,6 +2,7 @@ package cn.edu.xmu.flashsale.mapper;
 
 import cn.edu.xmu.flashsale.model.po.FlashSaleItemPo;
 import cn.edu.xmu.flashsale.model.po.FlashSaleItemPoExample;
+
 import java.util.List;
 
 public interface FlashSaleItemPoMapper {

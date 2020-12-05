@@ -11,21 +11,21 @@ import java.time.LocalDateTime;
 public class FlashSaleDataVo {
     /**
      * {
-     *   "id": 0,
-     *   "goodsSku": {
-     *     "id": 0,
-     *     "name": "string",
-     *     "skuSn": "string",
-     *     "imageUrl": "string",
-     *     "inventory": 0,
-     *     "originalPrice": 0,
-     *     "price": 0,
-     *     "disable": false
-     *   },
-     *   "price": 0,
-     *   "quantity": 0,
-     *   "gmtCreate": "string",
-     *   "gmtModified": "string"
+     * "id": 0,
+     * "goodsSku": {
+     * "id": 0,
+     * "name": "string",
+     * "skuSn": "string",
+     * "imageUrl": "string",
+     * "inventory": 0,
+     * "originalPrice": 0,
+     * "price": 0,
+     * "disable": false
+     * },
+     * "price": 0,
+     * "quantity": 0,
+     * "gmtCreate": "string",
+     * "gmtModified": "string"
      * }
      */
     private Long id;
@@ -99,13 +99,13 @@ public class FlashSaleDataVo {
     }
 
     // 此处缺少一个GoodsSKuVo
-    public FlashSaleDataVo(FlashSaleItemPo flashSaleItemPo){
-         this.gmtCreated = flashSaleItemPo.getGmtCreated();
-         this.gmtModified = flashSaleItemPo.getGmtModified();
-         this.goodsSkuId = flashSaleItemPo.getGoodsSkuId();
-         this.id = flashSaleItemPo.getId();
-         this.price = flashSaleItemPo.getPrice();
-         this.quantity = flashSaleItemPo.getQuantity();
-         this.saleId = flashSaleItemPo.getSaleId();
+    public FlashSaleDataVo(FlashSaleItemPo flashSaleItemPo) {
+        this.gmtCreated = flashSaleItemPo.getGmtCreated();
+        this.gmtModified = flashSaleItemPo.getGmtModified();
+        this.goodsSkuId = flashSaleItemPo.getGoodsSkuId();
+        this.id = flashSaleItemPo.getId();
+        this.price = flashSaleItemPo.getPrice();
+        this.quantity = flashSaleItemPo.getQuantity();
+        this.saleId = flashSaleItemPo.getSaleId();
     }
 }

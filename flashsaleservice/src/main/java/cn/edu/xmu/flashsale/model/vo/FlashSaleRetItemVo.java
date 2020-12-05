@@ -1,15 +1,20 @@
-package cn.edu.xmu.flashsale.model.bo;
+package cn.edu.xmu.flashsale.model.vo;
 
+import cn.edu.xmu.flashsale.model.bo.FlashSaleItem;
+import cn.edu.xmu.flashsale.model.bo.FlashSaleRetItem;
 import cn.edu.xmu.flashsale.model.po.FlashSaleItemPo;
-import cn.edu.xmu.ooad.model.VoObject;
 
 import java.time.LocalDateTime;
 
 /**
  * @author LJP_3424
- * @create 2020-12-03 17:34
+ * @create 2020-12-04 21:02
  */
-public class FlashSaleItem implements VoObject {
+public class FlashSaleRetItemVo {
+    private Long id;
+
+    private Long goodsSkuId;
+
 
     public Long getId() {
         return id;
@@ -17,14 +22,6 @@ public class FlashSaleItem implements VoObject {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public Long getSaleId() {
-        return saleId;
-    }
-
-    public void setSaleId(Long saleId) {
-        this.saleId = saleId;
     }
 
     public Long getGoodsSkuId() {
@@ -67,12 +64,6 @@ public class FlashSaleItem implements VoObject {
         this.gmtModified = gmtModified;
     }
 
-    private Long id;
-
-    private Long saleId;
-
-    private Long goodsSkuId;
-
     private Long price;
 
     private Integer quantity;
@@ -81,19 +72,13 @@ public class FlashSaleItem implements VoObject {
 
     private LocalDateTime gmtModified;
 
-    @Override
-    public Object createVo() {
-        return null;
+    public FlashSaleRetItemVo(FlashSaleRetItem flashSaleRetItem) {
+        id = flashSaleRetItem.getId();
+        goodsSkuId = flashSaleRetItem.getGoodsSkuId();
+        price = flashSaleRetItem.getPrice();
+        quantity = flashSaleRetItem.getQuantity();
+        gmtCreated = flashSaleRetItem.getGmtCreated();
+        gmtModified = flashSaleRetItem.getGmtModified();
     }
 
-    public FlashSaleItem(FlashSaleItemPo flashSaleItemPo) {
-        id = flashSaleItemPo.getId();
-
-
-    }
-
-    @Override
-    public Object createSimpleVo() {
-        return null;
-    }
 }
