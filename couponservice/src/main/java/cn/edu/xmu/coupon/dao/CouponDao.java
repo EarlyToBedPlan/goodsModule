@@ -102,5 +102,57 @@ public class CouponDao implements InitializingBean {
         }
         return po;
     }
+public ReturnObject addCoupon(CouponPo po)
+{
+    ReturnObject returnObject=null;
+    try{
+        int ret=couponMapper.insertSelective(po);
+        if(ret == 0) {
+            logger.debug("insertCoupon: insert fail.");
+            returnObject = new ReturnObject(ResponseCode.RESOURCE_ID_NOTEXIST);
+        } else {
+            logger.debug("insertCoupon: insert success." );
+            returnObject = new ReturnObject();
+        }
+    } catch (Exception e) {
+        logger.error("发生了严重的服务器内部错误：" + e.getMessage());
+    }
+    return returnObject;
+}
+
+public boolean haveCoupon(Long userId,Long activityId)
+{
+    CouponPoExample example=new CouponPoExample();
+    CouponPoExample.Criteria criteria=example.createCriteria();
+    criteria.andCustomerIdEqualTo(userId);
+    criteria.andActivityIdEqualTo(activityId);
+    boolean empty=false;
+    try{
+        List<CouponPo> couponPos=couponMapper.selectByExample(example);
+        empty=couponPos.isEmpty();
+    }
+    catch (Exception e) {
+        logger.error("发生了严重的服务器内部错误：" + e.getMessage());
+    }
+    return !empty;
+}
+public ReturnObject deleteCouponByActivityId(Long id)
+{
+    CouponPoExample example=new CouponPoExample();
+    CouponPoExample.Criteria criteria=example.createCriteria();
+    criteria.andActivityIdEqualTo(id);
+    criteria.andStateEqualTo((byte)Coupon.State.available.getCode());
+    try{
+        List<CouponPo> couponPos=couponMapper.selectByExample(example);
+        for(CouponPo po:couponPos)
+        {
+            couponMapper.deleteByPrimaryKey(po.getId());
+        }
+    }
+    catch (Exception e) {
+        logger.error("发生了严重的服务器内部错误：" + e.getMessage());
+    }
+    return null;
+}
 
 }

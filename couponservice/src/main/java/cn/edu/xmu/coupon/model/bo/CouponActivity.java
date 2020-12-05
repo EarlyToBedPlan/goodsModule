@@ -81,11 +81,10 @@ public class CouponActivity implements VoObject {
     }
 
     public enum State {
-        WAITING(0, "还未开始的"),
-        TOMORROW_ONLINE(1, "明天开始的"),
-        ONLINE(2, "正在进行中的"),
-        OFFLINE(3, "已经结束的"),
-        INVALID(4, "被强制下线的");
+        WAITING(0, "待上线"),
+        ONLINE(2, "进行中"),
+        INVALID(3, "已下线"),
+        OFFLINE(4, "已结束");
         private static final Map<Integer, CouponActivity.State> stateMap;
 
         static { //由类加载机制，静态块初始加载对应的枚举属性到map中，而不用每次取属性时，遍历一次所有枚举值

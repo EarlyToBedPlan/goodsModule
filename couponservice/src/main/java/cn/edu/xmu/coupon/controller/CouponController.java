@@ -279,17 +279,17 @@ public class CouponController {
     @ApiImplicitParams({
             @ApiImplicitParam(paramType = "header", dataType = "String", name = "authorization", value = "Token", required = true),
             @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "优惠券状态", value = "state", required = true),
-           })
+    })
     @ApiResponses({
             @ApiResponse(code = 0, message = "成功"),
     })
     @Audit
     @GetMapping("/coupons")
-    public Object getCouponByUserId(@RequestParam(required = false) Integer page, @RequestParam(required = false) Integer pageSize,@RequestParam(required = false) Integer state,
-                               @LoginUser Long id) {
+    public Object getCouponByUserId(@RequestParam(required = false) Integer page, @RequestParam(required = false) Integer pageSize, @RequestParam(required = false) Integer state,
+                                    @LoginUser Long id) {
         page = (page == null) ? 1 : page;
         pageSize = (pageSize == null) ? 10 : pageSize;
-        ReturnObject<PageInfo<VoObject>> returnObject = couponActivityService.getCouponByUserId(id, state,page, pageSize);
+        ReturnObject<PageInfo<VoObject>> returnObject = couponActivityService.getCouponByUserId(id, state, page, pageSize);
         if (returnObject.getData() != null)
             return ResponseUtil.ok(returnObject.getData());
         else {

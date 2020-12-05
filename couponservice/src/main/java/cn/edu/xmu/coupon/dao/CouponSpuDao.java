@@ -12,6 +12,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -78,8 +79,7 @@ public class CouponSpuDao implements InitializingBean {
             couponSpuPos = couponSpuMapper.selectByExample(example);
             if (couponSpuPos.isEmpty()) {
                 logger.debug("getCouponSpuByActivityId: Not Found");
-            }
-            else logger.debug("getCouponSpuByActivityId: retCouponSpu" + couponSpuPos);
+            } else logger.debug("getCouponSpuByActivityId: retCouponSpu" + couponSpuPos);
         } catch (Exception e) {
             logger.error("发生了严重的服务器内部错误：" + e.getMessage());
         }
@@ -103,14 +103,14 @@ public class CouponSpuDao implements InitializingBean {
         return couponSpuPos;
     }
 
-    public Long getActivityId(Long id) {
+    public CouponSpuPo getCouponSpuById(Long id) {
         CouponSpuPo po = null;
         try {
             po = couponSpuMapper.selectByPrimaryKey(id);
         } catch (Exception e) {
             logger.error("发生了严重的服务器内部错误：" + e.getMessage());
         }
-        return po.getActivityId();
+        return po;
     }
 
     public ReturnObject deleteCouponSpu(Long id) {

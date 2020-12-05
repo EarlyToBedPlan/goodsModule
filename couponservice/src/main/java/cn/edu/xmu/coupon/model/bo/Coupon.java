@@ -57,6 +57,8 @@ public class Coupon implements VoObject {
             return description;
         }
     }
+public Coupon()
+{}
 
     public Coupon(CouponPo po, CouponActivityPo couponActivityPo)
     {

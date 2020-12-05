@@ -108,8 +108,6 @@ public class CouponActivityDao implements InitializingBean {
     public int checkStateByTime(CouponActivity.State state, LocalDateTime beginTime, LocalDateTime endTime) {
         if (beginTime.isAfter(LocalDateTime.now()))
             return CouponActivity.State.WAITING.getCode();
-        else if (beginTime.minusDays(1).toLocalDate() == LocalDateTime.now().toLocalDate())
-            return CouponActivity.State.TOMORROW_ONLINE.getCode();
         else if (beginTime.isBefore(LocalDateTime.now()) && endTime.isAfter(LocalDateTime.now()))
             return CouponActivity.State.ONLINE.getCode();
         else
