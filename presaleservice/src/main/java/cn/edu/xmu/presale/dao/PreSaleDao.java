@@ -3,33 +3,22 @@ package cn.edu.xmu.presale.dao;
 import cn.edu.xmu.ooad.model.VoObject;
 import cn.edu.xmu.ooad.util.ResponseCode;
 import cn.edu.xmu.ooad.util.ReturnObject;
-import cn.edu.xmu.presale.mapper.NewUserPoMapper;
 import cn.edu.xmu.presale.mapper.PreSalePoMapper;
-import cn.edu.xmu.presale.model.bo.NewPreSale;
 import cn.edu.xmu.presale.model.bo.PreSale;
 import cn.edu.xmu.presale.model.po.PreSalePo;
 import cn.edu.xmu.presale.model.po.PreSalePoExample;
 import cn.edu.xmu.presale.model.vo.NewPreSaleVo;
-import cn.edu.xmu.presale.model.vo.PreSaleVo;
 import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
-import net.bytebuddy.asm.Advice;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * @author LJP_3424
@@ -65,20 +54,24 @@ public class PreSaleDao implements InitializingBean {
         }
     }
 
-    public ReturnObject<List> getPreSaleById(Long shopId, Long id, Byte state) {
+    public ReturnObject<List> getPreSaleBySpuId( Long id, Byte state) {
         PreSalePoExample example = new PreSalePoExample();
         PreSalePoExample.Criteria criteria = example.createCriteria();
-        criteria.andShopIdEqualTo(shopId);
         criteria.andGoodsSpuIdEqualTo(id);
-        if (state != -1) criteria.andStateEqualTo(state);
-        logger.debug("findPreSaleById: Id = " + id + ";Shop Id = " + shopId + ";state = " + state);
-        List<PreSalePo> preSalePos = preSalePoMapper.selectByExample(example);
-
-        if (preSalePos.size() != 0) {
-            return new ReturnObject<>(preSalePos);
-        } else {
-            return null;
+        if (state != null) criteria.andStateEqualTo(state);
+        logger.debug("find PreSale By Id: Id = " + id + ";state = " + state);
+        List<PreSalePo> preSalePos = null;
+        try {
+            preSalePos = preSalePoMapper.selectByExample(example);
+        } catch (DataAccessException e) {
+            logger.error("selectAllPreSale: DataAccessException:" + e.getMessage());
+            return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR, String.format("数据库错误：%s", e.getMessage()));
+        } catch (Exception e) {
+            // 其他Exception错误
+            logger.error("other exception : " + e.getMessage());
+            return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR, String.format("发生了严重的数据库错误：%s", e.getMessage()));
         }
+        return new ReturnObject<>(preSalePos);
     }
 
     /**
@@ -89,31 +82,35 @@ public class PreSaleDao implements InitializingBean {
      * @return ReturnObject<List> 活动列表
      * @author LJP_3424
      */
-    public ReturnObject<PageInfo<VoObject>> selectAllPreSale(Long shopId, Byte timeline, Long spuId, Integer pageNum, Integer pageSize) {
+    public List<PreSalePo> selectAllPreSale(Long shopId, Byte timeline, Long spuId, Integer pageNum, Integer pageSize) {
         PreSalePoExample example = new PreSalePoExample();
         PreSalePoExample.Criteria criteria = example.createCriteria();
         LocalDateTime localDateTime = LocalDateTime.now();
         LocalDateTime tomorrow;
-        LocalDate localDate = LocalDate.now();
-        switch (timeline) {
-            case 0:
-                criteria.andBeginTimeGreaterThan(LocalDateTime.now());
-                break;
-            case 1:
-                // 明天
-                tomorrow = LocalDateTime.of(localDateTime.toLocalDate(), LocalTime.MIN).minusDays(-1);
-                criteria.andBeginTimeBetween(tomorrow, tomorrow.minusDays(-1));
-                break;
-            case 2:
-                criteria.andBeginTimeLessThanOrEqualTo(localDateTime);
-                criteria.andEndTimeGreaterThan(localDateTime);
-                break;
-            case 3:
-                criteria.andEndTimeLessThan(localDateTime);
-                break;
+        if(timeline != null) {
+            switch (timeline) {
+                case 0:
+                    //
+                    criteria.andBeginTimeGreaterThan(LocalDateTime.now());
+                    break;
+                case 1:
+                    // 明天
+                    tomorrow = LocalDateTime.of(localDateTime.toLocalDate(), LocalTime.MIN).minusDays(-1);
+                    criteria.andBeginTimeBetween(tomorrow, tomorrow.minusDays(-1));
+                    break;
+                case 2:
+                    criteria.andBeginTimeLessThanOrEqualTo(localDateTime);
+                    criteria.andEndTimeGreaterThan(localDateTime);
+                    break;
+                case 3:
+                    criteria.andEndTimeLessThan(localDateTime);
+                    break;
+            }
         }
-        if (shopId != 0) criteria.andShopIdEqualTo(shopId);
-        if (spuId != 0) criteria.andGoodsSpuIdEqualTo(spuId);
+
+        if (shopId != null) criteria.andShopIdEqualTo(shopId);
+        if (spuId != null) criteria.andGoodsSpuIdEqualTo(spuId);
+
         //分页查询
         PageHelper.startPage(pageNum, pageSize);
         logger.debug("page = " + pageNum + "pageSize = " + pageSize);
@@ -121,21 +118,15 @@ public class PreSaleDao implements InitializingBean {
         try {
             //不加限定条件查询所有
             preSalePos = preSalePoMapper.selectByExample(example);
-            List<VoObject> ret = new ArrayList<>(preSalePos.size());
-            for (PreSalePo po : preSalePos) {
-                PreSale preSale = new PreSale(po);
-                ret.add(preSale);
-            }
-            PageInfo<VoObject> preSalePage = PageInfo.of(ret);
-            return new ReturnObject<PageInfo<VoObject>>(preSalePage);
         } catch (DataAccessException e) {
             logger.error("selectAllPreSale: DataAccessException:" + e.getMessage());
-            return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR, String.format("数据库错误：%s", e.getMessage()));
+            //return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR, String.format("数据库错误：%s", e.getMessage()));
         } catch (Exception e) {
             // 其他Exception错误
             logger.error("other exception : " + e.getMessage());
-            return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR, String.format("发生了严重的数据库错误：%s", e.getMessage()));
+            //return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR, String.format("发生了严重的数据库错误：%s", e.getMessage()));
         }
+        return preSalePos;
     }
 
     /**
@@ -145,30 +136,63 @@ public class PreSaleDao implements InitializingBean {
      * @return ReturnObject
      * createdBy: LJP_3424
      */
-    public ReturnObject<List> createNewPreSaleByVo(NewPreSaleVo vo, Long shopId, Long id) {
-        //logger.debug(String.valueOf(bloomFilter.includeByBloomFilter("mobileBloomFilter","FAED5EEF1C8562B02110BCA3F9165CBE")));
-        //by default,email/mobile are both needed
-        PreSalePo preSalePo = new PreSalePo();
-        ReturnObject returnObject;
-        preSalePo.setName(vo.getName());
-        preSalePo.setAdvancePayPrice(vo.getAdvancePayPrice());
-        preSalePo.setRestPayPrice(vo.getRestPayPrice());
-        preSalePo.setQuantity(vo.getQuantity());
-        preSalePo.setBeginTime(vo.getBeginTime());
-        preSalePo.setEndTime(vo.getEndTime());
+    public ReturnObject<VoObject> createNewPreSaleByVo(NewPreSaleVo vo, Long shopId, Long id) {
+
+        PreSalePo preSalePo = vo.createPreSalePo();
+        preSalePo.setState(PreSale.State.NEW.getCode());
         preSalePo.setGoodsSpuId(id);
         preSalePo.setShopId(shopId);
         preSalePo.setGmtCreated(LocalDateTime.now());
+        ReturnObject<VoObject> retObj = null;
         try {
             preSalePoMapper.insert(preSalePo);
-            return getPreSaleById(shopId, id, (byte) -1);
+            VoObject ret = new PreSale(getPreSalePo(preSalePo.getId()));
+            retObj = new ReturnObject<>(ret);
+        } catch (DataAccessException e) {
+            // 数据库错误
+            logger.error("数据库错误：" + e.getMessage());
+            retObj = new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR,
+                    String.format("发生了严重的数据库错误：%s", e.getMessage()));
         } catch (Exception e) {
-            return new ReturnObject(ResponseCode.INTERNAL_SERVER_ERR);
+            // 属未知错误
+            logger.error("严重错误：" + e.getMessage());
+            retObj = new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR,
+                    String.format("发生了严重的未知错误：%s", e.getMessage()));
         }
+        return retObj;
     }
 
 
-    public ReturnObject<Object> changePreSaleState(Long shopId, Long id) {
+    /**
+     * 修改一个预售活动信息
+     *
+     * @author LJP_3424
+     */
+    public Long updatePreSale(NewPreSaleVo preSaleVo, Long id) {
+
+        PreSalePo preSalePo = preSaleVo.createPreSalePo();
+        preSalePo.setId(id);
+        int ret;
+        preSalePo.setGmtModified(LocalDateTime.now());
+        try {
+            ret = preSalePoMapper.updateByPrimaryKeySelective(preSalePo);
+        }  catch (DataAccessException e) {
+            // 数据库错误
+            logger.error("数据库错误：" + e.getMessage());
+           /* retObj = new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR,
+                    String.format("发生了严重的数据库错误：%s", e.getMessage()));*/
+        } catch (Exception e) {
+            // 属未知错误
+            logger.error("严重错误：" + e.getMessage());
+            /*retObj = new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR,
+                    String.format("发生了严重的未知错误：%s", e.getMessage()));*/
+        }
+        // 这里可能存在空指针异常,在上一层捕获
+        return preSalePo.getId();
+    }
+
+
+    public ReturnObject<Object> changePreSaleState(Long id, Byte state) {
         PreSalePo po = preSalePoMapper.selectByPrimaryKey(id);
         if (po == null) {
             logger.info("活动不存在或已被删除：id = " + id);
@@ -177,7 +201,7 @@ public class PreSaleDao implements InitializingBean {
         if (po.getBeginTime().compareTo(LocalDateTime.now()) < 0 && po.getEndTime().compareTo(LocalDateTime.now()) > 0) {
             return new ReturnObject<>(ResponseCode.PRESALE_STATENOTALLOW);
         }
-        po.setState((byte) 4);
+        po.setState( state);
         ReturnObject<Object> retObj = new ReturnObject<>(ResponseCode.OK);
         int ret;
         try {
@@ -200,36 +224,12 @@ public class PreSaleDao implements InitializingBean {
         return retObj;
     }
 
-    /**
-     * 修改一个预售活动信息
-     *
-     * @author LJP_3424
-     */
-    public ReturnObject<VoObject> updatePreSale(NewPreSaleVo preSaleVo, Long shopId, Long id) {
-        PreSalePo po = preSalePoMapper.selectByPrimaryKey(id);
-        if (po.getBeginTime().compareTo(LocalDateTime.now()) < 0 && po.getEndTime().compareTo(LocalDateTime.now()) > 0) {
-            return new ReturnObject<>(ResponseCode.PRESALE_STATENOTALLOW);
-        }
-        po.setName(preSaleVo.getName());
-        po.setAdvancePayPrice(preSaleVo.getAdvancePayPrice());
-        po.setRestPayPrice(preSaleVo.getRestPayPrice());
-        po.setQuantity(preSaleVo.getQuantity());
-        po.setBeginTime(preSaleVo.getBeginTime());
-        po.setEndTime(preSaleVo.getEndTime());
-        po.setGmtModified(LocalDateTime.now());
-        ReturnObject<VoObject> retObj = null;
-        try {
-            int ret = preSalePoMapper.updateByPrimaryKey(po);
-            if (ret != 0) {
-                PreSale preSale = new PreSale(preSalePoMapper.selectByPrimaryKey(id));
-                retObj = new ReturnObject<>(preSale);
-            }
-        } catch (Exception e) {
-            // 其他Exception错误
-            logger.error("other exception : " + e.getMessage());
-            retObj = new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR, String.format("发生了严重的数据库错误：%s", e.getMessage()));
-        }
-        return retObj;
+
+    public PreSalePo getPreSalePo(Long preSaleId){
+
+        PreSalePo preSalePo = null;
+        preSalePo = preSalePoMapper.selectByPrimaryKey(preSaleId);
+        return preSalePo;
     }
 
 

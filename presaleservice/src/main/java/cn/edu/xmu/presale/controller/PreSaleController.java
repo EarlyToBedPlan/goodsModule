@@ -40,6 +40,68 @@ public class PreSaleController {
     private HttpServletResponse httpServletResponse;
 
     /**
+     * 查询预售活动所有状态
+     *
+     * @return Object
+     * createdBy: LJP_3424
+     */
+    @ApiOperation(value = "获得预售活动所有状态")
+    @ApiResponses({
+            @ApiResponse(code = 0, message = "成功")
+    })
+    @GetMapping("/presales/states")
+    public Object getAllPreSalesStates() {
+        PreSale.State[] states = PreSale.State.class.getEnumConstants();
+        List<PreSaleStateVo> preSaleStateVos = new ArrayList<PreSaleStateVo>();
+        for (int i = 0; i < states.length; i++) {
+            preSaleStateVos.add(new PreSaleStateVo(states[i]));
+        }
+        return ResponseUtil.ok(new ReturnObject<List>(preSaleStateVos).getData());
+    }
+
+
+    /**
+     * @Description:  筛选查询所有预售活动
+     *
+     * @param shopId
+     * @param timeline
+     * @param spuId
+     * @param page
+     * @param pageSize
+     * @return: java.lang.Object
+     * @Author: LJP_3424
+     * @Date: 2020/12/7 10:36
+     */
+    @ApiOperation(value = "筛选查询所有预售活动")
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "query", name = "shopId", value = "店铺id", required = false, dataType = "Integer"),
+            @ApiImplicitParam(paramType = "query", name = "timeline", value = "时间", required = false, dataType = "Integer"),
+            @ApiImplicitParam(paramType = "query", name = "spuId", value = "商品ID", required = false, dataType = "Integer"),
+            @ApiImplicitParam(paramType = "query", name = "page", value = "页码", required = false, dataType = "Integer"),
+            @ApiImplicitParam(paramType = "query", name = "pageSize", value = "页面大小", required = false, dataType = "Integer")
+    })
+    @ApiResponses({
+            @ApiResponse(code = 0, message = "成功")
+    })
+    @GetMapping("/presales")
+    public Object selectAllPreSale(
+            @RequestParam(required = false) Long shopId,
+            @RequestParam(required = false) Byte timeline,
+            @RequestParam(required = false) Long spuId,
+            @RequestParam(required = false, defaultValue = "1") Integer page,
+            @RequestParam(required = false, defaultValue = "10") Integer pageSize
+    ) {
+        logger.debug("selectAllPreSale: shopId = " + shopId + " timeline = " + timeline + "spuId = " + spuId + " page = " + page + "  pageSize =" + pageSize);
+        ReturnObject<PageInfo<VoObject>> returnObject = preSaleService.selectAllPreSale(shopId, timeline, shopId, page, pageSize);
+        if (returnObject.getCode().equals(ResponseCode.RESOURCE_ID_NOTEXIST)) {
+            return Common.getPageRetObject(returnObject);
+        } else {
+            return Common.decorateReturnObject(returnObject);
+        }
+    }
+
+
+    /**
      * @param id
      * @description:查看预售活动
      * @return: java.lang.Object
@@ -60,12 +122,13 @@ public class PreSaleController {
     public Object getPreSale(
             @PathVariable Long shopId,
             @PathVariable Long id,
-            @RequestParam(required = false, defaultValue = "-1") Byte state) {
+            @RequestParam(required = false) Byte state) {
+        //
         if (logger.isDebugEnabled()) {
             logger.debug("PreSaleInfo: spuId = " + id + " shopId = " + shopId);
         }
 
-        ReturnObject<List> returnObject = preSaleService.getPreSaleById(shopId, id, state);
+        ReturnObject<List> returnObject = preSaleService.getPreSaleById(id, state);
 
         if (returnObject.getCode().equals(ResponseCode.RESOURCE_ID_NOTEXIST)) {
             return Common.getListRetObject(returnObject);
@@ -74,61 +137,18 @@ public class PreSaleController {
         }
     }
 
+
+
+
     /**
+     * @Description:新增预售活动
+     * @param shopId
      * @param id
-     * @description:查看所有预售活动
+     * @param vo
+     * @param bindingResult
      * @return: java.lang.Object
-     * @author: LJP_3424
-     */
-    @ApiOperation(value = "筛选查询所有预售活动")
-    @ApiImplicitParams({
-            @ApiImplicitParam(paramType = "query", name = "shopId", value = "店铺id", required = false, dataType = "Integer"),
-            @ApiImplicitParam(paramType = "query", name = "timeline", value = "时间", required = false, dataType = "Integer"),
-            @ApiImplicitParam(paramType = "query", name = "spuId", value = "商品ID", required = false, dataType = "Integer"),
-            @ApiImplicitParam(paramType = "query", name = "page", value = "页码", required = false, dataType = "Integer"),
-            @ApiImplicitParam(paramType = "query", name = "pageSize", value = "页面大小", required = false, dataType = "Integer")
-    })
-    @ApiResponses({
-            @ApiResponse(code = 0, message = "成功")
-    })
-    @GetMapping("/presales")
-    public Object selectAllPreSale(
-            @RequestParam(required = false, defaultValue = "0") Long shopId,
-            @RequestParam(required = false, defaultValue = "-1") Byte timeline,
-            @RequestParam(required = false, defaultValue = "0") Long spuId,
-            @RequestParam(required = false, defaultValue = "1") Integer page,
-            @RequestParam(required = false, defaultValue = "10") Integer pageSize
-    ) {
-        logger.debug("selectAllPreSale: shopId = " + shopId + " timeline = " + timeline + "spuId = " + spuId + " page = " + page + "  pageSize =" + pageSize);
-        ReturnObject<PageInfo<VoObject>> returnObject = preSaleService.selectAllPreSale(shopId, timeline, shopId, page, pageSize);
-        return Common.getPageRetObject(returnObject);
-    }
-
-    /**
-     * 查询预售活动所有状态
-     *
-     * @return Object
-     * createdBy: LJP_3424
-     */
-    @ApiOperation(value = "获得预售活动所有状态")
-    @ApiResponses({
-            @ApiResponse(code = 0, message = "成功")
-    })
-    @GetMapping("/presales/states")
-    public Object getAllPreSalesStates() {
-        PreSale.State[] states = PreSale.State.class.getEnumConstants();
-        List<PreSaleStateVo> preSaleStateVos = new ArrayList<PreSaleStateVo>();
-        for (int i = 0; i < states.length; i++) {
-            preSaleStateVos.add(new PreSaleStateVo(states[i]));
-        }
-        return ResponseUtil.ok(new ReturnObject<List>(preSaleStateVos).getData());
-    }
-
-    /**
-     * 新增预售活动
-     *
-     * @param vo 角色视图
-     * @author LJP_3424
+     * @Author: LJP_3424
+     * @Date: 2020/12/7 12:19
      */
     @ApiOperation(value = "新增预售活动", produces = "application/json")
     @ApiImplicitParams({
@@ -148,13 +168,54 @@ public class PreSaleController {
             @Validated @RequestBody NewPreSaleVo vo,
             BindingResult bindingResult) {
         logger.debug("insert insertPreSale by shopId:" + shopId + " and spuId: " + id + " and PreSaleVo: " + vo.toString());
-        if (bindingResult.hasErrors()) {
-            return Common.processFieldErrors(bindingResult, httpServletResponse);
+        //校验前端数据
+        Object returnObject = Common.processFieldErrors(bindingResult, httpServletResponse);
+        if (null != returnObject) {
+            return returnObject;
         }
-        ReturnObject returnObject = preSaleService.createNewPreSale(vo, shopId, id);
-        if (returnObject.getCode() == ResponseCode.OK) {
-            return ResponseUtil.ok(returnObject.getData());
-        } else return ResponseUtil.fail(returnObject.getCode());
+        ReturnObject retObject = preSaleService.createNewPreSale(vo, shopId, id);
+        if (retObject.getCode() == ResponseCode.OK) {
+            return ResponseUtil.ok(retObject.getData());
+        } else {
+            return ResponseUtil.fail(retObject.getCode());
+        }
+    }
+
+    /**
+     *
+     * @param shopId
+     * @param id
+     * @param vo
+     * @param bindingResult
+     * @return
+     */
+    @ApiOperation(value = "新增预售活动", produces = "application/json")
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "header", dataType = "String", name = "authorization", value = "Token", required = true),
+            @ApiImplicitParam(name = "shopId", value = "商铺id", required = true, dataType = "Integer", paramType = "path"),
+            @ApiImplicitParam(name = "id", value = "商品SPUId", required = true, dataType = "Integer", paramType = "path"),
+            @ApiImplicitParam(paramType = "body", dataType = "NewPreSaleVo", name = "vo", value = "可修改的活动信息", required = true)
+    })
+    @ApiResponses({
+            @ApiResponse(code = 0, message = "成功"),
+    })
+    //@Audit
+    @PutMapping("/shops/{shopId}/presales/{id}")
+    public Object updatePreSale(@PathVariable Long shopId,
+                                @PathVariable Long id,
+                                @Validated @RequestBody NewPreSaleVo vo,
+                                BindingResult bindingResult) {
+        //校验前端数据
+        Object returnObject = Common.processFieldErrors(bindingResult, httpServletResponse);
+        if (null != returnObject) {
+            return returnObject;
+        }
+        ReturnObject retObject = preSaleService.updatePreSale(vo, id);
+        if (retObject.getCode() == ResponseCode.OK) {
+            return ResponseUtil.ok(retObject.getData());
+        } else {
+            return ResponseUtil.fail(retObject.getCode());
+        }
     }
 
     /**
@@ -176,43 +237,11 @@ public class PreSaleController {
         if (logger.isDebugEnabled()) {
             logger.debug("deleteUser: id = " + id);
         }
-        ReturnObject returnObject = preSaleService.deletePreSale(shopId, id);
+        ReturnObject returnObject = preSaleService.deletePreSale(id);
         return Common.decorateReturnObject(returnObject);
     }
 
-    /**
-     * 修改活动
-     *
-     * @author LJP_3424
-     */
-    @ApiOperation(value = "新增预售活动", produces = "application/json")
-    @ApiImplicitParams({
-            @ApiImplicitParam(paramType = "header", dataType = "String", name = "authorization", value = "Token", required = true),
-            @ApiImplicitParam(name = "shopId", value = "商铺id", required = true, dataType = "Integer", paramType = "path"),
-            @ApiImplicitParam(name = "id", value = "商品SPUId", required = true, dataType = "Integer", paramType = "path"),
-            @ApiImplicitParam(paramType = "body", dataType = "NewPreSaleVo", name = "vo", value = "可修改的活动信息", required = true)
-    })
-    @ApiResponses({
-            @ApiResponse(code = 0, message = "成功"),
-    })
-    //@Audit
-    @PutMapping("/shops/{shopId}/presales/{id}")
-    public Object updatePreSale(@PathVariable Long shopId,
-                                @PathVariable Long id,
-                                @Validated @RequestBody NewPreSaleVo vo,
-                                BindingResult bindingResult) {
-        //校验前端数据
-        /*Object returnObject = Common.processFieldErrors(bindingResult, httpServletResponse);
-        if (null != returnObject) {
-            return returnObject;
-        }*/
-        ReturnObject retObject = preSaleService.updatePreSale(vo, shopId, id);
-        if (retObject.getData() != null) {
-            return Common.getRetObject(retObject);
-        } else {
-            return Common.getNullRetObj(new ReturnObject<>(retObject.getCode(), retObject.getErrmsg()), httpServletResponse);
-        }
-    }
+
 
 
 }

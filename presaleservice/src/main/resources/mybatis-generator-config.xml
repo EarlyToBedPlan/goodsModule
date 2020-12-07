@@ -3,7 +3,7 @@
         PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
         "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
 <generatorConfiguration>
-    <insert id="insertSelective" useGeneratedKeys="true" keyProperty="id"></insert>
+
     <!--
         context:生成一组对象的环境
         id:必选，上下文id，用于在生成错误时提示

@@ -1,8 +1,8 @@
 package cn.edu.xmu.presale.model.vo;
 
+import cn.edu.xmu.presale.model.po.PreSalePo;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
-
+import javax.validation.constraints.Future;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
@@ -12,19 +12,38 @@ import java.time.LocalDateTime;
  * @create 2020-12-02 15:44
  */
 public class NewPreSaleVo {
+    @NotNull
     private String name;
+    @Future(message = "时间段已过")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime beginTime;
+    @Future(message = "时间段已过")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime payTime;
+    @Future(message = "时间段已过")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime endTime;
+    @NotNull
     @Min(0)
     private Integer quantity;
+    @NotNull
     @Min(1)
     private Long advancePayPrice;
+    @NotNull
     @Min(1)
     private Long restPayPrice;
+
+    public PreSalePo createPreSalePo(){
+        PreSalePo preSalePo = new PreSalePo();
+        preSalePo.setName(this.name);
+        preSalePo.setAdvancePayPrice(this.advancePayPrice);
+        preSalePo.setRestPayPrice(this.restPayPrice);
+        preSalePo.setQuantity(this.quantity);
+        preSalePo.setBeginTime(this.beginTime);
+        preSalePo.setPayTime(this.payTime);
+        preSalePo.setEndTime(this.endTime);
+        return preSalePo;
+    }
 
     public String getName() {
         return name;

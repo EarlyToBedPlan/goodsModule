@@ -1,8 +1,6 @@
 package cn.edu.xmu.presale.model.vo;
 
-import cn.edu.xmu.ooad.model.VoObject;
 import cn.edu.xmu.presale.model.bo.PreSale;
-import cn.edu.xmu.presale.model.po.PreSalePo;
 
 import java.time.LocalDateTime;
 
@@ -24,9 +22,9 @@ public class PreSaleVo {
 
     private Byte state;
 
-    private Long shopId;
+/*    private Long shopId;
 
-    private Long goodsSpuId;
+    private Long goodsSpuId;*/
 
 
     private Integer quantity;
@@ -40,22 +38,6 @@ public class PreSaleVo {
 
 
     private LocalDateTime gmtModified;
-
-    public Long getShopId() {
-        return shopId;
-    }
-
-    public void setShopId(Long shopId) {
-        this.shopId = shopId;
-    }
-
-    public Long getGoodsSpuId() {
-        return goodsSpuId;
-    }
-
-    public void setGoodsSpuId(Long goodsSpuId) {
-        this.goodsSpuId = goodsSpuId;
-    }
 
     public Long getId() {
         return id;
@@ -159,21 +141,4 @@ public class PreSaleVo {
         this.gmtCreated = preSale.getGmtCreated();
         this.gmtModified = preSale.getGmtModified();
     }
-
-    public PreSalePo creatPo() {
-        PreSalePo preSalePo = new PreSalePo();
-        preSalePo.setId(this.id);
-        preSalePo.setName(this.name);
-        preSalePo.setBeginTime(this.beginTime);
-        preSalePo.setPayTime(this.payTime);
-        preSalePo.setState(this.state);
-        preSalePo.setEndTime(this.endTime);
-        preSalePo.setQuantity(this.quantity);
-        preSalePo.setAdvancePayPrice(this.advancePayPrice);
-        preSalePo.setRestPayPrice(this.restPayPrice);
-        preSalePo.setGmtCreated(this.gmtCreated);
-        preSalePo.setGmtModified(this.gmtModified);
-        return preSalePo;
-    }
-
 }

@@ -2,7 +2,6 @@ package cn.edu.xmu.presale.model.bo;
 
 import cn.edu.xmu.ooad.model.VoObject;
 import cn.edu.xmu.presale.model.po.PreSalePo;
-import cn.edu.xmu.presale.model.vo.PreSaleRetVo;
 import cn.edu.xmu.presale.model.vo.PreSaleVo;
 import lombok.Data;
 
@@ -44,8 +43,8 @@ public class PreSale implements VoObject {
             return stateMap.get(code);
         }
 
-        public Integer getCode() {
-            return code;
+        public Byte getCode() {
+            return (byte)code;
         }
 
         public String getDescription() {
@@ -65,43 +64,9 @@ public class PreSale implements VoObject {
         this.restPayPrice = po.getRestPayPrice();
         this.gmtCreated = po.getGmtCreated();
         this.gmtModified = po.getGmtModified();
-        this.goodsSpuId = po.getGoodsSpuId();
-        this.shopId = po.getShopId();
+/*        this.goodsSpuId = po.getGoodsSpuId();
+        this.shopId = po.getShopId();*/
     }
-
-    public PreSale(PreSaleVo vo) {
-        this.id = vo.getId();
-        this.name = vo.getName();
-        this.beginTime = vo.getBeginTime();
-        this.payTime = vo.getPayTime();
-        this.state = vo.getState();
-        this.endTime = vo.getEndTime();
-        this.quantity = vo.getQuantity();
-        this.advancePayPrice = vo.getAdvancePayPrice();
-        this.restPayPrice = vo.getRestPayPrice();
-        this.gmtCreated = vo.getGmtCreated();
-        this.gmtModified = vo.getGmtModified();
-        this.goodsSpuId = vo.getGoodsSpuId();
-        this.shopId = vo.getShopId();
-    }
-
-    public PreSalePo creatPo() {
-
-        PreSalePo preSalePo = new PreSalePo();
-        preSalePo.setId(this.id);
-        preSalePo.setName(this.name);
-        preSalePo.setBeginTime(this.beginTime);
-        preSalePo.setPayTime(this.payTime);
-        preSalePo.setState(this.state);
-        preSalePo.setEndTime(this.endTime);
-        preSalePo.setQuantity(this.quantity);
-        preSalePo.setAdvancePayPrice(this.advancePayPrice);
-        preSalePo.setRestPayPrice(this.restPayPrice);
-        preSalePo.setGmtCreated(this.gmtCreated);
-        preSalePo.setGmtModified(this.gmtModified);
-        return preSalePo;
-    }
-
 
     private Long id;
 
@@ -117,9 +82,9 @@ public class PreSale implements VoObject {
 
     private Byte state;
 
-    private Long shopId;
+/*    private Long shopId;
 
-    private Long goodsSpuId;
+    private Long goodsSpuId;*/
 
 
     private Integer quantity;
@@ -147,7 +112,7 @@ public class PreSale implements VoObject {
     }
 
     public void setName(String name) {
-        this.name = name == null ? null : name.trim();
+        this.name = name;
     }
 
     public LocalDateTime getBeginTime() {
@@ -180,22 +145,6 @@ public class PreSale implements VoObject {
 
     public void setState(Byte state) {
         this.state = state;
-    }
-
-    public Long getShopId() {
-        return shopId;
-    }
-
-    public void setShopId(Long shopId) {
-        this.shopId = shopId;
-    }
-
-    public Long getGoodsSpuId() {
-        return goodsSpuId;
-    }
-
-    public void setGoodsSpuId(Long goodsSpuId) {
-        this.goodsSpuId = goodsSpuId;
     }
 
     public Integer getQuantity() {
