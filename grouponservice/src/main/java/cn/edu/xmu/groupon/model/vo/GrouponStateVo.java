@@ -1,6 +1,7 @@
 package cn.edu.xmu.groupon.model.vo;
 
 import cn.edu.xmu.groupon.model.bo.Groupon;
+import cn.edu.xmu.ooad.model.VoObject;
 import lombok.Data;
 
 /**
@@ -17,5 +18,7 @@ public class GrouponStateVo {
         Code = Long.valueOf(state.getCode());
         name = state.getDescription();
     }
+
+
 }
 

@@ -1,20 +1,24 @@
 package cn.edu.xmu.groupon.service;
 
 import cn.edu.xmu.groupon.dao.GrouponDao;
+import cn.edu.xmu.groupon.model.bo.Groupon;
+import cn.edu.xmu.groupon.model.po.GrouponPo;
+import cn.edu.xmu.groupon.model.vo.GrouponSimpleVo;
 import cn.edu.xmu.groupon.model.vo.NewGrouponVo;
 import cn.edu.xmu.ooad.model.VoObject;
 import cn.edu.xmu.ooad.util.ResponseCode;
 import cn.edu.xmu.ooad.util.ReturnObject;
+import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -38,10 +42,10 @@ public class GrouponService {
      * @author LJP_3424
      */
     public ReturnObject<PageInfo<VoObject>> selectAllGroupon(Long shopId, Byte timeline, Long spuId, Integer pageNum, Integer pageSize) {
-        return grouponDao.selectAllGroupon(shopId, timeline, spuId, pageNum, pageSize);
+        List<GrouponPo> grouponPos = grouponDao.selectAllGroupon(shopId, timeline, spuId, pageNum, pageSize);
+        return changeListIntoPage(grouponPos,pageNum,pageSize);
     }
-
-
+    
     public boolean getGrouponInActivities(Long goodsSpuId, LocalDateTime beginTime, LocalDateTime endTime) {
         return grouponDao.getGrouponInActivities(goodsSpuId, beginTime, endTime);
     }
@@ -55,19 +59,28 @@ public class GrouponService {
      * @author LJP_3424
      */
     public ReturnObject<PageInfo<VoObject>> selectGroupon(Long shopId, Byte state, Long spuId, LocalDateTime beginTime, LocalDateTime endTime, Integer pageNum, Integer pageSize) {
-        return grouponDao.selectGroupon(shopId, state, spuId, beginTime, endTime, pageNum, pageSize);
+        List<GrouponPo> grouponPos = grouponDao.selectGroupon(shopId, state, spuId, beginTime, endTime, pageNum, pageSize);
+        return changeListIntoPage(grouponPos,pageNum,pageSize);
     }
 
     @Transactional
-    public ReturnObject<List> getGrouponById(Long shopId, Long id, Byte state) {
+    public ReturnObject<List> getGrouponById( Long id, Byte state) {
 
-        ReturnObject<List> grouponPos = grouponDao.getGrouponById(shopId, id, state);
-        if (grouponPos != null) {
-            //returnObject = new ReturnObject<GrouponPo>(grouponPo);
-            return grouponPos;
-        } else {
-            logger.debug("findGrouponById: Not Found");
-            return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
+        try {
+            List<GrouponPo> grouponPos = grouponDao.getGrouponById(id, state);
+            List<VoObject> ret = new ArrayList<>(grouponPos.size());
+            for(GrouponPo grouponPo:grouponPos){
+                VoObject voObject = new Groupon(grouponPo).createSimpleVo();
+                ret.add(voObject);
+            }
+            return new ReturnObject<List>(ret);
+        } catch (DataAccessException e) {
+            logger.error("selectAllGroupon: DataAccessException:" + e.getMessage());
+            return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR, String.format("数据库错误：%s", e.getMessage()));
+        } catch (Exception e) {
+            // 其他Exception错误
+            logger.error("other exception : " + e.getMessage());
+            return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR, String.format("发生了严重的数据库错误：%s", e.getMessage()));
         }
     }
     
@@ -79,11 +92,36 @@ public class GrouponService {
         * @Date: 2020/12/5 23:24
     */
     @Transactional
-    public ReturnObject createNewGroupon(NewGrouponVo vo, Long shopId, Long id) {
-        ReturnObject returnObject = grouponDao.insertNewGroupon(vo, shopId, id);
-        return returnObject;
+    public ReturnObject createNewGroupon(NewGrouponVo vo,Long shopId ,Long id) {
+        try {
+            Long grouponId = grouponDao.insertNewGroupon(vo, shopId, id);
+            GrouponPo grouponPo = grouponDao.getGrouponPo(grouponId);
+            if(grouponPo != null){
+                return new ReturnObject<VoObject>(new Groupon(grouponPo).createVo());
+            }else {
+                return new ReturnObject(ResponseCode.INTERNAL_SERVER_ERR);
+            }
+        }  catch (DataAccessException e) {
+            // 数据库错误
+            logger.error("数据库错误：" + e.getMessage());
+            return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR,
+                    String.format("发生了严重的数据库错误：%s", e.getMessage()));
+        } catch (Exception e) {
+            // 属未知错误
+            logger.error("严重错误：" + e.getMessage());
+            return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR,
+                    String.format("发生了严重的未知错误：%s", e.getMessage()));
+        }
     }
 
+    boolean checkGroupon(Long id){
+        GrouponPo grouponPo = grouponDao.getGrouponPo(id);
+        if(grouponPo != null) {
+            return true;
+        }else{
+            return false;
+        }
+    }
     /**
         * @Description: 传入VO更新团购活动信息
         * @Param: No such property: code for class: Script1 
@@ -93,7 +131,32 @@ public class GrouponService {
     */
     @Transactional
     public ReturnObject updateGroupon(NewGrouponVo newGrouponVo, Long shopId, Long id) {
-        ReturnObject<VoObject> retObj = grouponDao.updateGroupon(newGrouponVo, shopId, id);
+        ReturnObject retObj = null;
+        try {
+            if(checkGroupon(id) == false) {
+                return new ReturnObject(ResponseCode.RESOURCE_ID_NOTEXIST);
+            }
+            GrouponPo po = grouponDao.getGrouponPo(id);
+            if (po.getBeginTime().compareTo(LocalDateTime.now()) < 0 && po.getEndTime().compareTo(LocalDateTime.now()) > 0) {
+                return new ReturnObject<>(ResponseCode.PRESALE_STATENOTALLOW);
+            }
+            // 更新并判断
+            if(grouponDao.updateGroupon(newGrouponVo,shopId,id) == false){
+                return new ReturnObject(ResponseCode.INTERNAL_SERVER_ERR);
+            }
+            GrouponPo grouponPo = grouponDao.getGrouponPo(id);
+            return new ReturnObject<VoObject>(new Groupon(grouponPo).createVo());
+        } catch (DataAccessException e) {
+            // 数据库错误
+            logger.error("数据库错误：" + e.getMessage());
+            retObj = new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR,
+                    String.format("发生了严重的数据库错误：%s", e.getMessage()));
+        } catch (Exception e) {
+            // 属未知错误
+            logger.error("严重错误：" + e.getMessage());
+            retObj = new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR,
+                    String.format("发生了严重的未知错误：%s", e.getMessage()));
+        }
         return retObj;
     }
     
@@ -105,8 +168,20 @@ public class GrouponService {
         * @Date: 2020/12/5 1:06
     */
     @Transactional
-    public ReturnObject<Object> deleteGroupon(Long shopId, Long id) {
-        return grouponDao.changeGrouponState(shopId, id);
+    public ReturnObject<Object> deleteGroupon(Long id) {
+        return grouponDao.changeGrouponState(id,Groupon.State.END.getCode());
     }
 
+
+    private ReturnObject<PageInfo<VoObject>> changeListIntoPage(List<GrouponPo> grouponPos,Integer pageNum, Integer pageSize){
+        List<VoObject> ret = new ArrayList<>(grouponPos.size());
+        for(GrouponPo grouponPo:grouponPos){
+            VoObject voObject = new Groupon(grouponPo).createSimpleVo();
+            ret.add(voObject);
+        }
+        PageHelper.startPage(pageNum, pageSize);
+
+        PageInfo<VoObject> of = PageInfo.of(ret);
+        return new ReturnObject<PageInfo<VoObject>>(of);
+    }
 }

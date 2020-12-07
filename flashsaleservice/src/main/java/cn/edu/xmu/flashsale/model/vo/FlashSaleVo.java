@@ -1,18 +1,20 @@
 package cn.edu.xmu.flashsale.model.vo;
 
+import cn.edu.xmu.ooad.model.VoObject;
+
 import java.time.LocalDateTime;
 
 /**
  * @author LJP_3424
  * @create 2020-12-03 17:56
  */
-public class FlashSaleVo {
+public class FlashSaleVo implements VoObject {
 
     private Long id;
 
     private LocalDateTime flashDate;
 
-    private Long timeSegId;
+//    private Long timeSegId;
 
     private LocalDateTime gmtCreated;
 
@@ -30,14 +32,6 @@ public class FlashSaleVo {
 
     public void setFlashDate(LocalDateTime flashDate) {
         this.flashDate = flashDate;
-    }
-
-    public Long getTimeSegId() {
-        return timeSegId;
-    }
-
-    public void setTimeSegId(Long timeSegId) {
-        this.timeSegId = timeSegId;
     }
 
     public LocalDateTime getGmtCreated() {
@@ -58,4 +52,13 @@ public class FlashSaleVo {
 
     private LocalDateTime gmtModified;
 
+    @Override
+    public Object createVo() {
+        return null;
+    }
+
+    @Override
+    public Object createSimpleVo() {
+        return null;
+    }
 }

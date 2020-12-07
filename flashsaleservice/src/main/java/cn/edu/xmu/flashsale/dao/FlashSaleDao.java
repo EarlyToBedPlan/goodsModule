@@ -4,7 +4,7 @@ import cn.edu.xmu.flashsale.mapper.FlashSaleItemPoMapper;
 import cn.edu.xmu.flashsale.mapper.FlashSalePoMapper;
 import cn.edu.xmu.flashsale.mapper.TimeSegmentPoMapper;
 import cn.edu.xmu.flashsale.model.bo.FlashSale;
-import cn.edu.xmu.flashsale.model.bo.FlashSaleRetItem;
+import cn.edu.xmu.flashsale.model.bo.FlashSaleItem;
 import cn.edu.xmu.flashsale.model.po.*;
 import cn.edu.xmu.flashsale.model.vo.*;
 import cn.edu.xmu.ooad.model.VoObject;
@@ -40,6 +40,7 @@ public class FlashSaleDao implements InitializingBean {
 
     @Autowired
     private TimeSegmentPoMapper timeSegmentPoMapper;
+
     private static final Logger logger = LoggerFactory.getLogger(FlashSaleDao.class);
 
 
@@ -48,14 +49,13 @@ public class FlashSaleDao implements InitializingBean {
 
     }
 
-/**
- * @Description: 未提供SPU-->SKUS接口,因此先暂时写一个临时函数
- *
- * @param goodsSpuId
- * @return: java.util.List<java.lang.Long>
- * @Author: LJP_3424
- * @Date: 2020/12/6 1:01
- */
+    /**
+     * @param goodsSpuId
+     * @Description: 未提供SPU-->SKUS接口,因此先暂时写一个临时函数
+     * @return: java.util.List<java.lang.Long>
+     * @Author: LJP_3424
+     * @Date: 2020/12/6 1:01
+     */
     private List<Long> goodsSpuIdsToSkuIds(Long goodsSpuId) {
         List<Long> longs = new ArrayList<Long>();
         longs.add(1003L);
@@ -64,16 +64,15 @@ public class FlashSaleDao implements InitializingBean {
         return longs;
     }
 
-/**
- * @Description: 通过SPU获取集合内SKU是否参与秒杀活动
- *
- * @param goodsSpuId
- * @param beginTime
- * @param endTime
- * @return: boolean
- * @Author: LJP_3424
- * @Date: 2020/12/6 1:02
- */
+    /**
+     * @param goodsSpuId
+     * @param beginTime
+     * @param endTime
+     * @Description: 通过SPU获取集合内SKU是否参与秒杀活动
+     * @return: boolean
+     * @Author: LJP_3424
+     * @Date: 2020/12/6 1:02
+     */
     public boolean getFlashSaleInActivities(Long goodsSpuId, LocalDateTime beginTime, LocalDateTime endTime) {
         // 等待接口
         List<Long> goodsSkuIds = goodsSpuIdsToSkuIds(goodsSpuId);
@@ -139,28 +138,22 @@ public class FlashSaleDao implements InitializingBean {
  * @Author: LJP_3424
  * @Date: 2020/12/6 1:03
  */
-    public ReturnObject<List> getCurrentFlashSale(LocalDateTime localDateTime) {
-
+/*    public ReturnObject<List> getCurrentFlashSale(LocalDateTime localDateTime) {
         TimeSegmentPoExample timeSegmentPoExample = new TimeSegmentPoExample();
         TimeSegmentPoExample.Criteria criteria = timeSegmentPoExample.createCriteria();
         criteria.andBeginTimeLessThanOrEqualTo(localDateTime);
         criteria.andEndTimeGreaterThanOrEqualTo(localDateTime);
         List<TimeSegmentPo> timeSegmentPos = timeSegmentPoMapper.selectByExample(timeSegmentPoExample);
-        if (timeSegmentPos.size() == 0) {
-            return null;
-        } else {
-            return getFlashSaleById(timeSegmentPos.get(0).getId());
-        }
-    }
+        return getFlashSaleById(timeSegmentPos.get(0).getId());
+    }*/
 
-/**
- * @Description: 通过商品SKUID 获取商品历史秒杀信息
- *
- * @param id
- * @return: cn.edu.xmu.ooad.util.ReturnObject<java.util.List>
- * @Author: LJP_3424
- * @Date: 2020/12/6 1:03
- */
+    /**
+     * @param id
+     * @Description: 通过商品SKUID 获取商品历史秒杀信息
+     * @return: cn.edu.xmu.ooad.util.ReturnObject<java.util.List>
+     * @Author: LJP_3424
+     * @Date: 2020/12/6 1:03
+     */
     public ReturnObject<List> getFlashSaleById(Long id) {
         FlashSalePoExample example = new FlashSalePoExample();
         FlashSalePoExample.Criteria criteria = example.createCriteria();
@@ -186,76 +179,64 @@ public class FlashSaleDao implements InitializingBean {
     }
 
 
-/**
- * @Description: 通过Vo验证时段冲突后创建新的秒杀
- *
- * @param vo
- * @param id
- * @return: cn.edu.xmu.ooad.util.ReturnObject<java.util.List>
- * @Author: LJP_3424
- * @Date: 2020/12/6 1:04
- */
-    public ReturnObject<List> createNewFlashSaleByVo(NewFlashSaleVo vo, Long id) {
-        //logger.debug(String.valueOf(bloomFilter.includeByBloomFilter("mobileBloomFilter","FAED5EEF1C8562B02110BCA3F9165CBE")));
-        //by default,email/mobile are both needed
-        FlashSalePoExample example = new FlashSalePoExample();
-        FlashSalePoExample.Criteria criteria = example.createCriteria();
-        criteria.andTimeSegIdEqualTo(id);
-        logger.debug("findFlashSaleById: TimeSegmentId = " + id);
-        List<FlashSalePo> flashSalePos = flashSalePoMapper.selectByExample(example);
-        if (flashSalePos.size() != 0) return new ReturnObject(ResponseCode.TIMESEG_CONFLICT);
+    /**
+     * @param vo
+     * @param id
+     * @Description: 通过Vo验证时段冲突后创建新的秒杀
+     * @return: cn.edu.xmu.ooad.util.ReturnObject<java.util.List>
+     * @Author: LJP_3424
+     * @Date: 2020/12/6 1:04
+     */
+    public Long createNewFlashSaleByVo(NewFlashSaleVo vo, Long id) {
         FlashSalePo flashSalePo = new FlashSalePo();
         flashSalePo.setFlashDate(vo.getFlashDate());
         flashSalePo.setTimeSegId(id);
         flashSalePo.setGmtCreated(LocalDateTime.now());
-        try {
-            flashSalePoMapper.insert(flashSalePo);
-            return getFlashSaleById(id);
-        } catch (Exception e) {
-            return new ReturnObject(ResponseCode.INTERNAL_SERVER_ERR);
-        }
-    }
-/**
- * @Description: 修改秒杀信息
- *
- * @param flashSaleVo
- * @param id
- * @return: cn.edu.xmu.ooad.util.ReturnObject<cn.edu.xmu.ooad.model.VoObject>
- * @Author: LJP_3424
- * @Date: 2020/12/6 1:04
- */
-    public ReturnObject<VoObject> updateFlashSale(NewFlashSaleVo flashSaleVo, Long id) {
-        FlashSalePo po = flashSalePoMapper.selectByPrimaryKey(id);
-        if (po == null) return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
-        TimeSegmentPo timeSegmentPo = timeSegmentPoMapper.selectByPrimaryKey(po.getTimeSegId());
-        if (timeSegmentPo == null) return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
-        if (timeSegmentPo.getBeginTime().compareTo(LocalDateTime.now()) < 0) {
-            return new ReturnObject<>(ResponseCode.TIMESEG_CONFLICT);
-        }
-        ReturnObject<VoObject> retObj = null;
-        po.setFlashDate(flashSaleVo.getFlashDate());
-        try {
-            int ret = flashSalePoMapper.updateByPrimaryKey(po);
-            if (ret != 0) {
-                FlashSale flashSale = new FlashSale(flashSalePoMapper.selectByPrimaryKey(id));
-                retObj = new ReturnObject<>(flashSale);
-            }
-        } catch (Exception e) {
-            // 其他Exception错误
-            logger.error("other exception : " + e.getMessage());
-            retObj = new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR, String.format("发生了严重的数据库错误：%s", e.getMessage()));
-        }
-        return retObj;
+        flashSalePoMapper.insert(flashSalePo);
+        return flashSalePo.getId();
     }
 
- /**
-  * @Description:  向秒杀活动中添加SKU
-  *
-  * @param null
-  * @return:
-  * @Author: LJP_3424
-  * @Date: 2020/12/6 1:05
-  */
+    public int countFlashSaleByTimeSegmentId(Long id) {
+        FlashSalePoExample example = new FlashSalePoExample();
+        FlashSalePoExample.Criteria criteria = example.createCriteria();
+        criteria.andTimeSegIdEqualTo(id);
+        logger.debug("findFlashSaleById: Time" + "SegmentId = " + id);
+        List<FlashSalePo> flashSalePos = flashSalePoMapper.selectByExample(example);
+        return flashSalePos.size();
+    }
+
+    public FlashSalePo getFlashSaleByFlashSaleId(Long flashSaleId) {
+        return flashSalePoMapper.selectByPrimaryKey(flashSaleId);
+    }
+
+    /**
+     * @param flashSaleVo
+     * @param id
+     * @Description: 修改秒杀信息
+     * @return: cn.edu.xmu.ooad.util.ReturnObject<cn.edu.xmu.ooad.model.VoObject>
+     * @Author: LJP_3424
+     * @Date: 2020/12/6 1:04
+     */
+    public boolean updateFlashSale(NewFlashSaleVo flashSaleVo, Long id) {
+        FlashSalePo flashSalePo = new FlashSalePo();
+        flashSalePo.setFlashDate(flashSaleVo.getFlashDate());
+        flashSalePo.setGmtModified(LocalDateTime.now());
+        flashSalePo.setId(id);
+        int ret = flashSalePoMapper.updateByPrimaryKeySelective(flashSalePo);
+        if(ret == 0){
+            return false;
+        }else{
+            return true;
+        }
+    }
+
+    /**
+     * @param null
+     * @Description: 向秒杀活动中添加SKU
+     * @return:
+     * @Author: LJP_3424
+     * @Date: 2020/12/6 1:05
+     */
     public ReturnObject<List> insertSkuIntoFlashSale(NewFlashSaleItemVo newFlashSaleItemVo, Long id) {
         Integer flashMaxSize = 5;
         FlashSaleItemPoExample flashSaleItemPoExample = new FlashSaleItemPoExample();
@@ -292,39 +273,30 @@ public class FlashSaleDao implements InitializingBean {
     }
 
 
-/**
- * @Description: 分页查询所有秒杀信息
- *
- * @param id
- * @param pageNum
- * @param pageSize
- * @return: cn.edu.xmu.ooad.util.ReturnObject<com.github.pagehelper.PageInfo<cn.edu.xmu.ooad.model.VoObject>>
- * @Author: LJP_3424
- * @Date: 2020/12/6 1:05
- */
+    /**
+     * @param id
+     * @param pageNum
+     * @param pageSize
+     * @Description: 分页查询所有秒杀信息
+     * @return: cn.edu.xmu.ooad.util.ReturnObject<com.github.pagehelper.PageInfo < cn.edu.xmu.ooad.model.VoObject>>
+     * @Author: LJP_3424
+     * @Date: 2020/12/6 1:05
+     */
 
-    public ReturnObject<PageInfo<VoObject>> selectAllFlashSale(Long id, Integer pageNum, Integer pageSize) {
+    public List<FlashSaleItemPo> selectAllFlashSale(Long id, Integer pageNum, Integer pageSize) {
         FlashSaleItemPoExample flashSaleItemPoExample = new FlashSaleItemPoExample();
         FlashSaleItemPoExample.Criteria criteriaItem = flashSaleItemPoExample.createCriteria();
         criteriaItem.andSaleIdEqualTo(id);
-        List<FlashSaleItemPo> flashSaleItemPos = flashSaleItemPoMapper.selectByExample(flashSaleItemPoExample);
-        //分页查询
-        List<VoObject> ret = new ArrayList<>(flashSaleItemPos.size());
         PageHelper.startPage(pageNum, pageSize);
-        logger.debug("page = " + pageNum + "pageSize = " + pageSize);
-        try {
-            for (FlashSaleItemPo po : flashSaleItemPos) {
-                ret.add(new FlashSaleRetItem(po));
-            }
-            PageInfo<VoObject> flashSalePage = PageInfo.of(ret);
-            return new ReturnObject<PageInfo<VoObject>>(flashSalePage);
-        } catch (DataAccessException e) {
-            logger.error("selectAllFlashSale: DataAccessException:" + e.getMessage());
-            return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR, String.format("数据库错误：%s", e.getMessage()));
-        } catch (Exception e) {
-            // 其他Exception错误
-            logger.error("other exception : " + e.getMessage());
-            return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR, String.format("发生了严重的数据库错误：%s", e.getMessage()));
-        }
+        List<FlashSaleItemPo> flashSaleItemPos = flashSaleItemPoMapper.selectByExample(flashSaleItemPoExample);
+        return flashSaleItemPos;
     }
+
+    public List<FlashSalePo> getFlashSalesByTimeSegmentId(Long timeSegmentId) {
+        FlashSalePoExample flashSalePoExample = new FlashSalePoExample();
+        FlashSalePoExample.Criteria criteria = flashSalePoExample.createCriteria();
+        criteria.andTimeSegIdEqualTo(timeSegmentId);
+        return flashSalePoMapper.selectByExample(flashSalePoExample);
+    }
+
 }

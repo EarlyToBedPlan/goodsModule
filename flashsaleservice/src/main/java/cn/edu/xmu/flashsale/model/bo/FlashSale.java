@@ -2,6 +2,7 @@ package cn.edu.xmu.flashsale.model.bo;
 
 import cn.edu.xmu.flashsale.model.po.FlashSalePo;
 import cn.edu.xmu.flashsale.model.vo.FlashSaleItemSimpleVo;
+import cn.edu.xmu.flashsale.model.vo.FlashSaleVo;
 import cn.edu.xmu.ooad.model.VoObject;
 
 import java.time.LocalDateTime;
@@ -16,18 +17,14 @@ public class FlashSale implements VoObject {
 
     private LocalDateTime flashDate;
 
-    private Long timeSegId;
+    //private Long timeSegId;
+    //private TimeSegmentVo timeSegmentVo;
+
+    private String imageUrl;
 
     private LocalDateTime gmtCreated;
 
-    public FlashSale(FlashSalePo po) {
-        id = po.getId();
-        flashDate = po.getFlashDate();
-        timeSegId = po.getTimeSegId();
-        gmtCreated = po.getGmtCreated();
-        gmtModified = po.getGmtModified();
-    }
-
+    private LocalDateTime gmtModified;
 
     public Long getId() {
         return id;
@@ -45,12 +42,12 @@ public class FlashSale implements VoObject {
         this.flashDate = flashDate;
     }
 
-    public Long getTimeSegId() {
-        return timeSegId;
+    public String getImageUrl() {
+        return imageUrl;
     }
 
-    public void setTimeSegId(Long timeSegId) {
-        this.timeSegId = timeSegId;
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     public LocalDateTime getGmtCreated() {
@@ -69,16 +66,25 @@ public class FlashSale implements VoObject {
         this.gmtModified = gmtModified;
     }
 
-    private LocalDateTime gmtModified;
-
-
-    @Override
-    public Object createVo() {
-        return null;
+    public FlashSale(FlashSalePo po) {
+        id = po.getId();
+        flashDate = po.getFlashDate();
+        gmtCreated = po.getGmtCreated();
+        gmtModified = po.getGmtModified();
     }
 
     @Override
-    public Object createSimpleVo() {
+    public VoObject createVo() {
+        FlashSaleVo flashSaleVo = new FlashSaleVo();
+        flashSaleVo.setFlashDate(this.flashDate);
+        flashSaleVo.setGmtCreated(this.gmtCreated);
+        flashSaleVo.setGmtModified(this.gmtModified);
+        flashSaleVo.setId(this.id);
+        return flashSaleVo;
+    }
+
+    @Override
+    public VoObject createSimpleVo() {
         return null;
     }
 }

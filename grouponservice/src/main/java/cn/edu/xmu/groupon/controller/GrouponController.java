@@ -2,6 +2,7 @@ package cn.edu.xmu.groupon.controller;
 
 import cn.edu.xmu.groupon.model.bo.Groupon;
 import cn.edu.xmu.groupon.model.vo.GrouponStateVo;
+import cn.edu.xmu.groupon.model.vo.GrouponSimpleVo;
 import cn.edu.xmu.groupon.model.vo.NewGrouponVo;
 import cn.edu.xmu.groupon.service.GrouponService;
 import cn.edu.xmu.ooad.model.VoObject;
@@ -85,9 +86,9 @@ public class GrouponController {
     })
     @GetMapping("/groupons")
     public Object selectAllGroupon(
-            @RequestParam(required = false, defaultValue = "0") Long shopId,
-            @RequestParam(required = false, defaultValue = "-1") Byte timeline,
-            @RequestParam(required = false, defaultValue = "0") Long spuId,
+            @RequestParam(required = false) Long shopId,
+            @RequestParam(required = false) Byte timeline,
+            @RequestParam(required = false) Long spuId,
             @RequestParam(required = false, defaultValue = "1") Integer page,
             @RequestParam(required = false, defaultValue = "10") Integer pageSize
     ) {
@@ -115,16 +116,23 @@ public class GrouponController {
     @GetMapping("/shops/{id}/groupons")
     public Object selectAllGroupon(
             @PathVariable Long id,
-            @RequestParam(required = false, defaultValue = "-1") Byte state,
-            @RequestParam(required = false, defaultValue = "0") Long spuId,
+            @RequestParam(required = false) Byte state,
+            @RequestParam(required = false) Long spuId,
             @RequestParam(required = false, defaultValue = "2000-01-01 18:00:00") String beginTime,
             @RequestParam(required = false, defaultValue = "2099-01-01 18:00:00") String endTime,
             @RequestParam(required = false, defaultValue = "1") Integer page,
             @RequestParam(required = false, defaultValue = "10") Integer pageSize
     ) {
         DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        ReturnObject<PageInfo<VoObject>> returnObject = grouponService.selectGroupon(id, state, spuId, LocalDateTime.parse(beginTime, df), LocalDateTime.parse(endTime, df), page, pageSize);
-        return Common.getPageRetObject(returnObject);
+        ReturnObject<PageInfo<VoObject>> returnObject = grouponService.selectGroupon(id, state, spuId,
+                                                        LocalDateTime.parse(beginTime, df),
+                                                        LocalDateTime.parse(endTime, df),
+                                                        page, pageSize);
+        if (returnObject.getCode().equals(ResponseCode.RESOURCE_ID_NOTEXIST)) {
+            return Common.getPageRetObject(returnObject);
+        } else {
+            return Common.decorateReturnObject(returnObject);
+        }
     }
 
     /**
@@ -148,12 +156,12 @@ public class GrouponController {
     public Object getGroupon(
             @PathVariable Long shopId,
             @PathVariable Long id,
-            @RequestParam(required = false, defaultValue = "-1") Byte state) {
+            @RequestParam(required = false) Byte state) {
         if (logger.isDebugEnabled()) {
             logger.debug("GrouponInfo: spuId = " + id + " shopId = " + shopId);
         }
 
-        ReturnObject<List> returnObject = grouponService.getGrouponById(shopId, id, state);
+        ReturnObject<List> returnObject = grouponService.getGrouponById(id, state);
 
         if (returnObject.getCode().equals(ResponseCode.RESOURCE_ID_NOTEXIST)) {
             return Common.getListRetObject(returnObject);
@@ -186,15 +194,30 @@ public class GrouponController {
             @Validated @RequestBody NewGrouponVo vo,
             BindingResult bindingResult) {
         logger.debug("insert insertGroupon by shopId:" + shopId + " and spuId: " + id + " and GrouponVo: " + vo.toString());
-        if (bindingResult.hasErrors()) {
-            return Common.processFieldErrors(bindingResult, httpServletResponse);
+        //校验前端数据
+        Object returnObject = Common.processFieldErrors(bindingResult, httpServletResponse);
+        if (null != returnObject) {
+            return returnObject;
         }
-        ReturnObject returnObject = grouponService.createNewGroupon(vo, shopId, id);
-        if (returnObject.getCode() == ResponseCode.OK) {
-            return ResponseUtil.ok(returnObject.getData());
-        } else return ResponseUtil.fail(returnObject.getCode());
+        ReturnObject retObject = grouponService.createNewGroupon(vo, shopId,id);
+        if (retObject.getCode().equals(ResponseCode.RESOURCE_ID_NOTEXIST)) {
+            return Common.getRetObject(retObject);
+        } else {
+            return Common.decorateReturnObject(retObject);
+        }
     }
 
+    @ApiOperation(value = "修改团购活动信息", produces = "application/json")
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "header", dataType = "String", name = "authorization", value = "Token", required = true),
+            @ApiImplicitParam(name = "shopId", value = "商铺id", required = true, dataType = "Integer", paramType = "path"),
+            @ApiImplicitParam(name = "id", value = "优惠活动Id", required = true, dataType = "Integer", paramType = "path"),
+            @ApiImplicitParam(paramType = "body", dataType = "NewGrouponVo", name = "vo", value = "可修改的活动信息", required = true)
+    })
+    @ApiResponses({
+            @ApiResponse(code = 0, message = "成功")
+    })
+    //@Audit
     @PutMapping("/shops/{shopId}/groupons/{id}")
     public Object updateGroupon(@PathVariable Long shopId,
                                 @PathVariable Long id,
@@ -206,10 +229,10 @@ public class GrouponController {
             return returnObject;
         }
         ReturnObject retObject = grouponService.updateGroupon(vo, shopId, id);
-        if (retObject.getData() != null) {
+        if (retObject.getCode().equals(ResponseCode.RESOURCE_ID_NOTEXIST)) {
             return Common.getRetObject(retObject);
         } else {
-            return Common.getNullRetObj(new ReturnObject<>(retObject.getCode(), retObject.getErrmsg()), httpServletResponse);
+            return Common.decorateReturnObject(retObject);
         }
     }
 
@@ -232,7 +255,7 @@ public class GrouponController {
         if (logger.isDebugEnabled()) {
             logger.debug("deleteUser: id = " + id);
         }
-        ReturnObject returnObject = grouponService.deleteGroupon(shopId, id);
+        ReturnObject returnObject = grouponService.deleteGroupon(id);
         return Common.decorateReturnObject(returnObject);
     }
 }

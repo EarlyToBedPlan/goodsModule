@@ -1,6 +1,7 @@
 package cn.edu.xmu.groupon.model.bo;
 
 import cn.edu.xmu.groupon.model.po.GrouponPo;
+import cn.edu.xmu.groupon.model.vo.GrouponSimpleVo;
 import cn.edu.xmu.groupon.model.vo.GrouponVo;
 import cn.edu.xmu.ooad.model.VoObject;
 import lombok.Data;
@@ -43,8 +44,8 @@ public class Groupon implements VoObject {
             return stateMap.get(code);
         }
 
-        public Integer getCode() {
-            return code;
+        public byte getCode() {
+            return (byte) code;
         }
 
         public String getDescription() {
@@ -62,9 +63,9 @@ public class Groupon implements VoObject {
 
     private Byte state;
 
-    private Long shopId;
+ /*   private Long shopId;
 
-    private Long goodsSpuId;
+    private Long goodsSpuId;*/
 
     private String strategy;
 
@@ -112,22 +113,6 @@ public class Groupon implements VoObject {
         this.state = state;
     }
 
-    public Long getShopId() {
-        return shopId;
-    }
-
-    public void setShopId(Long shopId) {
-        this.shopId = shopId;
-    }
-
-    public Long getGoodsSpuId() {
-        return goodsSpuId;
-    }
-
-    public void setGoodsSpuId(Long goodsSpuId) {
-        this.goodsSpuId = goodsSpuId;
-    }
-
     public String getStrategy() {
         return strategy;
     }
@@ -152,65 +137,38 @@ public class Groupon implements VoObject {
         this.gmtModified = gmtModified;
     }
 
-    public Groupon(GrouponVo vo) {
-        this.gmtModified = vo.getGmtModified();
-        this.gmtCreated = vo.getGmtCreated();
-        this.endTime = vo.getEndTime();
-        this.beginTime = vo.getBeginTime();
-        this.goodsSpuId = vo.getGoodsSpuId();
-        this.name = vo.getName();
-        this.id = vo.getId();
-        this.shopId = vo.getShopId();
-        this.state = vo.getState();
-        this.strategy = vo.getStrategy();
-    }
-
     public Groupon(GrouponPo po) {
         this.gmtModified = po.getGmtModified();
         this.gmtCreated = po.getGmtCreated();
         this.endTime = po.getEndTime();
         this.beginTime = po.getBeginTime();
-        this.goodsSpuId = po.getGoodsSpuId();
         this.name = po.getName();
         this.id = po.getId();
-        this.shopId = po.getShopId();
         this.state = po.getState();
         this.strategy = po.getStrategy();
     }
 
     @Override
-    public Object createVo() {
+    public VoObject createVo() {
         GrouponVo grouponVo = new GrouponVo();
         grouponVo.setBeginTime(this.beginTime);
         grouponVo.setEndTime(this.endTime);
         grouponVo.setGmtCreated(this.gmtCreated);
         grouponVo.setGmtModified(this.gmtModified);
-        grouponVo.setGoodsSpuId(this.goodsSpuId);
         grouponVo.setId(this.id);
         grouponVo.setName(this.name);
-        grouponVo.setShopId(this.shopId);
         grouponVo.setState(this.state);
         grouponVo.setStrategy(this.strategy);
         return grouponVo;
     }
 
-    public Object createPo() {
-        GrouponPo grouponPo = new GrouponPo();
-        grouponPo.setBeginTime(this.beginTime);
-        grouponPo.setEndTime(this.endTime);
-        grouponPo.setGmtCreated(this.gmtCreated);
-        grouponPo.setGmtModified(this.gmtModified);
-        grouponPo.setGoodsSpuId(this.goodsSpuId);
-        grouponPo.setId(this.id);
-        grouponPo.setName(this.name);
-        grouponPo.setShopId(this.shopId);
-        grouponPo.setState(this.state);
-        grouponPo.setStrategy(this.strategy);
-        return grouponPo;
-    }
-
     @Override
-    public Object createSimpleVo() {
-        return null;
+    public VoObject createSimpleVo() {
+        GrouponSimpleVo grouponSimpleVo = new GrouponSimpleVo();
+        grouponSimpleVo.setId(this.id);
+        grouponSimpleVo.setBeginTime(this.beginTime);
+        grouponSimpleVo.setEndTime(this.endTime);
+        grouponSimpleVo.setName(this.name);
+        return grouponSimpleVo;
     }
 }

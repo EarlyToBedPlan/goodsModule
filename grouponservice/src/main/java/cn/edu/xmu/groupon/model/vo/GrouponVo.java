@@ -1,5 +1,6 @@
 package cn.edu.xmu.groupon.model.vo;
 
+import cn.edu.xmu.ooad.model.VoObject;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -8,7 +9,7 @@ import java.time.LocalDateTime;
  * @author LJP_3424
  * @create 2020-12-02 20:54
  */
-public class GrouponVo {
+public class GrouponVo implements VoObject {
     private Long id;
 
     private String name;
@@ -19,9 +20,9 @@ public class GrouponVo {
 
     private Byte state;
 
-    private Long shopId;
+/*    private ShopVo shopVo;
 
-    private Long goodsSpuId;
+    private GoodsSpuVo goodsSpuVo;*/
 
     private String strategy;
 
@@ -69,22 +70,6 @@ public class GrouponVo {
         this.state = state;
     }
 
-    public Long getShopId() {
-        return shopId;
-    }
-
-    public void setShopId(Long shopId) {
-        this.shopId = shopId;
-    }
-
-    public Long getGoodsSpuId() {
-        return goodsSpuId;
-    }
-
-    public void setGoodsSpuId(Long goodsSpuId) {
-        this.goodsSpuId = goodsSpuId;
-    }
-
     public String getStrategy() {
         return strategy;
     }
@@ -109,4 +94,13 @@ public class GrouponVo {
         this.gmtModified = gmtModified;
     }
 
+    @Override
+    public Object createVo() {
+        return null;
+    }
+
+    @Override
+    public Object createSimpleVo() {
+        return null;
+    }
 }

@@ -1,6 +1,7 @@
 package cn.edu.xmu.flashsale.model.vo;
 
 import cn.edu.xmu.flashsale.model.po.FlashSaleItemPo;
+import cn.edu.xmu.ooad.model.VoObject;
 
 import java.time.LocalDateTime;
 
@@ -8,22 +9,13 @@ import java.time.LocalDateTime;
  * @author LJP_3424
  * @create 2020-12-04 12:10
  */
-public class FlashSaleItemVo {
-
-    public FlashSaleItemVo(FlashSaleItemPo po) {
-        id = po.getId();
-        goodsSkuId = po.getGoodsSkuId();
-        price = po.getPrice();
-        quantity = po.getQuantity();
-        gmtCreated = po.getGmtCreated();
-        gmtModified = po.getGmtModified();
-    }
+public class FlashSaleItemVo implements VoObject {
 
     private Long id;
 
     private Long saleId;
 
-    private Long goodsSkuId;
+    //private Long goodsSkuId;
 
     private Long price;
 
@@ -46,14 +38,6 @@ public class FlashSaleItemVo {
 
     public void setSaleId(Long saleId) {
         this.saleId = saleId;
-    }
-
-    public Long getGoodsSkuId() {
-        return goodsSkuId;
-    }
-
-    public void setGoodsSkuId(Long goodsSkuId) {
-        this.goodsSkuId = goodsSkuId;
     }
 
     public Long getPrice() {
@@ -89,4 +73,14 @@ public class FlashSaleItemVo {
     }
 
     private LocalDateTime gmtModified;
+
+    @Override
+    public Object createVo() {
+        return null;
+    }
+
+    @Override
+    public Object createSimpleVo() {
+        return null;
+    }
 }

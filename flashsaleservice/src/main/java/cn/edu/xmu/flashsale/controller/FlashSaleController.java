@@ -63,7 +63,6 @@ public class FlashSaleController {
         if (logger.isDebugEnabled()) {
             logger.debug("FlashSaleInfo: timeSegmentId = " + id);
         }
-
         ReturnObject<List> returnObject = flashSaleService.getFlashSaleById(id);
 
         if (returnObject.getCode().equals(ResponseCode.RESOURCE_ID_NOTEXIST)) {
@@ -98,9 +97,11 @@ public class FlashSaleController {
             return Common.processFieldErrors(bindingResult, httpServletResponse);
         }
         ReturnObject returnObject = flashSaleService.createNewFlashSale(vo, id);
-        if (returnObject.getCode() == ResponseCode.OK) {
-            return ResponseUtil.ok(returnObject.getData());
-        } else return ResponseUtil.fail(returnObject.getCode());
+        if (returnObject.getCode().equals(ResponseCode.RESOURCE_ID_NOTEXIST)) {
+            return Common.getListRetObject(returnObject);
+        } else {
+            return Common.decorateReturnObject(returnObject);
+        }
     }
 
 /**
@@ -120,12 +121,9 @@ public class FlashSaleController {
             @ApiResponse(code = 0, message = "成功")
     })
     //@Audit //认证
-    @GetMapping("/timesegments/current")
+    @GetMapping("/flashsales/current")
     public Object getFlashSale() {
-
-        Calendar now = Calendar.getInstance();
-        LocalDateTime dateTimeNow = LocalDateTime.now();
-        ReturnObject<List> returnObject = flashSaleService.getCurrentFlashSale(dateTimeNow);
+        ReturnObject<List> returnObject = flashSaleService.getCurrentFlashSale();
         if (returnObject.getCode().equals(ResponseCode.RESOURCE_ID_NOTEXIST)) {
             return Common.getListRetObject(returnObject);
         } else {
@@ -146,8 +144,7 @@ public class FlashSaleController {
     @ApiOperation(value = "修改秒杀活动", produces = "application/json")
     @ApiImplicitParams({
             @ApiImplicitParam(paramType = "header", dataType = "String", name = "authorization", value = "Token", required = true),
-            @ApiImplicitParam(name = "shopId", value = "商铺id", required = true, dataType = "Integer", paramType = "path"),
-            @ApiImplicitParam(name = "id", value = "商品SPUId", required = true, dataType = "Integer", paramType = "path"),
+            @ApiImplicitParam(name = "id", value = "秒杀活动Id", required = true, dataType = "Integer", paramType = "path"),
             @ApiImplicitParam(paramType = "body", dataType = "NewFlashSaleVo", name = "vo", value = "可修改的活动信息", required = true)
     })
     @ApiResponses({
