@@ -2,19 +2,17 @@ package cn.edu.xmu.coupon.service;
 
 import cn.edu.xmu.coupon.dao.CouponActivityDao;
 import cn.edu.xmu.coupon.dao.CouponDao;
-import cn.edu.xmu.coupon.dao.CouponSpuDao;
+import cn.edu.xmu.coupon.dao.CouponSkuDao;
 import cn.edu.xmu.coupon.model.bo.Coupon;
 import cn.edu.xmu.coupon.model.bo.CouponActivity;
-import cn.edu.xmu.coupon.model.bo.CouponSpu;
+import cn.edu.xmu.coupon.model.bo.CouponSku;
 import cn.edu.xmu.coupon.model.po.CouponActivityPo;
 import cn.edu.xmu.coupon.model.po.CouponPo;
-import cn.edu.xmu.coupon.model.po.CouponSpuPo;
-import cn.edu.xmu.coupon.model.po.CouponSpuPoExample;
-//import cn.edu.xmu.goods.model.po.GoodsSpuPo;
-import cn.edu.xmu.coupon.model.vo.CouponActivityRetVo;
-import cn.edu.xmu.goods.model.vo.GoodsSpuRetVo;
-import cn.edu.xmu.goods.service.GoodsSpuService;
-import cn.edu.xmu.goods.service.GoodsSpuServiceClass;
+import cn.edu.xmu.coupon.model.po.CouponSkuPo;
+//import cn.edu.xmu.goods.model.vo.GoodsSkuRetVo;
+//import cn.edu.xmu.goods.service.GoodsSkuServiceClass;
+import cn.edu.xmu.goods.model.bo.GoodsSku;
+import cn.edu.xmu.goods.model.bo.GoodsSpu;
 import cn.edu.xmu.ooad.model.VoObject;
 import cn.edu.xmu.ooad.util.ImgHelper;
 import cn.edu.xmu.ooad.util.ResponseCode;
@@ -24,8 +22,6 @@ import com.github.pagehelper.PageInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,10 +29,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
-
-import static com.mysql.cj.conf.PropertyKey.logger;
+import java.util.Map;
 
 /**
  * @author Feiyan Liu
@@ -47,11 +42,13 @@ public class CouponActivityServiceImpl implements CouponActivityService {
     @Autowired
     CouponActivityDao couponActivityDao;
     @Autowired
-    CouponSpuDao couponSpuDao;
+    CouponSkuDao couponSkuDao;
     @Autowired
     CouponDao couponDao;
-    GoodsSpuServiceClass goodsSpuService = new GoodsSpuServiceClass();
     private Logger logger = LoggerFactory.getLogger(CouponActivityServiceImpl.class);
+
+    @Autowired
+    GoodsSkuService goodsSkuService;
 
 //     * @author 24320182203218
 //     **/
@@ -92,42 +89,47 @@ public class CouponActivityServiceImpl implements CouponActivityService {
 
     }
 
+    @Override
+    public ReturnObject<VoObject> createCouponActivity(Long shopId, Long SkuId, CouponActivity couponActivity) {
+        return null;
+    }
+
     /**
-     * @param spuId
+     * @param SkuId
      * @param couponActivity
      * @description:新建己方优惠活动 bug：要判断是否要插入优惠券 优惠券的生成形式还没设计 是最初就全部生成吗？
      * @return: cn.edu.xmu.ooad.util.ReturnObject
      * @author: Feiyan Liu
      * @date: Created at 2020/11/30 4:33
      */
-    @Transactional
-    @Override
-    public ReturnObject createCouponActivity(Long shopId, Long spuId, CouponActivity couponActivity) {
-        ReturnObject ret = new ReturnObject();
-        //判断商品是否存在
-        try {
-            GoodsSpuRetVo vo = goodsSpuService.findSpuById(spuId).getData();
-            if (vo.getId() == null)
-                return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST, String.format("新增优惠商品失败，优惠商品不存在 id：" + spuId));
-            //判断商品是否属于此商铺
-            if (vo.getShop().getId() != shopId)
-                return new ReturnObject<>(ResponseCode.RESOURCE_ID_OUTSCOPE, String.format("创建优惠活动失败，商品非用户店铺的商品"));
-            //判断商品同一时段是否有其他活动（不同时间段有不同活动是可以的）
-            boolean result = (Boolean) checkActivityParticipation(spuId, couponActivity.getBeginTime(), couponActivity.getEndTime()).getData();
-            if (result) {
-                logger.debug("the spu id=" + spuId + " already has other activity at the same time.");
-                return new ReturnObject<>(ResponseCode.SPU_PARTICIPATE);
-            }
-            CouponActivityPo newPo = couponActivityDao.addCouponActivity(couponActivity, spuId);
-            couponSpuDao.addCouponSpu(spuId, newPo.getId());
-            couponActivity.setId(newPo.getId());
-            VoObject retVo = couponActivity.createVo();
-            return new ReturnObject(retVo);
-        } catch (Exception e) {
-            logger.error("发生了严重的服务器内部错误：" + e.getMessage());
-            return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR);
-        }
-    }
+//    @Transactional
+//    @Override
+//    public ReturnObject createCouponActivity(Long shopId, Long SkuId, CouponActivity couponActivity) {
+//        ReturnObject ret = new ReturnObject();
+//        //判断商品是否存在
+//        try {
+//            GoodsSkuRetVo vo = goodsSkuService.findSkuById(SkuId).getData();
+//            if (vo.getId() == null)
+//                return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST, String.format("新增优惠商品失败，优惠商品不存在 id：" + SkuId));
+//            //判断商品是否属于此商铺
+//            if (vo.getShop().getId() != shopId)
+//                return new ReturnObject<>(ResponseCode.RESOURCE_ID_OUTSCOPE, String.format("创建优惠活动失败，商品非用户店铺的商品"));
+//            //判断商品同一时段是否有其他活动（不同时间段有不同活动是可以的）
+//            boolean result = (Boolean) checkActivityParticipation(SkuId, couponActivity.getBeginTime(), couponActivity.getEndTime()).getData();
+//            if (result) {
+//                logger.debug("the Sku id=" + SkuId + " already has other activity at the same time.");
+//                return new ReturnObject<>(ResponseCode.Sku_PARTICIPATE);
+//            }
+//            CouponActivityPo newPo = couponActivityDao.addCouponActivity(couponActivity, SkuId);
+//            couponSkuDao.addCouponSku(SkuId, newPo.getId());
+//            couponActivity.setId(newPo.getId());
+//            VoObject retVo = couponActivity.createVo();
+//            return new ReturnObject(retVo);
+//        } catch (Exception e) {
+//            logger.error("发生了严重的服务器内部错误：" + e.getMessage());
+//            return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR);
+//        }
+//    }
 
     /**
      * @param page
@@ -139,14 +141,23 @@ public class CouponActivityServiceImpl implements CouponActivityService {
      */
     @Transactional
     @Override
-    public ReturnObject<PageInfo<VoObject>> getCouponActivities(Long shopId, Integer stateCode, Integer page, Integer pagesize) {
+    public ReturnObject<PageInfo<VoObject>> getCouponActivities(Long shopId, Integer timelineCode, Integer page, Integer pagesize) {
         try {
-            CouponActivity.State state = CouponActivity.State.getTypeByCode(stateCode);
-            List<CouponActivityPo> couponActivitiesPos = couponActivityDao.getCouponActivity(shopId, state);
+            List<CouponActivityPo> couponActivitiesPos = couponActivityDao.getCouponActivity(shopId);
             List<VoObject> couponActivityVos = new ArrayList<>(couponActivitiesPos.size());
             for (CouponActivityPo po : couponActivitiesPos) {
-                CouponActivity couponActivity = new CouponActivity(po);
-                couponActivityVos.add(couponActivity);
+                if(timelineCode==null)
+                {
+                    CouponActivity couponActivity = new CouponActivity(po);
+                    couponActivityVos.add(couponActivity);
+                }
+                else if(timelineCode!=null&&CouponActivity.Timeline.getTypeByTime(po.getBeginTime(),po.getEndTime()).getCode()==timelineCode)
+                {
+                        CouponActivity couponActivity = new CouponActivity(po);
+                        couponActivityVos.add(couponActivity);
+                }
+                else
+                    continue;
             }
             PageHelper.startPage(page, pagesize);
             PageInfo<VoObject> returnObject = new PageInfo<>(couponActivityVos);
@@ -175,7 +186,6 @@ public class CouponActivityServiceImpl implements CouponActivityService {
                 CouponActivity couponActivity = new CouponActivity(po);
                 couponActivityVos.add(couponActivity.createVo());
             }
-
             PageHelper.startPage(page, pagesize);
             PageInfo<VoObject> returnObject = new PageInfo<>(couponActivityVos);
             return new ReturnObject<>(returnObject);
@@ -185,40 +195,46 @@ public class CouponActivityServiceImpl implements CouponActivityService {
         }
     }
 
+    @Override
+    public ReturnObject addCouponSku(Long shopId,Long[] SkuId , Long activityId) {
+        return null;
+    }
+
     /**
-     * @param spuId
+     * @param SkuId
      * @param activityId
-     * @description:管理员为己方已有优惠活动新增商品范围
+     * @description:管理员为己方已有优惠活动新增商品范围 可以批量新增
      * @return: cn.edu.xmu.ooad.util.ReturnObject
      * @author: Feiyan Liu
      * @date: Created at 2020/11/30 21:08
      */
     @Transactional
     @Override
-    public ReturnObject addCouponSpu(Long shopId, Long spuId, Long activityId) {
+    public ReturnObject addCouponSku(Long shopId, Long SkuId, Long activityId) {
         try {
             //1. 判断活动状态是否待上线
-            CouponSpuPo couponSpuPo = couponSpuDao.getCouponSpuById(spuId);
-            CouponActivityPo couponActivityPo = couponActivityDao.getCouponActivityById(couponSpuPo.getActivityId());
+            CouponSkuPo couponSkuPo = couponSkuDao.getCouponSkuById(SkuId);
+            CouponActivityPo couponActivityPo = couponActivityDao.getCouponActivityById(couponSkuPo.getActivityId());
             if (couponActivityPo.getState() != (byte) CouponActivity.State.WAITING.getCode())
-                return new ReturnObject<>(ResponseCode.COUPONACT_STATENOTALLOW, String.format("优惠活动非待上线,不允许修改限定范围 id：" + couponSpuPo.getActivityId()));
+                return new ReturnObject<>(ResponseCode.COUPONACT_STATENOTALLOW, String.format("优惠活动非待上线,不允许修改限定范围 id：" + couponSkuPo.getActivityId()));
             //2.判断商品是否存在
             //若商品不存在
-            if (goodsSpuService.findSpuById(spuId) == null) {
-                return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST, String.format("新增优惠商品失败，优惠商品不存在 id：" + spuId));
+            GoodsSku goodsSku=goodsSkuService
+            if (goodsSkuService.findSkuById(SkuId) == null) {
+                return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST, String.format("新增优惠商品失败，优惠商品不存在 id：" + SkuId));
             }
             //3.判断此商品的shopId和管理员的shopId是否相同
-            if (goodsSpuService.findSpuById(spuId).getData().getShop().getId() != shopId)
+            if (goodsSkuService.findSkuById(SkuId).getData().getShop().getId() != shopId)
                 return new ReturnObject<>(ResponseCode.RESOURCE_ID_OUTSCOPE, String.format("新增优惠商品失败，此商品非用户店铺的商品"));
             //4.判断商品同一时段是否有其他活动（不同时间段有不同活动是可以的）
             ReturnObject<CouponActivity> couponActivityReturnObject = getCouponActivityById(activityId);
             CouponActivity couponActivity = couponActivityReturnObject.getData();
-            Boolean result = (Boolean) checkActivityParticipation(spuId, couponActivity.getBeginTime(), couponActivity.getEndTime()).getData();
+            Boolean result = (Boolean) checkActivityParticipation(SkuId, couponActivity.getBeginTime(), couponActivity.getEndTime()).getData();
             if (result) {
-                logger.debug("the spu id=" + spuId + " already has other activity at the same time.");
-                return new ReturnObject<>(ResponseCode.SPU_PARTICIPATE);
+                logger.debug("the Sku id=" + SkuId + " already has other activity at the same time.");
+                return new ReturnObject<>(ResponseCode.Sku_PARTICIPATE);
             }
-            return couponSpuDao.addCouponSpu(spuId, activityId);
+            return couponSkuDao.addCouponSku(SkuId, activityId);
         } catch (Exception e) {
             logger.error("发生了严重的服务器内部错误：" + e.getMessage());
             return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR);
@@ -229,22 +245,25 @@ public class CouponActivityServiceImpl implements CouponActivityService {
     /**
      * @param id
      * @description: 删除己方待上线的某优惠券活动对应的限定范围
+     * bug:还需根据skuid获得shopId 判断操作权限
      * @return: cn.edu.xmu.ooad.util.ReturnObject
      * @author: Feiyan Liu
      * @date: Created at 2020/12/2 11:16
      */
     @Transactional
     @Override
-    public ReturnObject deleteCouponSpu(Long id) {
+    public ReturnObject deleteCouponSku(Long shopId,Long id) {
         try {
-            CouponSpuPo couponSpuPo = couponSpuDao.getCouponSpuById(id);
-            if (couponSpuPo == null)
+            CouponSkuPo couponSkuPo = couponSkuDao.getCouponSkuById(id);
+            //SpuPo spuPo=
+            if (couponSkuPo == null)
                 return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
-            CouponActivityPo couponActivityPo = couponActivityDao.getCouponActivityById(couponSpuPo.getActivityId());
+            CouponActivityPo couponActivityPo = couponActivityDao.getCouponActivityById(couponSkuPo.getActivityId());
             //判断活动状态是否为待上线
-            if (couponActivityPo.getState() != (byte) CouponActivity.State.WAITING.getCode())
-                return new ReturnObject<>(ResponseCode.COUPONACT_STATENOTALLOW, String.format("优惠活动非待上线,不允许修改限定范围 id：" + couponSpuPo.getActivityId()));
-            couponSpuDao.deleteCouponSpu(id);
+            CouponActivity.Timeline timeline=CouponActivity.Timeline.getTypeByTime(couponActivityPo.getBeginTime(),couponActivityPo.getEndTime());
+            if (timeline!=CouponActivity.Timeline.WAITING||timeline!=CouponActivity.Timeline.TOMORROW_ONLINE)
+                return new ReturnObject<>(ResponseCode.COUPONACT_STATENOTALLOW, String.format("优惠活动非待上线,不允许修改限定范围 id：" + couponSkuPo.getActivityId()));
+            couponSkuDao.deleteCouponSku(id);
             return new ReturnObject();
         } catch (Exception e) {
             logger.error("发生了严重的服务器内部错误：" + e.getMessage());
@@ -263,19 +282,19 @@ public class CouponActivityServiceImpl implements CouponActivityService {
      */
     @Transactional
     @Override
-    public ReturnObject<PageInfo<VoObject>> getCouponSpu(Long id, Integer page, Integer pagesize) {
+    public ReturnObject<PageInfo<VoObject>> getCouponSku(Long id, Integer page, Integer pagesize) {
         try {
             CouponActivityPo couponActivityPo = couponActivityDao.getCouponActivityById(id);
             if (couponActivityPo == null)
-                return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST, String.format("查询的优惠活动不存在 id：" + id));
-            List<CouponSpuPo> couponSpuPos = couponSpuDao.getCouponSpuListByActivityId(id);
-            List<VoObject> couponSpuVos = new ArrayList<>(couponSpuPos.size());
-            for (CouponSpuPo po : couponSpuPos) {
-                CouponSpu couponSpu = new CouponSpu(po);
-                couponSpuVos.add(couponSpu.createSimpleVo());
+                return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
+            List<CouponSkuPo> couponSkuPos = couponSkuDao.getCouponSkuListByActivityId(id);
+            List<VoObject> couponSkuVos = new ArrayList<>(couponSkuPos.size());
+            for (CouponSkuPo po : couponSkuPos) {
+                CouponSku couponSku = new CouponSku(po);
+                couponSkuVos.add(couponSku.createSimpleVo());
             }
             PageHelper.startPage(page, pagesize);
-            PageInfo<VoObject> returnObject = new PageInfo<>(couponSpuVos);
+            PageInfo<VoObject> returnObject = new PageInfo<>(couponSkuVos);
             return new ReturnObject<>(returnObject);
         } catch (Exception e) {
             logger.error("发生了严重的服务器内部错误：" + e.getMessage());
@@ -314,47 +333,24 @@ public class CouponActivityServiceImpl implements CouponActivityService {
      * @date: Created at 2020/11/30 20:02
      */
     public boolean timeClash(LocalDateTime beginTime1, LocalDateTime endTime1, LocalDateTime beginTime2, LocalDateTime endTime2) {
-        if (beginTime1.isBefore(endTime2) || endTime1.isBefore(beginTime2))
+        if (beginTime1.isAfter(endTime2) || endTime1.isBefore(beginTime2))
             return false;
         return true;
     }
 
-    /**
-     * @param id
-     * @description: 根据活动id判断活动是否有效
-     * @return: boolean
-     * @author: Feiyan Liu
-     * @date: Created at 2020/11/30 19:08
-     */
-    public boolean effective(Long id) {
-        LocalDateTime now = LocalDateTime.now();
-        try {
-            CouponActivityPo po = couponActivityDao.getCouponActivityById(id);
-            //如果活动是在待上线或者进行中，即活动时间有效
-            if (now.isAfter(po.getEndTime()) || now.isAfter(po.getBeginTime()) && now.isBefore(po.getEndTime())) {
-                //如果活动状态不是已下线（因为有可能时间是有效，但被管理员下线了）
-                if (po.getState().byteValue() != (byte) CouponActivity.State.INVALID.getCode()) {
-                    return true;
-                }
-            }
-        } catch (Exception e) {
-            logger.error("发生了严重的服务器内部错误严重错误：" + e.getMessage());
-        }
-        return false;
-    }
 
     /**
-     * @param spuId
+     * @param SkuId
      * @param beginTime
      * @param endTime
-     * @description: 判断spu在某个时间段内是否参加了活动
+     * @description: 判断Sku在某个时间段内是否参加了活动
      * @return: cn.edu.xmu.ooad.util.ReturnObject
      * @author: Feiyan Liu
      * @date: Created at 2020/12/5 17:24
      */
-    public ReturnObject checkActivityParticipation(Long spuId, LocalDateTime beginTime, LocalDateTime endTime) {
+    public ReturnObject checkActivityParticipation(Long SkuId, LocalDateTime beginTime, LocalDateTime endTime) {
         try {
-            Boolean participateCouponActivity = (Boolean) checkCouponActivityParticipation(spuId, beginTime, endTime).getData();
+            Boolean participateCouponActivity = (Boolean) checkCouponActivityParticipation(SkuId, beginTime, endTime).getData();
             //这里需要调用三个活动的service的接口
             boolean participateGroupon = false;
             boolean participatePreSale = false;
@@ -369,22 +365,22 @@ public class CouponActivityServiceImpl implements CouponActivityService {
 
 
     /**
-     * @param spuId
+     * @param SkuId
      * @param beginTime
      * @param endTime
      * @description: 判断商品在一个时间段内 是否已经参加了优惠活动
-     * @return: boolean
+     * @return: ReturnObject
      * @author: Feiyan Liu
      * @date: Created at 2020/11/30 20:06
      */
-    public ReturnObject checkCouponActivityParticipation(Long spuId, LocalDateTime beginTime, LocalDateTime endTime) {
+    public ReturnObject checkCouponActivityParticipation(Long SkuId, LocalDateTime beginTime, LocalDateTime endTime) {
         try {
             //检测活动商品表中，此商品是否已参加此活动
-            List<CouponSpuPo> couponSpuPos = couponSpuDao.getCouponSpuListBySpuId(spuId);
-            for (CouponSpuPo po : couponSpuPos) {
+            List<CouponSkuPo> couponSkuPos = couponSkuDao.getCouponSkuListBySkuId(SkuId);
+            for (CouponSkuPo po : couponSkuPos) {
                 //判断商品参与的活动与即将加入的活动时间是否冲突
                 CouponActivityPo couponActivityPo = couponActivityDao.getCouponActivityById(po.getActivityId());
-                if (effective(po.getActivityId())
+                if (couponActivityPo.getState()!=CouponActivity.State.CANCELLED.getCode()
                         && timeClash(couponActivityPo.getBeginTime(), couponActivityPo.getEndTime(), beginTime, endTime)) {
                     return new ReturnObject<>(true);
                 }
@@ -465,7 +461,7 @@ public class CouponActivityServiceImpl implements CouponActivityService {
     }
 
     /**
-     * @param id
+     * @param id 活动id
      * @description: 管理员下线优惠活动
      * bug：直接删了优惠券吗？还是将状态改为不可用？
      * @return: cn.edu.xmu.ooad.util.ReturnObject
@@ -474,10 +470,13 @@ public class CouponActivityServiceImpl implements CouponActivityService {
      */
     @Transactional
     @Override
-    public ReturnObject deleteCouponActivity(Long id) {
+    public ReturnObject deleteCouponActivity(Long shopId,Long id) {
         try {
-            if (couponActivityDao.getCouponActivityById(id) == null)
+            CouponActivityPo couponActivityPo=couponActivityDao.getCouponActivityById(id);
+            if (couponActivityPo == null)
                 return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST, String.format("优惠活动不存在 id：" + id));
+            if(couponActivityPo.getShopId()!=shopId)
+                return new ReturnObject<>(ResponseCode.RESOURCE_ID_OUTSCOPE, String.format("无权限删除此店的优惠活动"));
             couponActivityDao.deleteCouponActivity(id);
             //直接删了优惠券吗？还是将状态改为不可用？
             //暂时删了优惠券
@@ -486,7 +485,6 @@ public class CouponActivityServiceImpl implements CouponActivityService {
             logger.error("发生了严重的服务器内部错误：" + e.getMessage());
             return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR);
         }
-
         return new ReturnObject();
     }
 
@@ -514,16 +512,17 @@ public class CouponActivityServiceImpl implements CouponActivityService {
                 couponVos.add(coupon.createSimpleVo());
             }
             PageHelper.startPage(page, pagesize);
+            logger.error("发生了严重的服务器内部错误：pagehelper" );
             returnObject = new PageInfo<>(couponVos);
+            logger.error("发生了严重的服务器内部错误 返回失败：" );
             return new ReturnObject<>(returnObject);
         } catch (Exception e) {
-            logger.error("发生了严重的服务器内部错误：" + e.getMessage());
+            logger.error("发生了严重的服务器内部错误ha：" + e.getMessage());
             return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR);
         }
 
     }
-
-
+    
     /**
      * @param id
      * @param userId
@@ -535,13 +534,22 @@ public class CouponActivityServiceImpl implements CouponActivityService {
     @Override
     @Transactional
     public ReturnObject useCoupon(Long id, Long userId) {
+        CouponPo couponPo=null;
         try {
-            CouponPo couponPo = couponDao.getCouponById(id);
+            couponPo = couponDao.getCouponById(id);
+            //判断优惠券id是否存在
+            if(couponPo==null)
+                return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
+            //判断优惠券是否属于客户
             if (couponPo.getCustomerId() != userId)
-                return new ReturnObject<>(ResponseCode.RESOURCE_ID_OUTSCOPE, String.format("操作的优惠券非此用户优惠券" + id));
-            if (couponPo.getState() != Coupon.State.available.getCode())
-                return new ReturnObject<>(ResponseCode.COUPON_STATENOTALLOW, String.format("优惠券不可使用" + id));
-            else return couponDao.updateCouponState(id, Coupon.State.used.getCode());
+                return new ReturnObject<>(ResponseCode.RESOURCE_ID_OUTSCOPE);
+            //若优惠券已使用或者是失效了
+            if (couponPo.getState() != (byte)Coupon.State.CLAIMED.getCode())
+                return new ReturnObject<>(ResponseCode.COUPON_STATENOTALLOW);
+            //若优惠券已过期或者是还未到有效时间
+            if(couponPo.getBeginTime().isAfter(LocalDateTime.now())||couponPo.getEndTime().isBefore(LocalDateTime.now()))
+                return new ReturnObject<>(ResponseCode.COUPON_STATENOTALLOW);
+            else return couponDao.updateCouponState(id, Coupon.State.USED.getCode());
         } catch (Exception e) {
             logger.error("发生了严重的服务器内部错误：" + e.getMessage());
             return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR);
@@ -560,11 +568,25 @@ public class CouponActivityServiceImpl implements CouponActivityService {
      */
     @Override
     @Transactional
-    public ReturnObject getCoupon(Long userId, Long id) {
+    public ReturnObject userGetCoupon(Long userId, Long id) {
         CouponActivityPo couponActivityPo = couponActivityDao.getCouponActivityById(id);
-        //检测活动是否存在
+        //检测活动是否有效
         if (couponActivityPo == null)
             return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
+        boolean effective=false;
+        LocalDateTime now=LocalDateTime.now();
+        //如果活动是在待上线或者进行中，即活动时间有效
+        if (now.isAfter(couponActivityPo.getEndTime()) || now.isAfter(couponActivityPo.getBeginTime()) && now.isBefore(couponActivityPo.getEndTime())) {
+            //如果活动状态不是已下线（因为有可能时间是有效，但被管理员下线了）
+            if (couponActivityPo.getState().byteValue() != (byte) CouponActivity.State.CANCELLED.getCode()) {
+               effective=true;
+            }
+        }
+        if(effective==false)
+            return new ReturnObject(ResponseCode.COUPONACT_STATENOTALLOW);
+        //若领取优惠券的时间还没到
+        if(couponActivityPo.getCouponTime().isAfter(now))
+            return new ReturnObject(ResponseCode.COUPON_STATENOTALLOW);
         int quantityType = couponActivityPo.getQuantitiyType();
         ReturnObject returnObject = null;
         try {
@@ -592,7 +614,6 @@ public class CouponActivityServiceImpl implements CouponActivityService {
                     //
                     //
                 }
-
             }
             return returnObject;
         } catch (Exception e) {
@@ -618,9 +639,7 @@ public class CouponActivityServiceImpl implements CouponActivityService {
         couponPo.setActivityId(id);
         couponPo.setBeginTime(couponActivityPo.getCouponTime());
         couponPo.setEndTime(couponActivityPo.getEndTime());
-        if (couponPo.getBeginTime().isAfter(LocalDateTime.now()))
-            couponPo.setState((byte) Coupon.State.unavailable.getCode());
-        else couponPo.setState((byte) Coupon.State.available.getCode());
+        couponPo.setState((byte) Coupon.State.NOT_CLAIMED.getCode());
         return couponPo;
     }
 
@@ -635,12 +654,7 @@ public class CouponActivityServiceImpl implements CouponActivityService {
     public ReturnObject returnCoupon(Long id) {
         try {
             CouponPo couponPo = couponDao.getCouponById(id);
-            //判断优惠券是否仍有效
-            //若无效则设置优惠券状态不可用
-            if (couponPo.getEndTime().isBefore(LocalDateTime.now()))
-                return couponDao.updateCouponState(id, Coupon.State.unavailable.getCode());
-                //若有效则设置优惠券状态可用
-            else return couponDao.updateCouponState(id, Coupon.State.available.getCode());
+            return couponDao.updateCouponState(id, Coupon.State.CLAIMED.getCode());
         } catch (Exception e) {
             logger.error("发生了严重的服务器内部错误：" + e.getMessage());
             return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR);

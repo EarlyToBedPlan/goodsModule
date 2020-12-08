@@ -1,0 +1,132 @@
+package cn.edu.xmu.coupon.dao;
+
+import cn.edu.xmu.coupon.mapper.CouponSkuPoMapper;
+import cn.edu.xmu.coupon.model.bo.CouponSku;
+import cn.edu.xmu.coupon.model.po.CouponSkuPo;
+import cn.edu.xmu.coupon.model.po.CouponSkuPoExample;
+import cn.edu.xmu.ooad.util.ResponseCode;
+import cn.edu.xmu.ooad.util.ReturnObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+/**
+ * @author Feiyan Liu
+ * @date Created at 2020/12/2 10:51
+ */
+@Repository
+public class CouponSkuDao implements InitializingBean {
+    private static final Logger logger = LoggerFactory.getLogger(CouponActivityDao.class);
+    @Autowired
+    private CouponSkuPoMapper couponSkuMapper;
+    /**
+     * 是否初始化，生成signature和加密
+     */
+    @Value("${couponservice.initialization}")
+    private Boolean initialization;
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+    }
+
+    /**
+     * @param SkuId
+     * @param activityId
+     * @description:加入新的优惠商品
+     * @return: cn.edu.xmu.ooad.util.ReturnObject
+     * @author: Feiyan Liu
+     * @date: Created at 2020/11/30 4:11
+     */
+    public ReturnObject addCouponSku(Long SkuId, Long activityId) {
+        ReturnObject retObj = null;
+        //数据插入优惠商品表
+        CouponSku couponSku = new CouponSku();
+        couponSku.setSkuId(SkuId);
+        couponSku.setActivityId(activityId);
+        CouponSkuPo couponSkuPo = couponSku.createPo();
+        try {
+            couponSkuMapper.insert(couponSkuPo);
+            //插入成功
+            logger.debug("insertCouponSku: insert couponSku = " + couponSkuPo.toString());
+            retObj = new ReturnObject<>(couponSku);
+        } catch (Exception e) {
+            logger.error("严重错误：" + e.getMessage());
+            return new ReturnObject(ResponseCode.INTERNAL_SERVER_ERR,
+                    String.format("发生了严重的服务器内部错误：%s", e.getMessage()));
+        }
+        return retObj;
+    }
+
+    /**
+     * @param id
+     * @description: 根据活动id获取活动商品列表
+     * @return: cn.edu.xmu.ooad.util.ReturnObject<java.util.List>
+     * @author: Feiyan Liu
+     * @date: Created at 2020/11/30 22:17
+     */
+    public List<CouponSkuPo> getCouponSkuListByActivityId(Long id) {
+        CouponSkuPoExample example = new CouponSkuPoExample();
+        CouponSkuPoExample.Criteria criteria = example.createCriteria();
+        criteria.andActivityIdEqualTo(id);
+        List<CouponSkuPo> couponSkuPos = null;
+        try {
+            couponSkuPos = couponSkuMapper.selectByExample(example);
+            if (couponSkuPos.isEmpty()) {
+                logger.debug("getCouponSkuByActivityId: Not Found");
+            } else logger.debug("getCouponSkuByActivityId: retCouponSku" + couponSkuPos);
+        } catch (Exception e) {
+            logger.error("发生了严重的服务器内部错误：" + e.getMessage());
+        }
+        return couponSkuPos;
+    }
+
+    public List<CouponSkuPo> getCouponSkuListBySkuId(Long id) {
+        CouponSkuPoExample example = new CouponSkuPoExample();
+        CouponSkuPoExample.Criteria criteria = example.createCriteria();
+        criteria.andSkuIdEqualTo(id);
+        List<CouponSkuPo> couponSkuPos = null;
+        try {
+            couponSkuPos = couponSkuMapper.selectByExample(example);
+            if (couponSkuPos.isEmpty()) {
+                logger.debug("getCouponSkuByActivityId: Not Found");
+            }
+            logger.debug("getCouponSkuByActivityId: retCouponSku" + couponSkuPos);
+        } catch (Exception e) {
+            logger.error("发生了严重的服务器内部错误：" + e.getMessage());
+        }
+        return couponSkuPos;
+    }
+
+    public CouponSkuPo getCouponSkuById(Long id) {
+        CouponSkuPo po = null;
+        try {
+            po = couponSkuMapper.selectByPrimaryKey(id);
+        } catch (Exception e) {
+            logger.error("发生了严重的服务器内部错误：" + e.getMessage());
+        }
+        return po;
+    }
+
+    public ReturnObject deleteCouponSku(Long id) {
+        ReturnObject returnObject = null;
+        try {
+            int ret = couponSkuMapper.deleteByPrimaryKey(id);
+            if (ret == 0) {
+                logger.debug("deleteCouponActivity: delete fail. user id: " + id);
+                returnObject = new ReturnObject(ResponseCode.RESOURCE_ID_NOTEXIST);
+            } else {
+                logger.debug("deleteCouponActivity: delete user success id: " + id);
+                returnObject = new ReturnObject();
+            }
+        } catch (Exception e) {
+            logger.error("发生了严重的服务器内部错误：" + e.getMessage());
+        }
+        return returnObject;
+    }
+}

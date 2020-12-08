@@ -17,9 +17,9 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDateTime;
 import java.util.List;
 
-//import cn.edu.xmu.goods.mapper.GoodsSpuPoMapper;
-//import cn.edu.xmu.goods.model.po.GoodsSpuPo;
-//import cn.edu.xmu.goods.model.po.GoodsSpuPoExample;
+//import cn.edu.xmu.goods.mapper.GoodsSkuPoMapper;
+//import cn.edu.xmu.goods.model.po.GoodsSkuPo;
+//import cn.edu.xmu.goods.model.po.GoodsSkuPoExample;
 
 /**
  * @author Feiyan Liu
@@ -30,7 +30,7 @@ import java.util.List;
 public class CouponActivityDao implements InitializingBean {
     private static final Logger logger = LoggerFactory.getLogger(CouponActivityDao.class);
     @Autowired
-    private CouponSpuDao couponSpuDao;
+    private CouponSkuDao couponSkuDao;
     @Autowired
     private CouponActivityPoMapper couponActivityMapper;
     /**
@@ -68,7 +68,7 @@ public class CouponActivityDao implements InitializingBean {
      * @author: Feiyan Liu
      * @date: Created at 2020/11/30 3:49
      */
-    public CouponActivityPo addCouponActivity(CouponActivity couponActivity, Long spuId) {
+    public CouponActivityPo addCouponActivity(CouponActivity couponActivity, Long SkuId) {
         CouponActivityPo couponActivityPo = couponActivity.createPo();
         try {
             couponActivityMapper.insert(couponActivityPo);
@@ -88,13 +88,12 @@ public class CouponActivityDao implements InitializingBean {
      * @author: Feiyan Liu
      * @date: Created at 2020/11/30 9:10
      */
-    public List<CouponActivityPo> getCouponActivity(Long shopId, CouponActivity.State state) {
+    public List<CouponActivityPo> getCouponActivity(Long shopId) {
         CouponActivityPoExample example = new CouponActivityPoExample();
         CouponActivityPoExample.Criteria criteria = example.createCriteria();
         if (shopId != null)
             criteria.andShopIdEqualTo(shopId);
-        if (state != null)
-            criteria.andStateEqualTo((byte) state.getCode());
+        criteria.andStateEqualTo((byte)CouponActivity.State.NEW.getCode());
         List<CouponActivityPo> couponActivityPos = null;
         try {
             couponActivityPos = couponActivityMapper.selectByExample(example);
@@ -105,14 +104,7 @@ public class CouponActivityDao implements InitializingBean {
         return couponActivityPos;
     }
 
-    public int checkStateByTime(CouponActivity.State state, LocalDateTime beginTime, LocalDateTime endTime) {
-        if (beginTime.isAfter(LocalDateTime.now()))
-            return CouponActivity.State.WAITING.getCode();
-        else if (beginTime.isBefore(LocalDateTime.now()) && endTime.isAfter(LocalDateTime.now()))
-            return CouponActivity.State.ONLINE.getCode();
-        else
-            return CouponActivity.State.OFFLINE.getCode();
-    }
+
 
     /**
      * @param shopId
@@ -124,7 +116,7 @@ public class CouponActivityDao implements InitializingBean {
     public List<CouponActivityPo> getInvalidCouponActivity(Long shopId) {
         CouponActivityPoExample example = new CouponActivityPoExample();
         CouponActivityPoExample.Criteria criteria = example.createCriteria();
-        criteria.andStateEqualTo((byte) CouponActivity.State.INVALID.getCode());
+        criteria.andStateEqualTo((byte) CouponActivity.State.CANCELLED.getCode());
         criteria.andShopIdEqualTo(shopId);
         List<CouponActivityPo> couponActivityPos = null;
         try {
@@ -135,23 +127,23 @@ public class CouponActivityDao implements InitializingBean {
         }
         return couponActivityPos;
     }
-//    public boolean checkSpu(Long id)
+//    public boolean checkSku(Long id)
 //    {
-//        if(getSpuById(id)==null)
+//        if(getSkuById(id)==null)
 //            return true;
 //        else return false;
 //    }
     /**
-     * @description: 根据spuId获取spu具体信息
+     * @description: 根据SkuId获取Sku具体信息
      * @param id
      * @return: cn.edu.xmu.ooad.util.ReturnObject
      * @author: Feiyan Liu
      * @date: Created at 2020/11/30 17:16
      */
-//    public GoodsSpuPo getSpuById(Long id) {
-//        GoodsSpuPo po=null;
+//    public GoodsSkuPo getSkuById(Long id) {
+//        GoodsSkuPo po=null;
 //        try {
-//            po=spuMapper.selectByPrimaryKey(id);
+//            po=SkuMapper.selectByPrimaryKey(id);
 //        } catch (Exception e) {
 //            logger.error("严重错误：" + e.getMessage());
 //        }
@@ -227,7 +219,7 @@ public class CouponActivityDao implements InitializingBean {
         ReturnObject returnObject = null;
         CouponActivityPo po = new CouponActivityPo();
         po.setId(id);
-        po.setState((byte) CouponActivity.State.OFFLINE.getCode());
+        po.setState((byte) CouponActivity.State.CANCELLED.getCode());
         try {
             int ret = couponActivityMapper.updateByPrimaryKeySelective(po);
             if (ret == 0) {
@@ -253,7 +245,7 @@ public class CouponActivityDao implements InitializingBean {
         return po.getShopId();
     }
 }
-//    public ReturnObject getCouponSpuByActivityId(Long id)
+//    public ReturnObject getCouponSkuByActivityId(Long id)
 //    {
 //
 //    }

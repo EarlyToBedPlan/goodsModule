@@ -2,7 +2,6 @@ package cn.edu.xmu.coupon.controller;
 
 import cn.edu.xmu.coupon.model.bo.CouponActivity;
 import cn.edu.xmu.coupon.model.vo.CouponActivityVo;
-import cn.edu.xmu.coupon.model.vo.CouponSpuVo;
 import cn.edu.xmu.coupon.service.CouponActivityService;
 import cn.edu.xmu.ooad.annotation.Audit;
 import cn.edu.xmu.ooad.annotation.Depart;
@@ -77,7 +76,7 @@ public class CouponController {
             @ApiResponse(code = 0, message = "成功"),
     })
     @Audit
-    @PostMapping("/shops/{shopId}/spus/{id}/couponactivities")
+    @PostMapping("/shops/{shopId}/skus/{id}/couponactivities")
     public Object addCouponActivity(@Validated @RequestBody CouponActivityVo vo, BindingResult bindingResult,
                                     @PathVariable Long id, @PathVariable Long shopId) {
         Object errors = Common.processFieldErrors(bindingResult, httpServletResponse);
@@ -95,7 +94,7 @@ public class CouponController {
     }
 
     /**
-     * @description:查看上线的列表 可以根据shopId查看 也可以指定状态查看
+     * @description:查看上线的列表 可以根据shopId查看 也可以指定timeline查看
      * @author: Feiyan Liu
      * @date: Created at 2020/12/2 15:08
      */
@@ -110,36 +109,31 @@ public class CouponController {
     })
     @GetMapping("/couponactivities")
     public Object getOnlineCouponActivity(@RequestParam(required = false) Integer page, @RequestParam(required = false) Integer pageSize,
-                                          @RequestParam(required = false) Long shopId, @RequestParam(required = false) Integer state) {
+                                          @RequestParam(required = false) Long shopId, @RequestParam(required = false) Integer timeline) {
         page = (page == null) ? 1 : page;
         pageSize = (pageSize == null) ? 10 : pageSize;
-        ReturnObject<PageInfo<VoObject>> returnObject = couponActivityService.getCouponActivities(shopId, state, page, pageSize);
+        ReturnObject<PageInfo<VoObject>> returnObject = couponActivityService.getCouponActivities(shopId, timeline, page, pageSize);
         return ResponseUtil.ok(returnObject.getData());
     }
 
-//    @ApiOperation(value = "查看本店下线的优惠活动列表")
-//    @ApiImplicitParams({
-//            @ApiImplicitParam(paramType = "header", dataType = "String", name = "authorization", value = "Token", required = true),
-//            @ApiImplicitParam(name = "id", value = "店铺id", required = true, dataType = "Integer", paramType = "path"),
-//    })
-//    @ApiResponses({
-//            @ApiResponse(code = 0, message = "成功"),
-//            @ApiResponse(code = 504, message = "操作id不存在")
-//    })
-//    @Audit
-//    @GetMapping("/shops/{id}/couponactivities/invalid")
-//    public Object getOfflineCouponActivity(@RequestParam(required = false) Integer page, @RequestParam(required = false) Integer pageSize,
-//                                           @PathVariable Long id, @Depart Long departId) {
-//        page = (page == null) ? 1 : page;
-//        if (id.equals(departId)) {
-//            pageSize = (pageSize == null) ? 10 : pageSize;
-//            List<VoObject> returnObject = couponActivityService.getInvalidCouponActivities(page, pageSize, id);
-//            PageHelper.startPage(page, pageSize);
-//            return ResponseUtil.ok(new ReturnObject(getPageInfoReturnObject(new PageInfo(returnObject))).getData());
-//        } else {
-//            return Common.getNullRetObj(new ReturnObject<>(ResponseCode.FIELD_NOTVALID, String.format("departId不匹配")), httpServletResponse);
-//        }
-//    }
+    @ApiOperation(value = "查看本店下线的优惠活动列表")
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "header", dataType = "String", name = "authorization", value = "Token", required = true),
+            @ApiImplicitParam(name = "id", value = "店铺id", required = true, dataType = "Integer", paramType = "path"),
+    })
+    @ApiResponses({
+            @ApiResponse(code = 0, message = "成功"),
+            @ApiResponse(code = 504, message = "操作id不存在")
+    })
+    @Audit
+    @GetMapping("/shops/{id}/couponactivities/invalid")
+    public Object getInvalidCouponActivity(@RequestParam(required = false) Integer page, @RequestParam(required = false) Integer pageSize,
+                                           @PathVariable Long id, @Depart Long departId) {
+        page = (page == null) ? 1 : page;
+        pageSize = (pageSize == null) ? 10 : pageSize;
+        ReturnObject<PageInfo<VoObject>> returnObject = couponActivityService.getInvalidCouponActivities(page, pageSize,departId);
+        return ResponseUtil.ok(returnObject.getData());
+    }
 
     @ApiOperation(value = "查看优惠活动中的商品")
     @ApiImplicitParams({
@@ -150,12 +144,12 @@ public class CouponController {
             @ApiResponse(code = 0, message = "成功"),
             @ApiResponse(code = 504, message = "操作id不存在")
     })
-    @GetMapping("/couponactivities/{id}/spus")
-    public Object getCouponSpu(@RequestParam(required = false) Integer page, @RequestParam(required = false) Integer pageSize,
+    @GetMapping("/couponactivities/{id}/skus")
+    public Object getCouponSku(@RequestParam(required = false) Integer page, @RequestParam(required = false) Integer pageSize,
                                @PathVariable Long id) {
         page = (page == null) ? 1 : page;
         pageSize = (pageSize == null) ? 10 : pageSize;
-        ReturnObject<PageInfo<VoObject>> returnObject = couponActivityService.getCouponSpu(id, page, pageSize);
+        ReturnObject<PageInfo<VoObject>> returnObject = couponActivityService.getCouponSku(id, page, pageSize);
         if (returnObject.getData() != null)
             return ResponseUtil.ok(returnObject.getData());
         else {
@@ -175,7 +169,7 @@ public class CouponController {
     })
     @Audit
     @PutMapping("/shops/{shopId}/couponactivities/{id}")
-    public Object updateCouponActivity(@PathVariable Long shopId, @PathVariable Long id, @Depart Long departId,
+    public Object updateCouponActivity(@PathVariable Long shopId, @PathVariable Long id,
                                        @Validated @RequestBody CouponActivityVo vo, BindingResult bindingResult, @LoginUser Long userId) {
         Object errors = Common.processFieldErrors(bindingResult, httpServletResponse);
         if (null != errors) {
@@ -206,9 +200,9 @@ public class CouponController {
     })
     @Audit
     @DeleteMapping("/shops/{shopId}/couponactivities/{id}")
-    public Object updateCouponActivity(@PathVariable Long shopId, @PathVariable Long id, @Depart Long departId) {
+    public Object deleteCouponActivity(@PathVariable Long shopId, @PathVariable Long id, @Depart Long departId) {
         if (shopId.equals(departId)) {
-            ReturnObject returnObject = couponActivityService.deleteCouponActivity(id);
+            ReturnObject returnObject = couponActivityService.deleteCouponActivity(departId,id);
             if (returnObject.getData() != null) {
                 return Common.getRetObject(returnObject);
             } else {
@@ -223,31 +217,27 @@ public class CouponController {
     @ApiImplicitParams({
             @ApiImplicitParam(paramType = "header", dataType = "String", name = "authorization", value = "Token", required = true),
             @ApiImplicitParam(name = "shopId", value = "店铺id", required = true, dataType = "Integer", paramType = "path"),
-            @ApiImplicitParam(name = "id", value = "优惠活动id", required = true, dataType = "Integer", paramType = "path"),
+            @ApiImplicitParam(name = "id", value = "优惠活动id", required = true, dataType = "Array", paramType = "path"),
     })
     @ApiResponses({
             @ApiResponse(code = 0, message = "成功"),
             @ApiResponse(code = 504, message = "操作id不存在")
     })
     @Audit
-    @PostMapping("/shops/{shopId}/couponactivities/{id}/spus")
-    public Object addCouponSpu(@PathVariable Long shopId, @PathVariable Long id, @Depart Long departId,
-                               @Validated @RequestBody CouponSpuVo vo, BindingResult bindingResult,
+    @PostMapping("/shops/{shopId}/couponactivities/{id}/skus")
+    public Object addCouponSku(@PathVariable Long shopId, @PathVariable Long id, @Depart Long departId,
+                               @Validated @RequestBody Long[] skuArray, BindingResult bindingResult,
                                @LoginUser Long userId) {
         Object errors = Common.processFieldErrors(bindingResult, httpServletResponse);
         if (null != errors) {
             return errors;
         }
-        if (shopId.equals(departId)) {
-            ReturnObject returnObject = couponActivityService.addCouponSpu(shopId, vo.getId(), id);
+            ReturnObject returnObject = couponActivityService.addCouponSku(shopId, skuArray, id);
             if (returnObject.getData() != null) {
                 return Common.getRetObject(returnObject);
             } else {
                 return Common.getNullRetObj(new ReturnObject<>(returnObject.getCode(), returnObject.getErrmsg()), httpServletResponse);
             }
-        } else {
-            return Common.getNullRetObj(new ReturnObject<>(ResponseCode.FIELD_NOTVALID, String.format("部门id不匹配：" + shopId)), httpServletResponse);
-        }
     }
 
     @ApiOperation(value = "管理员删除己方优惠活动的某限定范围")
@@ -261,10 +251,10 @@ public class CouponController {
             @ApiResponse(code = 504, message = "操作id不存在")
     })
     @Audit
-    @DeleteMapping("/shops/{shopId}/couponactivities/{id}/spus")
-    public Object deleteCouponSpu(@PathVariable Long shopId, @PathVariable Long id, @Depart Long departId) {
+    @DeleteMapping("/shops/{shopId}/couponactivities/{id}/skus")
+    public Object deleteCouponSku(@PathVariable Long shopId, @PathVariable Long id, @Depart Long departId) {
         if (shopId.equals(departId)) {
-            ReturnObject returnObject = couponActivityService.deleteCouponSpu(id);
+            ReturnObject returnObject = couponActivityService.deleteCouponSku(departId,id);
             if (returnObject.getData() != null) {
                 return Common.getRetObject(returnObject);
             } else {
@@ -293,6 +283,44 @@ public class CouponController {
         if (returnObject.getData() != null)
             return ResponseUtil.ok(returnObject.getData());
         else {
+            return Common.getNullRetObj(new ReturnObject<>(returnObject.getCode(), returnObject.getErrmsg()), httpServletResponse);
+        }
+    }
+    @ApiOperation(value = "买家使用优惠券列表")
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "header", dataType = "String", name = "authorization", value = "Token", required = true),
+            @ApiImplicitParam(paramType = "path", dataType = "Integer", name = "优惠券id", value = "state", required = true),
+    })
+    @ApiResponses({
+            @ApiResponse(code = 0, message = "成功"),
+    })
+    @Audit
+    @PutMapping("/coupons/{id}")
+    public Object useCoupon(@PathVariable Long id, @LoginUser Long userId) {
+
+        ReturnObject returnObject = couponActivityService.useCoupon(id,userId);
+        if (returnObject.getData() != null)
+            return ResponseUtil.ok(returnObject.getData());
+        else {
+            return Common.getNullRetObj(new ReturnObject<>(returnObject.getCode(), returnObject.getErrmsg()), httpServletResponse);
+        }
+    }
+    @ApiOperation(value = "用户领取优惠券")
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "header", dataType = "String", name = "authorization", value = "Token", required = true),
+            @ApiImplicitParam(name = "id", value = "优惠活动id", required = true, dataType = "Array", paramType = "path"),
+    })
+    @ApiResponses({
+            @ApiResponse(code = 0, message = "成功"),
+            @ApiResponse(code = 504, message = "操作id不存在")
+    })
+    @Audit
+    @PostMapping("/couponactivities/{id}/usercoupons")
+    public Object userGetCoupon(@PathVariable Long id, @LoginUser Long userId) {
+        ReturnObject returnObject = couponActivityService.userGetCoupon(userId,id);
+        if (returnObject.getData() != null) {
+            return Common.getRetObject(returnObject);
+        } else {
             return Common.getNullRetObj(new ReturnObject<>(returnObject.getCode(), returnObject.getErrmsg()), httpServletResponse);
         }
     }

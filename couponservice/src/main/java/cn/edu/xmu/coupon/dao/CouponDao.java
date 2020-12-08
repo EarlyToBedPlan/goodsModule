@@ -5,7 +5,6 @@ import cn.edu.xmu.coupon.mapper.CouponPoMapper;
 import cn.edu.xmu.coupon.model.bo.Coupon;
 import cn.edu.xmu.coupon.model.po.CouponPo;
 import cn.edu.xmu.coupon.model.po.CouponPoExample;
-import cn.edu.xmu.coupon.model.po.CouponSpuPo;
 import cn.edu.xmu.ooad.util.ResponseCode;
 import cn.edu.xmu.ooad.util.ReturnObject;
 import org.slf4j.Logger;
@@ -59,7 +58,7 @@ public class CouponDao implements InitializingBean {
             }
             else logger.debug("getCouponSpuByActivityId: retCouponSpu" + couponPos);
         } catch (Exception e) {
-            logger.error("发生了严重的服务器内部错误：" + e.getMessage());
+            logger.error("发生了严重的服务器内部错误haha：" + e.getMessage());
         }
         return couponPos;
     }
@@ -93,10 +92,10 @@ public class CouponDao implements InitializingBean {
 
     public CouponPo getCouponById(Long id)
     {
-        ReturnObject returnObject = null;
-        CouponPo po=new CouponPo();
+        CouponPo po=null;
         try {
              po = couponMapper.selectByPrimaryKey(id);
+             logger.debug("po的id"+po.getId());
         } catch (Exception e) {
             logger.error("发生了严重的服务器内部错误：" + e.getMessage());
         }
@@ -141,7 +140,7 @@ public ReturnObject deleteCouponByActivityId(Long id)
     CouponPoExample example=new CouponPoExample();
     CouponPoExample.Criteria criteria=example.createCriteria();
     criteria.andActivityIdEqualTo(id);
-    criteria.andStateEqualTo((byte)Coupon.State.available.getCode());
+    criteria.andStateBetween((byte)Coupon.State.NOT_CLAIMED.getCode(),(byte)Coupon.State.CLAIMED.getCode());
     try{
         List<CouponPo> couponPos=couponMapper.selectByExample(example);
         for(CouponPo po:couponPos)

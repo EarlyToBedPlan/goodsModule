@@ -5,8 +5,11 @@ import cn.edu.xmu.coupon.model.po.CouponPo;
 import cn.edu.xmu.coupon.model.vo.CouponActivityRetSimpleVo;
 import cn.edu.xmu.coupon.model.vo.CouponRetSimpleVo;
 import cn.edu.xmu.coupon.model.vo.CouponRetVo;
+import cn.edu.xmu.coupon.service.CouponActivityServiceImpl;
 import cn.edu.xmu.ooad.model.VoObject;
 import lombok.Data;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,12 +25,12 @@ public class Coupon implements VoObject {
     Long customerId;
     String name;
     String  couponSn;
-
+    private Logger logger = LoggerFactory.getLogger(Coupon.class);
     public enum State {
-        unavailable(0,"不可用"),
-        available(1,"可用"),
-        used(2,"已使用"),
-        expired(3,"失效");
+        NOT_CLAIMED(0,"未领取"),
+        CLAIMED(1,"已领取"),
+        USED(2,"已使用"),
+        INVALID(3,"失效");
         private static final Map<Integer, Coupon.State> stateMap;
 
         static { //由类加载机制，静态块初始加载对应的枚举属性到map中，而不用每次取属性时，遍历一次所有枚举值

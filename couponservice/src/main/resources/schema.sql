@@ -71,13 +71,13 @@ CREATE TABLE `coupon_activity` (
 -- Table structure for table `coupon_spu`
 --
 
-DROP TABLE IF EXISTS `coupon_spu`;
+DROP TABLE IF EXISTS `coupon_sku`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `coupon_spu` (
+CREATE TABLE `coupon_sku` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `activity_id` bigint(20) DEFAULT NULL,
-  `spu_id` bigint(20) DEFAULT NULL,
+  `sku_id` bigint(20) DEFAULT NULL,
   `gmt_created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `gmt_modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)

@@ -13,11 +13,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.context.WebApplicationContext;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -27,7 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = CouponServiceApplication.class)   //标识本类是一个SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
-public class UpdateCouponActivityTest {
+public class DeleteCouponActivityTest {
     @Autowired
     private MockMvc mvc;
 
@@ -40,26 +38,17 @@ public class UpdateCouponActivityTest {
     }
 
     /**
-     * @description:修改优惠活动 成功
+     * @description:删除优惠活动 成功
      * @author: Feiyan Liu
      * @date: Created at 2020/12/3 11:58
      */
 
     @Test
-    public void addCouponActivity1() throws Exception {
+    public void deleteCouponActivity1() throws Exception {
         String token=creatTestToken(1L, 1L, 100);
-        CouponActivityVo vo=new CouponActivityVo();
-        vo.setName("618大促");
-        vo.setQuantity(1);
-        vo.setQuantityType((byte) 0);
-        vo.setStrategy("1");
-        vo.setValidTerm((byte) 0);
 
-        String requireJson = JacksonUtil.toJson(vo);
-
-        String responseString = this.mvc.perform(put("/coupon/shops/1/couponactivities/1").header("authorization",token)
-                .contentType("application/json;charset=UTF-8")
-                .content(requireJson))
+        String responseString = this.mvc.perform(delete("/coupon/shops/1/couponactivities/1").header("authorization",token)
+                .contentType("application/json;charset=UTF-8"))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
        String expectedResponse="{\"errno\":0,\"errmsg\":\"成功\"}";
@@ -67,28 +56,35 @@ public class UpdateCouponActivityTest {
     }
 
     /**
-     * @description:修改非本店的优惠活动
+     * @description:删除非本店的优惠活动
      * @author: Feiyan Liu
      * @date: Created at 2020/12/3 11:58
      */
     @Test
-    public void addCouponActivity2() throws Exception {
+    public void deleteCouponActivity2() throws Exception {
         String token=creatTestToken(1L, 2L, 100);
-        CouponActivityVo vo=new CouponActivityVo();
-        vo.setName("618大促");
-        vo.setQuantity(1);
-        vo.setQuantityType((byte) 0);
-        vo.setStrategy("1");
-        vo.setValidTerm((byte) 0);
 
-        String requireJson = JacksonUtil.toJson(vo);
-
-        String responseString = this.mvc.perform(put("/coupon/shops/2/couponactivities/1").header("authorization",token)
-                .contentType("application/json;charset=UTF-8")
-                .content(requireJson))
+        String responseString = this.mvc.perform(delete("/coupon/shops/2/couponactivities/1").header("authorization",token)
+                .contentType("application/json;charset=UTF-8"))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
-        String expectedResponse= "{\"errno\":505,\"errmsg\":\"无权限修改此店的优惠活动\"}";
+        String expectedResponse="{\"errno\":505,\"errmsg\":\"无权限删除此店的优惠活动\"}";
+        JSONAssert.assertEquals(expectedResponse, responseString, true);
+    }
+    /**
+     * @description:删除优惠活动 操作的id不存在 失败
+     * @author: Feiyan Liu
+     * @date: Created at 2020/12/3 11:58
+     */
+    @Test
+    public void deleteCouponActivity3() throws Exception {
+        String token=creatTestToken(1L, 0L, 100);
+
+        String responseString = this.mvc.perform(delete("/coupon/shops/0/couponactivities/1000").header("authorization",token)
+                .contentType("application/json;charset=UTF-8"))
+                .andExpect(status().isNotFound())
+                .andReturn().getResponse().getContentAsString();
+        String expectedResponse="{\"errno\":504,\"errmsg\":\"操作的资源id不存在\"}";
         JSONAssert.assertEquals(expectedResponse, responseString, true);
     }
 }
