@@ -1,5 +1,6 @@
 package cn.edu.xmu.goods.model.vo;
 
+import cn.edu.xmu.goods.model.bo.GoodsSku;
 import cn.edu.xmu.goods.model.bo.GoodsSpu;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -25,8 +26,6 @@ public class GoodsSpuSimpleRetVo {
     private String goodsSn;
     @ApiModelProperty(value = "商品图片链接")
     private String imageUrl;
-    @ApiModelProperty(value = "状态")
-    private Byte state;
     @ApiModelProperty(value = "创建时间")
     private LocalDateTime gmtCreated;
     @ApiModelProperty(value = "编辑时间")
@@ -44,12 +43,12 @@ public class GoodsSpuSimpleRetVo {
 
     public GoodsSpuSimpleRetVo(GoodsSpu goodsSpu){
         this.disabled = goodsSpu.getDisabled();
-        this.gmtCreated = goodsSpu.getGmtCreated();
-        this.gmtModified = goodsSpu.getGmtModified();
+//        this.gmtCreated = goodsSpu.getGmtCreated();
+//        this.gmtModified = goodsSpu.getGmtModified();
         this.goodsSn = goodsSpu.getGoodsSn();
         this.id = goodsSpu.getId();
         this.imageUrl = goodsSpu.getImageUrl();
         this.name = goodsSpu.getName();
-        this.state = goodsSpu.getState();
+
     }
 }

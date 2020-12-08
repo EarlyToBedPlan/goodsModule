@@ -83,6 +83,10 @@ goodsservice:
     multiply: false
     #jwt过期的时间(秒)
     jwtExpire: 3600
+  dav:
+    username: oomall
+    password: admin
+    baseUrl: http://192.168.148.131:8888/webdav/img/
 
 
 #pagehelper分页插件配置

@@ -1,14 +1,12 @@
 package cn.edu.xmu.goods.dao;
 
+import cn.edu.xmu.goods.mapper.BrandPoMapper;
 import cn.edu.xmu.goods.mapper.GoodsSkuPoMapper;
 import cn.edu.xmu.goods.mapper.GoodsSpuPoMapper;
 import cn.edu.xmu.goods.model.bo.GoodsSku;
 import cn.edu.xmu.goods.model.bo.GoodsSpu;
 import cn.edu.xmu.goods.model.bo.Shop;
-import cn.edu.xmu.goods.model.po.GoodsSkuPo;
-import cn.edu.xmu.goods.model.po.GoodsSkuPoExample;
-import cn.edu.xmu.goods.model.po.GoodsSpuPo;
-import cn.edu.xmu.goods.model.po.GoodsSpuPoExample;
+import cn.edu.xmu.goods.model.po.*;
 import cn.edu.xmu.ooad.model.VoObject;
 import cn.edu.xmu.ooad.util.ResponseCode;
 import cn.edu.xmu.ooad.util.ReturnObject;
@@ -44,6 +42,10 @@ public class GoodsSpuDao {
     @Autowired
     private GoodsSpuPoMapper goodsSpuPoMapper;
 
+    @Autowired
+    private BrandPoMapper brandPoMapper;
+
+
     /**
     * @Description:  查询GoodsSpuPo以id
     * @Param: [id]
@@ -67,7 +69,7 @@ public class GoodsSpuDao {
         if (null == goodsSpuPos || goodsSpuPos.isEmpty()) {
             return new ReturnObject<>();
         } else {
-                return new ReturnObject<>(new GoodsSpuPo(goodsSpuPos.get(0)));
+                return new ReturnObject<>(goodsSpuPos.get(0));
             }
         }
     /**
@@ -115,7 +117,7 @@ public class GoodsSpuDao {
         if (null == goodsSpuPos || goodsSpuPos.isEmpty()) {
             return new ReturnObject<>();
         } else {
-            return new ReturnObject<>(new GoodsSpuPo(goodsSpuPos.get(0)));
+            return new ReturnObject<>(goodsSpuPos.get(0));
         }
     }
     /**
@@ -138,29 +140,30 @@ public class GoodsSpuDao {
 
     public ReturnObject<VoObject> updateSpu(GoodsSpu goodsSpu){
         GoodsSpuPo po = goodsSpuPoMapper.selectByPrimaryKey(goodsSpu.getId());
-        GoodsSpuPo newPo = new GoodsSpuPo( goodsSpu.getGoodsSpuPo());
 
-        goodsSpuPoMapper.updateByPrimaryKeySelective(newPo);
+        goodsSpuPoMapper.updateByPrimaryKeySelective(goodsSpu.getGoodsSpuPo());
         return new ReturnObject<VoObject>();
     }
 
 
-    public ReturnObject<VoObject> revokeSpu(Long shopId, Long id){
+    public ReturnObject<VoObject> revokeSpu( Long id){
         GoodsSpuPoExample goodsSpuPoExample =  new GoodsSpuPoExample();
         GoodsSpuPoExample.Criteria criteria = goodsSpuPoExample.createCriteria();
         criteria.andIdEqualTo(id);
         GoodsSpuPo goodsSpuPo = goodsSpuPoMapper.selectByPrimaryKey(id);
-
         //shopid或spuid不存在
         if ( goodsSpuPo == null) {
             return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
         }
 
         try {
-            int state = goodsSkuPoMapper.deleteByPrimaryKey(id);
+            //int state = goodsSkuPoMapper.deleteByPrimaryKey(id);
+            goodsSpuPo.setDisabled((byte)0);
+            int state = goodsSpuPoMapper.updateByPrimaryKeySelective(goodsSpuPo);
             if (state == 0){
                 return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
             }
+
         } catch (DataAccessException e) {
             return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR,
                     String.format("Database Exception：%s", e.getMessage()));
@@ -168,23 +171,34 @@ public class GoodsSpuDao {
             return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR,
                     String.format("Unknown Exception：%s", e.getMessage()));
         }
-
         return new ReturnObject<>();
     }
 
-    public ReturnObject<VoObject> updateSpuOnShelves(Long id){
-        GoodsSpuPo po = goodsSpuPoMapper.selectByPrimaryKey(id);
-        po.setState((byte)0);
 
-        goodsSpuPoMapper.updateByPrimaryKeySelective(po);
-        return new ReturnObject<VoObject>();
+
+    public ReturnObject<VoObject>insertGoodsBrand(Long spuId,Long id)
+    {
+        GoodsSpuPo goodsSpuPo = goodsSpuPoMapper.selectByPrimaryKey(spuId);
+            BrandPo brandPo = brandPoMapper.selectByPrimaryKey(id);
+            if(brandPo == null || goodsSpuPo == null){
+                return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
+            }
+            else goodsSpuPo.setBrandId(id);
+            goodsSpuPoMapper.updateByPrimaryKeySelective(goodsSpuPo);
+            return new ReturnObject<>();
+
     }
 
-    public ReturnObject<VoObject> updateSpuOffShelves(Long id){
-        GoodsSpuPo po = goodsSpuPoMapper.selectByPrimaryKey(id);
-        po.setState((byte)0);
+    public ReturnObject<VoObject>deleteGoodsBrand(Long spuId,Long id)
+    {
+        GoodsSpuPo goodsSpuPo = goodsSpuPoMapper.selectByPrimaryKey(spuId);
+            BrandPo brandPo = brandPoMapper.selectByPrimaryKey(id);
+            if(brandPo == null || goodsSpuPo == null || goodsSpuPo.getBrandId() != id){
+                return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
+            }
+            else goodsSpuPo.setBrandId(0l);
+            goodsSpuPoMapper.updateByPrimaryKeySelective(goodsSpuPo);
+            return new ReturnObject<>();
 
-        goodsSpuPoMapper.updateByPrimaryKeySelective(po);
-        return new ReturnObject<VoObject>();
     }
 }

@@ -1,9 +1,6 @@
 package cn.edu.xmu.goods.model.vo;
 
-import cn.edu.xmu.goods.model.bo.Brand;
-import cn.edu.xmu.goods.model.bo.GoodsCategory;
-import cn.edu.xmu.goods.model.bo.GoodsSpu;
-import cn.edu.xmu.goods.model.bo.SpecItems;
+import cn.edu.xmu.goods.model.bo.*;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.models.auth.In;
@@ -12,6 +9,7 @@ import javax.validation.constraints.NotBlank;
 
 import cn.edu.xmu.ooad.util.JacksonUtil;
 import lombok.Data;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -31,9 +29,9 @@ public class GoodsSpuRetVo {
     @ApiModelProperty(value = "Spu名称")
     private String name;
     @ApiModelProperty(value = "品牌")
-    private Brand brand;
+    private BrandSimpleRetVo brand;
     @ApiModelProperty(value = "种类")
-    private GoodsCategory category;
+    private GoodsCategorySimpleVo category;
     @ApiModelProperty(value = "运费模板id")
     private Long freightId;
     @ApiModelProperty(value = "店铺")
@@ -44,16 +42,15 @@ public class GoodsSpuRetVo {
     private String detail;
     @ApiModelProperty(value = "商品图片链接")
     private String imageUrl;
-    @ApiModelProperty(value = "状态")
-    private Byte state;
+
     @ApiModelProperty(value = "规格")
-    private List<SpecItems> spec;
+    private Spec spec;
     @ApiModelProperty(value = "Sku")
     private List<GoodsSkuSimpleRetVo> sku;
     @ApiModelProperty(value = "是否被逻辑删除")
     private Byte disabled;
     @ApiModelProperty(value = "创建时间")
-    private LocalDateTime gmtCreated;
+    private LocalDateTime gmtCreate;
     @ApiModelProperty(value = "编辑时间")
     private LocalDateTime gmtModified;
     /**
@@ -67,20 +64,22 @@ public class GoodsSpuRetVo {
      */
     //brand category shop sku未初始化
     public GoodsSpuRetVo(GoodsSpu goodsSpu){
-        //this.brandId = goodsSpu.getBrandId();
-        //this.categoryId = goodsSpu.getCategoryId();
-        this.detail = goodsSpu.getDetail();
-        this.disabled = goodsSpu.getDisabled();
-        this.freightId = goodsSpu.getFreightId();
-        this.gmtCreated = goodsSpu.getGmtCreated();
-        this.gmtModified = goodsSpu.getGmtModified();
-        this.goodsSn = goodsSpu.getGoodsSn();
-        this.id = goodsSpu.getId();
-        this.imageUrl = goodsSpu.getImageUrl();
-        //this.shopId = goodsSpu.getShopId();
-        this.name = goodsSpu.getName();
-        this.state = goodsSpu.getState();
-        this.spec = (List<SpecItems>) JacksonUtil.toNode(goodsSpu.getSpec());
+        this.setId(goodsSpu.getId());
+        this.setName(goodsSpu.getName());
+        this.setFreightId(goodsSpu.getFreightId());
+        this.setGoodsSn(goodsSpu.getGoodsSn());
+        this.setDetail(goodsSpu.getDetail());
+        this.setImageUrl(goodsSpu.getImageUrl());
+        try{
+            Spec spec = new Spec( goodsSpu.getSpec());
+            setSpec(spec);
+        }
+        catch (Exception e){
+
+        }
+        this.setGmtCreate(goodsSpu.getGmtCreate());
+        this.setGmtModified(goodsSpu.getGmtModified());
+
     }
 
 }

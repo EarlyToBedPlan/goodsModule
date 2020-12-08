@@ -18,7 +18,7 @@ import java.util.List;
  * @Date: 2020.11.30
  * @Description:类别控制器
  */
-@Api(value = "商品服务", tags = "goods")
+@Api(value = "商品服务", tags = "cn/edu/xmu/goods")
 @RestController
 @RequestMapping(value = "/categories",produces = "application/json;charset=UTF-8")
 public class GoodsCategoryController {

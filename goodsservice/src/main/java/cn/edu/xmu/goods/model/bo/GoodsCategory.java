@@ -2,6 +2,7 @@ package cn.edu.xmu.goods.model.bo;
 
 import cn.edu.xmu.goods.model.po.GoodsCategoryPo;
 import cn.edu.xmu.goods.model.vo.GoodsCategoryRetVo;
+import cn.edu.xmu.goods.model.vo.GoodsCategorySimpleVo;
 import cn.edu.xmu.ooad.model.VoObject;
 import lombok.Data;
 
@@ -17,14 +18,14 @@ public class GoodsCategory implements VoObject {
     private Long id;
     private Long pId;
     private String name;
-    private LocalDateTime gmtGreated;
+    private LocalDateTime gmtGreate;
     private LocalDateTime gmtModified;
 
     public GoodsCategory(GoodsCategoryPo goodsCategoryPo){
         this.id=goodsCategoryPo.getId();
         this.pId=goodsCategoryPo.getPid();
         this.name=goodsCategoryPo.getName();
-        this.gmtGreated=goodsCategoryPo.getGmtCreated();
+        this.gmtGreate=goodsCategoryPo.getGmtCreate();
         this.gmtModified=goodsCategoryPo.getGmtModified();
     }
 
@@ -37,14 +38,17 @@ public class GoodsCategory implements VoObject {
         goodsCategoryRetVo.setId(this.id);
         goodsCategoryRetVo.setPId(this.pId);
         goodsCategoryRetVo.setName(this.name);
-        goodsCategoryRetVo.setGmtCreated(this.gmtGreated.toString());
+        goodsCategoryRetVo.setGmtCreate(this.gmtGreate.toString());
         goodsCategoryRetVo.setGmtModified(this.gmtModified.toString());
         return goodsCategoryRetVo;
     }
 
     @Override
-    public Object createSimpleVo() {
-        return null;
+    public GoodsCategorySimpleVo createSimpleVo() {
+        GoodsCategorySimpleVo goodsCategorySimpleVo = new GoodsCategorySimpleVo();
+        goodsCategorySimpleVo.setId(this.id);
+        goodsCategorySimpleVo.setName(this.name);
+        return goodsCategorySimpleVo;
     }
 
     public GoodsCategoryPo createPo(){
@@ -52,7 +56,7 @@ public class GoodsCategory implements VoObject {
         goodsCategoryPo.setId(this.id);
         goodsCategoryPo.setName(this.name);
         goodsCategoryPo.setPid(this.pId);
-        goodsCategoryPo.setGmtCreated(this.gmtGreated);
+        goodsCategoryPo.setGmtCreate(this.gmtGreate);
         goodsCategoryPo.setGmtModified(this.gmtModified);
         return goodsCategoryPo;
     }

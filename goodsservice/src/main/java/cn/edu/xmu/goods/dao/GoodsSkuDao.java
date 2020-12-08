@@ -10,10 +10,13 @@ import cn.edu.xmu.goods.model.po.GoodsSpuPo;
 import cn.edu.xmu.goods.model.po.GoodsSpuPoExample;
 import cn.edu.xmu.goods.model.vo.BrandRetVo;
 import cn.edu.xmu.goods.model.vo.GoodsSkuRetVo;
+import cn.edu.xmu.goods.model.vo.GoodsSkuSimpleRetVo;
 import cn.edu.xmu.ooad.model.VoObject;
 import cn.edu.xmu.ooad.util.ResponseCode;
 import cn.edu.xmu.ooad.util.ReturnObject;
 import com.github.pagehelper.PageInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Repository;
@@ -33,6 +36,8 @@ public class GoodsSkuDao {
     private GoodsSpuPoMapper goodsSpuPoMapper;
     @Autowired
     private GoodsSkuPoMapper goodsSkuPoMapper;
+
+    public static final Logger logger = LoggerFactory.getLogger(GoodsSkuDao.class);
 
     /**
     * @Description: 分页获取Sku信息
@@ -122,20 +127,21 @@ public class GoodsSkuDao {
     * @Author: Yancheng Lai
     * @Date: 2020/12/3 0:06
     */
-    public ReturnObject<VoObject> revokeSku(Long shopId, Long id){
+    public ReturnObject<VoObject> revokeSku(Long id){
         GoodsSkuPoExample goodsSkuPoExample =  new GoodsSkuPoExample();
         GoodsSkuPoExample.Criteria criteria = goodsSkuPoExample.createCriteria();
         criteria.andIdEqualTo(id);
-        Shop shop = (Shop)getShopById(shopId).getData();
         GoodsSkuPo goodsSkuPo = goodsSkuPoMapper.selectByPrimaryKey(id);
 
         //shopid或skuid不存在
-        if (shop == null|| goodsSkuPo == null) {
+        if ( goodsSkuPo == null) {
             return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
         }
 
         try {
-            int state = goodsSkuPoMapper.deleteByPrimaryKey(id);
+            goodsSkuPo.setState((byte)GoodsSku.State.DELETED.getCode());
+            goodsSkuPo.setDisabled((byte)0);
+            int state = goodsSkuPoMapper.updateByPrimaryKeySelective(goodsSkuPo);
             if (state == 0){
                 return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
             }
@@ -147,7 +153,7 @@ public class GoodsSkuDao {
                     String.format("Unknown Exception：%s", e.getMessage()));
         }
 
-        return new ReturnObject<>();
+        return new ReturnObject<>(ResponseCode.OK,"删除成功");
     }
 
     /** 
@@ -158,20 +164,21 @@ public class GoodsSkuDao {
     * @Date: 2020/12/3 17:09
     */
 
-    public ReturnObject<VoObject> insertGoodsSku(GoodsSku goodsSku) {
+    public ReturnObject<GoodsSkuSimpleRetVo> insertGoodsSku(GoodsSku goodsSku) {
+        logger.info("Dao");
         GoodsSkuPo goodsSkuPo = goodsSku.getPo();
-        ReturnObject<VoObject> retObj = null;
+        ReturnObject<GoodsSkuSimpleRetVo> retObj = null;
         try{
-            int ret = goodsSkuPoMapper.insertSelective(goodsSkuPo);
+            int ret = goodsSkuPoMapper.insert(goodsSkuPo);
             if (ret == 0) {
-                retObj = new ReturnObject<VoObject>(ResponseCode.RESOURCE_ID_NOTEXIST, String.format("Insert false：" + goodsSkuPo.getName()));
+                retObj = new ReturnObject<GoodsSkuSimpleRetVo>(ResponseCode.RESOURCE_ID_NOTEXIST, String.format("Insert false：" + goodsSkuPo.getName()));
             } else {
                 goodsSku.setId(goodsSkuPo.getId());
-                retObj = new ReturnObject<VoObject>(goodsSku);
+                retObj = new ReturnObject<GoodsSkuSimpleRetVo>(goodsSku.createSimpleVo());
             }
         }
         catch (DataAccessException e) {
-                retObj = new ReturnObject<VoObject>(ResponseCode.INTERNAL_SERVER_ERR, String.format("Database Eoor: %s", e.getMessage()));
+                retObj = new ReturnObject<GoodsSkuSimpleRetVo>(ResponseCode.INTERNAL_SERVER_ERR, String.format("Database Error: %s", e.getMessage()));
         }
         return retObj;
     }
@@ -190,4 +197,67 @@ public class GoodsSkuDao {
         return new ReturnObject<VoObject>();
     }
 
+    /** 
+    * @Description: 用id得到goodsSku 
+    * @Param: [id] 
+    * @return: cn.edu.xmu.ooad.util.ReturnObject<cn.edu.xmu.ooad.model.VoObject> 
+    * @Author: Yancheng Lai
+    * @Date: 2020/12/6 16:35
+    */
+
+    public ReturnObject<GoodsSkuPo> getSkuById(Long id){
+        logger.info("dao: get Sku by id: "+ id);
+        GoodsSkuPo goodsSkuPo = goodsSkuPoMapper.selectByPrimaryKey(id);
+        if(goodsSkuPo == null){
+            logger.info("po = null "+ id);
+            return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
+        }
+        logger.info("po != null "+ id);
+        return new  ReturnObject<> (goodsSkuPo);
+    }
+
+    public List<GoodsSkuPo> getSkuBySpuId(Long id){
+        logger.debug("dao: get Sku by Spu id: "+ id);
+        GoodsSkuPoExample example = new GoodsSkuPoExample();
+        GoodsSkuPoExample.Criteria criteria = example.createCriteria();
+        criteria.andGoodsSpuIdEqualTo(id);
+
+        List<GoodsSkuPo> goodsSkuPos = goodsSkuPoMapper.selectByExample(example);
+        return goodsSkuPos;
+    }
+
+    public ReturnObject<VoObject> updateSkuOnShelves(Long id){
+        GoodsSkuPo po = goodsSkuPoMapper.selectByPrimaryKey(id);
+        if(po == null){
+            return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
+        }
+        po.setState((byte)GoodsSku.State.INVALID.getCode());
+        po.setDisabled((byte)0);
+        goodsSkuPoMapper.updateByPrimaryKeySelective(po);
+        return new ReturnObject<VoObject>();
+    }
+
+    public ReturnObject<VoObject> updateSkuOffShelves(Long id){
+        GoodsSkuPo po = goodsSkuPoMapper.selectByPrimaryKey(id);
+        if(po == null){
+            return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
+        }
+        po.setState((byte)GoodsSku.State.WAITING.getCode());
+        po.setDisabled((byte)1);
+        goodsSkuPoMapper.updateByPrimaryKeySelective(po);
+        return new ReturnObject<VoObject>();
+    }
+
+    public ReturnObject<VoObject> setSpuNull(Long skuId){
+        GoodsSkuPoExample example = new GoodsSkuPoExample();
+        GoodsSkuPoExample.Criteria criteria = example.createCriteria();
+        criteria.andGoodsSpuIdEqualTo(skuId);
+
+        List<GoodsSkuPo> goodsSkuPos = goodsSkuPoMapper.selectByExample(example);
+        for (GoodsSkuPo goodsSkuPo : goodsSkuPos){
+            goodsSkuPo.setGoodsSpuId(0l);
+            goodsSkuPoMapper.updateByPrimaryKeySelective(goodsSkuPo);
+        }
+        return new ReturnObject<>(ResponseCode.OK);
+    }
 }

@@ -15,6 +15,8 @@ import cn.edu.xmu.ooad.util.ResponseUtil;
 import cn.edu.xmu.ooad.util.ReturnObject;
 import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -34,60 +36,39 @@ import java.util.Map;
 
 @Api(value = "品牌服务", tags = "brands")
 @RestController /*Restful的Controller对象*/
-@RequestMapping(value = "", produces = "application/json;charset=UTF-8")
+@RequestMapping(value = "/brands", produces = "application/json;charset=UTF-8")
 
 public class BrandController {
 
     @Autowired
     BrandService brandService;
 
+    public static final Logger logger = LoggerFactory.getLogger(BrandController.class);
+
     @Autowired
     private HttpServletResponse httpServletResponse;
 
     @ApiOperation(value = "获得Brand列表")
     @ApiImplicitParams({
-            @ApiImplicitParam(name="page", required = false, dataType="Integer", paramType="query"),
-            @ApiImplicitParam(name="pageSize", required = false, dataType="Integer", paramType="query"),
+            @ApiImplicitParam(name="page", required = true, dataType="String", paramType="query",defaultValue = "1"),
+            @ApiImplicitParam(name="pageSize", required = true, dataType="String", paramType="query",defaultValue = "10"),
     })
     @ApiResponses({
             @ApiResponse(code = 0, message = "成功"),
             @ApiResponse(code = 404,message = "资源不存在")
     })
     @GetMapping("/brands")
-    public Object getBrands(@PathVariable("page") Integer page, @PathVariable("pageSize") Integer pageSize){
-        Object retObject = null;
-        if(page <= 0 || pageSize <= 0) {
-            retObject = Common.getNullRetObj(new ReturnObject<>(ResponseCode.FIELD_NOTVALID), httpServletResponse);
-        } else {
-            ReturnObject<PageInfo<BrandRetVo>> returnObject = brandService.getAllBrands(page, pageSize);
-            ResponseCode code = returnObject.getCode();
-            switch (code){
-                case OK:
-                    PageInfo<BrandRetVo> objs = returnObject.getData();
-                    if (objs != null){
-                        List<Object> voObjs = new ArrayList<>(objs.getList().size());
-                        for (Object data : objs.getList()) {
-                            if (data instanceof VoObject) {
-                                voObjs.add(((VoObject)data).createVo());
-                            }
-                        }
+    public Object getBrands(@RequestParam(required = false) Integer page, @RequestParam(required = false) Integer pageSize){
+        logger.debug("Test for brands");
+        page = (page == null)?1:page;
+        pageSize = (pageSize == null)?10:pageSize;
 
-                        Map<String, Object> ret = new HashMap<>();
-                        ret.put("list", voObjs);
-                        ret.put("total", objs.getTotal());
-                        ret.put("page", objs.getPageNum());
-                        ret.put("pageSize", objs.getPageSize());
-                        ret.put("pages", objs.getPages());
-                        return ResponseUtil.ok(ret);
-                    }else{
-                        return ResponseUtil.ok();
-                    }
-                default:
-                    return ResponseUtil.fail(returnObject.getCode(), returnObject.getErrmsg());
-            }
-        }
 
-        return retObject;
+        ReturnObject<PageInfo<VoObject>> returnObject = brandService.getAllBrands(page, pageSize);
+        return Common.getPageRetObject(returnObject);
+
+
+
     }
 
     @ApiOperation(value = "修改品牌信息")
@@ -145,6 +126,8 @@ public class BrandController {
     @Audit
     @DeleteMapping("/shops/{shopId}/brands/{id}")
     public Object revokeSpu(@PathVariable Long shopId, @PathVariable Long id){
-        return Common.decorateReturnObject(brandService.revokeBrand(shopId, id));
+        return Common.decorateReturnObject(brandService.revokeBrand(id));
     }
+
+
 }

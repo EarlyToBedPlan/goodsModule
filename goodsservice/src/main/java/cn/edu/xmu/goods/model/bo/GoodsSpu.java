@@ -1,14 +1,21 @@
 package cn.edu.xmu.goods.model.bo;
 
 import cn.edu.xmu.goods.model.po.GoodsSpuPo;
-import cn.edu.xmu.goods.model.vo.GoodsSkuRetVo;
-import cn.edu.xmu.goods.model.vo.GoodsSpuRetVo;
-import cn.edu.xmu.goods.model.vo.GoodsSpuSimpleRetVo;
+import cn.edu.xmu.goods.model.vo.*;
+import cn.edu.xmu.goods.service.BrandService;
+import cn.edu.xmu.goods.service.GoodsCategoryService;
+import cn.edu.xmu.goods.service.GoodsSkuService;
+import cn.edu.xmu.goods.service.GoodsSpuService;
 import cn.edu.xmu.ooad.model.VoObject;
+import cn.edu.xmu.ooad.util.JacksonUtil;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.Data;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /** 
@@ -22,40 +29,8 @@ import java.util.Map;
 @Data
 public class GoodsSpu implements VoObject, Serializable {
 
-    public enum State {
-        WAITING(0, "还未开始的"),
-        INVALID(4, "被强制下线的"),
-        DELETED(6, "已被删除的");
 
-        private static final Map<Integer, State> stateMap;
 
-        static { //由类加载机制，静态块初始加载对应的枚举属性到map中，而不用每次取属性时，遍历一次所有枚举值
-            stateMap = new HashMap();
-            for (GoodsSpu.State enum1 : values()) {
-                stateMap.put(enum1.code, enum1);
-            }
-        }
-
-        private int code;
-        private String description;
-
-        State(int code, String description) {
-            this.code = code;
-            this.description = description;
-        }
-
-        public static GoodsSpu.State getTypeByCode(Integer code) {
-            return stateMap.get(code);
-        }
-
-        public int getCode() {
-            return code;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-    }
     private GoodsSpuPo goodsSpuPo;
 
     /**
@@ -66,13 +41,17 @@ public class GoodsSpu implements VoObject, Serializable {
     * @Date: 2020/12/1 19:51
     */
     public GoodsSpu(GoodsSpuPo goodsSpuPo) {
-        this.goodsSpuPo = new GoodsSpuPo(goodsSpuPo);
+        this.goodsSpuPo = goodsSpuPo;
     }
 
+    //注意 注意 由于集成的历史原因 这里的FreightModel还没有初始化
     @Override
     public GoodsSpuRetVo createVo() {
-        return new GoodsSpuRetVo(this);
+           return new GoodsSpuRetVo(this);
     }
+
+
+
 
     @Override
     public GoodsSpuSimpleRetVo createSimpleVo() {
@@ -87,15 +66,14 @@ public class GoodsSpu implements VoObject, Serializable {
         this.setDetail(goodsSpuRetVo.getDetail());
         this.setDisabled(goodsSpuRetVo.getDisabled());
         this.setFreightId(goodsSpuRetVo.getFreightId());
-        this.setGmtModified(goodsSpuRetVo.getGmtModified());
-        this.setGmtCreated(goodsSpuRetVo.getGmtCreated());
         this.setId(goodsSpuRetVo.getId());
         this.setImageUrl(goodsSpuRetVo.getImageUrl());
         this.setName(goodsSpuRetVo.getName());
         this.setShopId(goodsSpuRetVo.getShop().getId());
-        this.setSpec(goodsSpuRetVo.getSpec().toString());
-        this.setState(goodsSpuRetVo.getState());
+        this.setSpec(JacksonUtil.toJson(goodsSpuRetVo.getSpec()));
         this.setGoodsSn(goodsSpuRetVo.getGoodsSn());
+        this.setGmtCreate(goodsSpuRetVo.getGmtCreate());
+        this.setGmtModified(goodsSpuRetVo.getGmtModified());
     }
 
 
@@ -171,13 +149,6 @@ public class GoodsSpu implements VoObject, Serializable {
         goodsSpuPo.setImageUrl(imageUrl);
     }
 
-    public Byte getState() {
-        return goodsSpuPo.getState();
-    }
-
-    public void setState(Byte state) {
-        goodsSpuPo.setState(state);
-    }
 
     public String getSpec() {
         return goodsSpuPo.getSpec();
@@ -195,12 +166,12 @@ public class GoodsSpu implements VoObject, Serializable {
         goodsSpuPo.setDisabled(disabled);
     }
 
-    public LocalDateTime getGmtCreated() {
-        return goodsSpuPo.getGmtCreated();
+    public LocalDateTime getGmtCreate() {
+        return goodsSpuPo.getGmtCreate();
     }
 
-    public void setGmtCreated(LocalDateTime gmtCreated) {
-        goodsSpuPo.setGmtCreated(gmtCreated);
+    public void setGmtCreate(LocalDateTime gmtCreated) {
+        goodsSpuPo.setGmtCreate(gmtCreated);
     }
 
     public LocalDateTime getGmtModified() {

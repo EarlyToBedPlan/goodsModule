@@ -41,13 +41,13 @@ public class GoodsSkuSimpleRetVo {
     */
 
     public GoodsSkuSimpleRetVo(GoodsSku goodSku){
-        this.disabled  = goodSku.getDisabled();
-        this.id = goodSku.getId();
-        this.imageUrl = goodSku.getImageUrl();
-        this.inventory = goodSku.getInventory();
-        this.name = goodSku.getName();
-        this.originalPrice = goodSku.getOriginalPrice();
+        this.setDisabled( goodSku.getDisabled());
+        this.setId (goodSku.getId());
+        this.setImageUrl(goodSku.getImageUrl());
+        this.setInventory( goodSku.getInventory());
+        this.setName(goodSku.getName());
+        this.setOriginalPrice ( goodSku.getOriginalPrice());
         //this.price = goodSku.getPrice();
-        this.skuSn = goodSku.getSkuSn();
+        this.setSkuSn ( goodSku.getSkuSn());
     }
 }

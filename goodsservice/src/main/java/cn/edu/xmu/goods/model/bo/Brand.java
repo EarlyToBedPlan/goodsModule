@@ -2,6 +2,7 @@ package cn.edu.xmu.goods.model.bo;
 
 import cn.edu.xmu.goods.model.po.BrandPo;
 import cn.edu.xmu.goods.model.vo.BrandRetVo;
+import cn.edu.xmu.goods.model.vo.BrandSimpleRetVo;
 import cn.edu.xmu.ooad.model.*;
 import lombok.Data;
 
@@ -34,11 +35,17 @@ public class Brand implements VoObject{
         this.brandPo = brandPo;
     }
 
+    public BrandPo getPo(){
+        return this.brandPo;
+    }
+
     public Brand(BrandRetVo brandRetVo){
         brandPo.setDetail(brandRetVo.getDetail());
         brandPo.setId(brandRetVo.getId());
         brandPo.setImageUrl(brandRetVo.getImageUrl());
         brandPo.setName(brandRetVo.getName());
+        brandPo.setGmtCreate(brandRetVo.getGmtCreate());
+        brandPo.setGmtModified(brandRetVo.getGmtModified());
     }
 
     @Override
@@ -47,8 +54,8 @@ public class Brand implements VoObject{
     }
 
     @Override
-    public Object createSimpleVo() {
-        return null;
+    public BrandSimpleRetVo createSimpleVo() {
+        return new BrandSimpleRetVo(this);
     }
 
     public Long getId() {
@@ -73,6 +80,22 @@ public class Brand implements VoObject{
 
     public void setDetail(String detail) {
         brandPo.setDetail(detail);
+    }
+
+    public LocalDateTime getGmtCreate() {
+        return brandPo.getGmtCreate();
+    }
+
+    public void setGmtCreate(LocalDateTime gmtCreate) {
+        brandPo.setGmtCreate(gmtCreate);
+    }
+
+    public LocalDateTime getGmtModified() {
+        return brandPo.getGmtModified();
+    }
+
+    public void setGmtModified(LocalDateTime gmtModified) {
+        brandPo.setGmtModified(gmtModified);
     }
 
     public String getImageUrl() {

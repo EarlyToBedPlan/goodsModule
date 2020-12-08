@@ -4,6 +4,7 @@ import cn.edu.xmu.goods.dao.GoodsCategoryDao;
 import cn.edu.xmu.goods.model.bo.GoodsCategory;
 import cn.edu.xmu.goods.model.po.GoodsCategoryPo;
 import cn.edu.xmu.goods.model.vo.GoodsCategoryRetVo;
+import cn.edu.xmu.goods.model.vo.GoodsCategorySimpleVo;
 import cn.edu.xmu.ooad.util.ResponseCode;
 import cn.edu.xmu.ooad.util.ReturnObject;
 import org.slf4j.Logger;
@@ -31,7 +32,7 @@ public class GoodsCategoryService {
         GoodsCategory goodsCategory=new GoodsCategory();
         goodsCategory.setPId(pid);
         goodsCategory.setName(name);
-        goodsCategory.setGmtGreated(LocalDateTime.now());
+        goodsCategory.setGmtGreate(LocalDateTime.now());
         goodsCategory.setGmtModified(LocalDateTime.now());
         ReturnObject<GoodsCategoryPo> media=goodsCategoryDao.insertSubcategory(goodsCategory);
         ReturnObject<GoodsCategoryRetVo> result=null;
@@ -45,6 +46,15 @@ public class GoodsCategoryService {
             result=new ReturnObject<>(media.getCode());
         }
         return result;
+    }
+
+    public ReturnObject<GoodsCategorySimpleVo> findSimpleCategory(Long id){
+        GoodsCategory goodsCategory =  goodsCategoryDao.getCategoryById(id).getData();
+        if(goodsCategory == null){
+            return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
+        }
+        GoodsCategorySimpleVo goodsCategorySimpleVo = goodsCategory.createSimpleVo();
+        return new ReturnObject<GoodsCategorySimpleVo>(goodsCategorySimpleVo);
     }
 
     public ReturnObject<Object> updateCategory(long id,String name){

@@ -11,6 +11,6 @@ public class GoodsCategoryRetVo {
     private Long id;
     private Long pId;
     private String name;
-    private String gmtCreated;
+    private String gmtCreate;
     private String gmtModified;
 }

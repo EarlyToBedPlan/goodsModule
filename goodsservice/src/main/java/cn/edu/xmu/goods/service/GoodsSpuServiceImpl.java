@@ -1,21 +1,31 @@
 package cn.edu.xmu.goods.service;
 
+import cn.edu.xmu.goods.dao.BrandDao;
+import cn.edu.xmu.goods.dao.GoodsSkuDao;
 import cn.edu.xmu.goods.dao.GoodsSpuDao;
+import cn.edu.xmu.goods.model.bo.Brand;
 import cn.edu.xmu.goods.model.bo.GoodsSku;
 import cn.edu.xmu.goods.model.bo.GoodsSpu;
+import cn.edu.xmu.goods.model.bo.Shop;
+import cn.edu.xmu.goods.model.po.GoodsSkuPo;
 import cn.edu.xmu.goods.model.po.GoodsSpuPo;
 import cn.edu.xmu.goods.model.po.GoodsSpuPoExample;
-import cn.edu.xmu.goods.model.vo.GoodsSpuRetVo;
+import cn.edu.xmu.goods.model.vo.*;
 import cn.edu.xmu.ooad.model.VoObject;
+import cn.edu.xmu.ooad.util.ImgHelper;
 import cn.edu.xmu.ooad.util.ResponseCode;
 import cn.edu.xmu.ooad.util.ReturnObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -31,6 +41,26 @@ public class GoodsSpuServiceImpl implements GoodsSpuService{
     @Autowired
     GoodsSpuDao goodsSpuDao;
 
+    @Autowired
+    GoodsCategoryService categoryService;
+
+    @Autowired
+    BrandDao brandDao;
+
+    @Autowired
+    GoodsSkuDao goodsSkuDao;
+
+    //@Autowired
+    //ShopService shopService;
+
+    @Value("${goodsservice.dav.username}")
+    private String davUsername;
+
+    @Value("${goodsservice.dav.password}")
+    private String davPassword;
+
+    @Value("${goodsservice.dav.baseUrl}")
+    private String baseUrl;
     /**
     * @Description: 查询 Spu 以 Id
     * @Param: [id]
@@ -44,10 +74,29 @@ public class GoodsSpuServiceImpl implements GoodsSpuService{
 
         GoodsSpuPo goodsSpuPo = goodsSpuDao.getGoodsSpuPoById(id).getData();
         if(goodsSpuPo != null) {
-            logger.debug("findSpuById : " + returnObject);
-            returnObject = new ReturnObject<> (new GoodsSpu(goodsSpuPo).createVo());
+            logger.info("findSpuById : " + returnObject);
+            GoodsSpuRetVo goodsSpuRetVo = new GoodsSpuRetVo(new GoodsSpu(goodsSpuPo));
+            goodsSpuRetVo.setCategory(categoryService.findSimpleCategory(goodsSpuPo.getCategoryId()).getData());
+            Brand brand = brandDao.getBrandById(goodsSpuPo.getBrandId()).getData();
+            if(brand == null)
+                logger.info("brand == null");
+            BrandSimpleRetVo brandSimpleRetVo = brand.createSimpleVo();
+            if (brandSimpleRetVo == null){
+                logger.info("simplevo == null");
+            }
+            else logger.info("brand!=null");
+            goodsSpuRetVo.setBrand(brandSimpleRetVo);
+            goodsSpuRetVo.setFreightId(goodsSpuPo.getFreightId());
+            List<GoodsSkuPo> Skus = goodsSkuDao.getSkuBySpuId(goodsSpuPo.getId());
+            List<GoodsSkuSimpleRetVo> retSkus = new ArrayList<>();
+            for( GoodsSkuPo goodsSkuPo : Skus) {
+                retSkus.add(new GoodsSkuSimpleRetVo(new GoodsSku(goodsSkuPo)));
+            }
+            goodsSpuRetVo.setSku(retSkus);
+            //goodsSpuRetVo.setShop((ShopSimpleRetVo) shopService.getShopById(goodsSpuPo.getShopId()).getData().createSimpleVo());
+            returnObject = new ReturnObject<> (goodsSpuRetVo);
         } else {
-            logger.debug("findSpuById: Not Found");
+            logger.info("findSpuById: Not Found");
             returnObject = new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
         }
 
@@ -92,42 +141,52 @@ public class GoodsSpuServiceImpl implements GoodsSpuService{
         }
     }
 
+
+
     @Transactional
-    public ReturnObject<List<GoodsSpu.State>>findSpuStates(){
-        List<GoodsSpu.State> lst = null;
+    public ReturnObject<VoObject> revokeSpu(  Long id){
+        ReturnObject<VoObject> ret =  goodsSpuDao.revokeSpu( id);
+        if(ret.getCode() == ResponseCode.OK){
+            ReturnObject<VoObject> skuret = goodsSkuDao.setSpuNull(id);
+                return skuret;
+            }
 
-        for (GoodsSpu.State e : GoodsSpu.State.values()) {
-            lst.add(e);
-        }
-
-        return new ReturnObject<>( (lst));
+        return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
     }
 
-    @Transactional
-    public ReturnObject<VoObject> revokeSpu( Long shopId, Long id){
-        if (goodsSpuDao.checkSpuId(shopId,id)) {
-            return goodsSpuDao.revokeSpu(shopId, id);
-        } else {
-            return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
-        }
 
-    }
 
     @Transactional
-    public ReturnObject<VoObject> updateSpuOnShelves(Long shopId,Long id){
-        if (goodsSpuDao.checkSpuId(shopId,id)) {
-            return goodsSpuDao.updateSpuOnShelves(id);
-        } else {
-            return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
-        }
-    }
+    public ReturnObject uploadSpuImg(Long id, MultipartFile multipartFile){
+        ReturnObject<GoodsSpu> goodsSpuReturnObject = new ReturnObject<>(new GoodsSpu(goodsSpuDao.getGoodsSpuPoById(id).getData()));
 
-    @Transactional
-    public ReturnObject<VoObject> updateSpuOffShelves(Long shopId,Long id){
-        if (goodsSpuDao.checkSpuId(shopId,id)) {
-            return goodsSpuDao.updateSpuOnShelves(id);
-        } else {
-            return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
+        if(goodsSpuReturnObject.getCode() == ResponseCode.RESOURCE_ID_NOTEXIST) {
+            return goodsSpuReturnObject;
         }
+        GoodsSpu goodsSpu = goodsSpuReturnObject.getData();
+
+        ReturnObject returnObject = new ReturnObject();
+        try{
+            returnObject = ImgHelper.remoteSaveImg(multipartFile,2,davUsername, davPassword,baseUrl);
+            if(returnObject.getCode()!=ResponseCode.OK){
+                return returnObject;
+            }
+
+            String oldFilename = goodsSpu.getImageUrl();
+            goodsSpu.setImageUrl(returnObject.getData().toString());
+
+            ReturnObject updateReturnObject = goodsSpuDao.updateSpu(goodsSpu);
+            if(updateReturnObject.getCode()==ResponseCode.FIELD_NOTVALID) {
+                ImgHelper.deleteRemoteImg(returnObject.getData().toString(), davUsername, davPassword, baseUrl);
+                return updateReturnObject;
+            }
+            if(oldFilename!=null) {
+                ImgHelper.deleteRemoteImg(oldFilename, davUsername, davPassword,baseUrl);
+            }
+        }
+        catch (IOException e){
+            return new ReturnObject(ResponseCode.FILE_NO_WRITE_PERMISSION);
+        }
+        return returnObject;
     }
 }

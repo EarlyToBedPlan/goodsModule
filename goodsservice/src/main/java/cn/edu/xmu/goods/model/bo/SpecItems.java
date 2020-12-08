@@ -18,7 +18,10 @@ public class SpecItems implements VoObject, Serializable {
 
     private String name;
 
-
+    public SpecItems(Integer id,String name){
+        this.name = name;
+        this.specid = id;
+    }
     @Override
     public Object createVo() {
         return null;

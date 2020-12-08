@@ -1,5 +1,6 @@
 package cn.edu.xmu.goods.model.vo;
 
+import cn.edu.xmu.goods.model.bo.Spec;
 import cn.edu.xmu.goods.model.bo.SpecItems;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -22,6 +23,6 @@ public class GoodsSpecVo {
     private String name;
 
     @ApiModelProperty(value = "Spec对象")
-    private List<SpecItems> specItems;
+    private Spec spec;
 
 }

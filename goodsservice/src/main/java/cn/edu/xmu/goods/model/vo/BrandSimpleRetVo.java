@@ -23,8 +23,8 @@ public class BrandSimpleRetVo {
     private String imageUrl;
 
     public BrandSimpleRetVo(Brand brand){
-        this.id = brand.getId();
-        this.name = brand.getName();
-        this.imageUrl = brand.getImageUrl();
+        this.setId( brand.getId());
+        this.setName ( brand.getName());
+        this.setImageUrl( brand.getImageUrl());;
     }
 }

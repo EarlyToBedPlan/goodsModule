@@ -32,8 +32,8 @@ public class FloatPrice implements VoObject {
         this.activityPrive=floatPricePo.getActivityPrice();
         this.beginTime=floatPricePo.getBeginTime();
         this.endTime=floatPricePo.getEndTime();
-        this.gmtCreated=floatPricePo.getGmtCreated();
-        this.gmtModified=floatPricePo.getGmtModified();
+//        this.gmtCreated=floatPricePo.getGmtCreated();
+//        this.gmtModified=floatPricePo.getGmtModified();
         this.valid=floatPricePo.getValid();
         this.quantity=floatPricePo.getQuantity();
         this.createdBy=floatPricePo.getCreatedBy();
@@ -54,8 +54,8 @@ public class FloatPrice implements VoObject {
         floatPricePo.setBeginTime(this.beginTime);
         floatPricePo.setEndTime(this.endTime);
         floatPricePo.setCreatedBy(this.createdBy);
-        floatPricePo.setGmtCreated(this.gmtCreated);
-        floatPricePo.setGmtModified(this.gmtModified);
+//        floatPricePo.setGmtCreated(this.gmtCreated);
+//        floatPricePo.setGmtModified(this.gmtModified);
         floatPricePo.setGoodsSkuId(this.goodsSkuId);
         floatPricePo.setInvalidBy(this.invaildBy);
         floatPricePo.setQuantity(this.quantity);
