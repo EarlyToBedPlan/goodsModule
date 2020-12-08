@@ -83,7 +83,7 @@ public class ShopDao implements InitializingBean{
             returnObject=new ReturnObject<>(shopPoMapper.insert(shopPo));
             logger.debug(("success apply shop:")+shopPo.getId());
             shopPo.setState((byte) 0);
-            shopPo.setGmtCreated(localDateTime);
+            shopPo.setGmtCreate(localDateTime);
             shopPo.setGmtModified(localDateTime);
         }catch (DataAccessException e){
             if (Objects.requireNonNull(e.getMessage()).contains("auth_shop.shop_name_uindex")) {
