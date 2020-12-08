@@ -13,6 +13,9 @@ import cn.edu.xmu.coupon.model.po.CouponSkuPo;
 //import cn.edu.xmu.goods.service.GoodsSkuServiceClass;
 import cn.edu.xmu.goods.model.bo.GoodsSku;
 import cn.edu.xmu.goods.model.bo.GoodsSpu;
+import cn.edu.xmu.goods.model.po.GoodsSkuPo;
+import cn.edu.xmu.goods.model.vo.GoodsSkuRetVo;
+import cn.edu.xmu.goods.service.GoodsSkuService;
 import cn.edu.xmu.ooad.model.VoObject;
 import cn.edu.xmu.ooad.util.ImgHelper;
 import cn.edu.xmu.ooad.util.ResponseCode;
@@ -195,50 +198,51 @@ public class CouponActivityServiceImpl implements CouponActivityService {
         }
     }
 
-    @Override
-    public ReturnObject addCouponSku(Long shopId,Long[] SkuId , Long activityId) {
-        return null;
-    }
-
     /**
-     * @param SkuId
+     * @description: 管理员为己方已有优惠活动新增商品范围 可以批量新增
+     * @param shopId
+     * @param skuIds
      * @param activityId
-     * @description:管理员为己方已有优惠活动新增商品范围 可以批量新增
      * @return: cn.edu.xmu.ooad.util.ReturnObject
      * @author: Feiyan Liu
-     * @date: Created at 2020/11/30 21:08
+     * @date: Created at 2020/12/8 22:50
      */
+
     @Transactional
     @Override
-    public ReturnObject addCouponSku(Long shopId, Long SkuId, Long activityId) {
+    public ReturnObject addCouponSku(Long shopId, Long[] skuIds, Long activityId) {
         try {
             //1. 判断活动状态是否待上线
-            CouponSkuPo couponSkuPo = couponSkuDao.getCouponSkuById(SkuId);
-            CouponActivityPo couponActivityPo = couponActivityDao.getCouponActivityById(couponSkuPo.getActivityId());
-            if (couponActivityPo.getState() != (byte) CouponActivity.State.WAITING.getCode())
-                return new ReturnObject<>(ResponseCode.COUPONACT_STATENOTALLOW, String.format("优惠活动非待上线,不允许修改限定范围 id：" + couponSkuPo.getActivityId()));
+            CouponActivityPo couponActivityPo = couponActivityDao.getCouponActivityById(activityId);
+            if (CouponActivity.Timeline.getTypeByTime(couponActivityPo.getBeginTime(),couponActivityPo.getEndTime())==CouponActivity.Timeline.WAITING)
+                return new ReturnObject<>(ResponseCode.COUPONACT_STATENOTALLOW);
             //2.判断商品是否存在
             //若商品不存在
-            GoodsSku goodsSku=goodsSkuService
-            if (goodsSkuService.findSkuById(SkuId) == null) {
-                return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST, String.format("新增优惠商品失败，优惠商品不存在 id：" + SkuId));
+            for(Long id:skuIds)
+            {
+                GoodsSkuRetVo goodsSkuRetVo=goodsSkuService.getSkuById(id).getData();
+                if (goodsSkuRetVo==null) {
+                    return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
+                }
+                //3.判断此商品的shopId和管理员的shopId是否相同
+//            if (goodsSkuService.getSkuById(SkuId).getData().getShop().getId() != shopId)
+//                return new ReturnObject<>(ResponseCode.RESOURCE_ID_OUTSCOPE, String.format("新增优惠商品失败，此商品非用户店铺的商品"));
+                //4.判断商品同一时段是否有其他活动（不同时间段有不同活动是可以的）
+                ReturnObject<CouponActivity> couponActivityReturnObject = getCouponActivityById(activityId);
+                CouponActivity couponActivity = couponActivityReturnObject.getData();
+                Boolean result = (Boolean) checkActivityParticipation(id, couponActivity.getBeginTime(), couponActivity.getEndTime()).getData();
+                if (result) {
+                    logger.debug("the Sku id=" + id + " already has other activity at the same time.");
+                    return new ReturnObject<>(ResponseCode.SKU_PARTICIPATE);
+                }
+                couponSkuDao.addCouponSku(id, activityId);
             }
-            //3.判断此商品的shopId和管理员的shopId是否相同
-            if (goodsSkuService.findSkuById(SkuId).getData().getShop().getId() != shopId)
-                return new ReturnObject<>(ResponseCode.RESOURCE_ID_OUTSCOPE, String.format("新增优惠商品失败，此商品非用户店铺的商品"));
-            //4.判断商品同一时段是否有其他活动（不同时间段有不同活动是可以的）
-            ReturnObject<CouponActivity> couponActivityReturnObject = getCouponActivityById(activityId);
-            CouponActivity couponActivity = couponActivityReturnObject.getData();
-            Boolean result = (Boolean) checkActivityParticipation(SkuId, couponActivity.getBeginTime(), couponActivity.getEndTime()).getData();
-            if (result) {
-                logger.debug("the Sku id=" + SkuId + " already has other activity at the same time.");
-                return new ReturnObject<>(ResponseCode.Sku_PARTICIPATE);
-            }
-            return couponSkuDao.addCouponSku(SkuId, activityId);
+
         } catch (Exception e) {
             logger.error("发生了严重的服务器内部错误：" + e.getMessage());
             return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR);
         }
+        return new ReturnObject();
     }
 
 
