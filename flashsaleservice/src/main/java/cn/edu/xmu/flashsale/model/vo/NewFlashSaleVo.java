@@ -2,6 +2,7 @@ package cn.edu.xmu.flashsale.model.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
+import javax.validation.constraints.Future;
 import java.time.LocalDateTime;
 
 /**
@@ -9,6 +10,7 @@ import java.time.LocalDateTime;
  * @create 2020-12-03 18:00
  */
 public class NewFlashSaleVo {
+    @Future
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime flashDate;
 
