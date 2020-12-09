@@ -6,6 +6,8 @@ import cn.edu.xmu.coupon.model.po.CouponActivityPo;
 import cn.edu.xmu.coupon.model.po.CouponActivityPoExample;
 import cn.edu.xmu.ooad.util.ResponseCode;
 import cn.edu.xmu.ooad.util.ReturnObject;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import org.apache.ibatis.annotations.Mapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,20 +90,34 @@ public class CouponActivityDao implements InitializingBean {
      * @author: Feiyan Liu
      * @date: Created at 2020/11/30 9:10
      */
-    public List<CouponActivityPo> getCouponActivity(Long shopId) {
+    public PageInfo<CouponActivityPo> getCouponActivity(Long shopId,LocalDateTime beginTime,LocalDateTime endTime,Integer page,Integer pageSize) {
+        PageHelper.startPage(page,pageSize);
         CouponActivityPoExample example = new CouponActivityPoExample();
         CouponActivityPoExample.Criteria criteria = example.createCriteria();
+        criteria.andStateEqualTo((byte)CouponActivity.State.ONLINE.getCode());//查询处于上线状态的活动
         if (shopId != null)
             criteria.andShopIdEqualTo(shopId);
-        criteria.andStateEqualTo((byte)CouponActivity.State.NEW.getCode());
-        List<CouponActivityPo> couponActivityPos = null;
-        try {
-            couponActivityPos = couponActivityMapper.selectByExample(example);
-            logger.debug("getOnlineCouponActivity: retCouponActivities" + couponActivityPos);
-        } catch (Exception e) {
-            logger.error("发生了严重的服务器内部错误：" + e.getMessage());
+        //查询明天开始的活动
+        if(beginTime!=null&&endTime==null&&beginTime.isAfter(LocalDateTime.now()))
+        {
+            criteria.andBeginTimeLessThan(beginTime);
+            criteria.andBeginTimeGreaterThan(LocalDateTime.now());
         }
-        return couponActivityPos;
+        //查询待上线的活动
+        else if(beginTime!=null&&endTime==null)
+            criteria.andBeginTimeGreaterThan(LocalDateTime.now());
+        //查询进行中的活动
+        else if(beginTime!=null&&endTime!=null)
+        {
+            criteria.andBeginTimeLessThan(LocalDateTime.now());
+            criteria.andEndTimeGreaterThan(LocalDateTime.now());
+        }
+        //查询已下线的活动
+        else if(beginTime==null&&endTime!=null)
+            criteria.andEndTimeLessThan(LocalDateTime.now());
+        List<CouponActivityPo> couponActivityPos = couponActivityMapper.selectByExample(example);
+        logger.debug("getOnlineCouponActivity: retCouponActivities" + couponActivityPos);
+        return new PageInfo<>(couponActivityPos);
     }
 
 
@@ -113,19 +129,15 @@ public class CouponActivityDao implements InitializingBean {
      * @author: Feiyan Liu
      * @date: Created at 2020/11/30 16:54
      */
-    public List<CouponActivityPo> getInvalidCouponActivity(Long shopId) {
+    public PageInfo<CouponActivityPo> getInvalidCouponActivity(Long shopId,Integer page,Integer pageSize) {
+        PageHelper.startPage(page,pageSize);
         CouponActivityPoExample example = new CouponActivityPoExample();
         CouponActivityPoExample.Criteria criteria = example.createCriteria();
-        criteria.andStateEqualTo((byte) CouponActivity.State.CANCELLED.getCode());
+        criteria.andStateEqualTo((byte) CouponActivity.State.OFFLINE.getCode());
         criteria.andShopIdEqualTo(shopId);
-        List<CouponActivityPo> couponActivityPos = null;
-        try {
-            couponActivityPos = couponActivityMapper.selectByExample(example);
+        List<CouponActivityPo> couponActivityPos = couponActivityMapper.selectByExample(example);
             logger.debug("getOfflineCouponActivity: retCouponActivities" + couponActivityPos);
-        } catch (Exception e) {
-            logger.error("发生了严重的服务器内部错误：" + e.getMessage());
-        }
-        return couponActivityPos;
+        return new PageInfo<>(couponActivityPos);
     }
 //    public boolean checkSku(Long id)
 //    {
@@ -210,7 +222,7 @@ public class CouponActivityDao implements InitializingBean {
 
     /**
      * @param id
-     * @description: 下线优惠活动（修改状态，逻辑删除）
+     * @description: 下线优惠活动
      * @return: cn.edu.xmu.ooad.util.ReturnObject
      * @author: Feiyan Liu
      * @date: Created at 2020/12/2 10:35
@@ -219,7 +231,7 @@ public class CouponActivityDao implements InitializingBean {
         ReturnObject returnObject = null;
         CouponActivityPo po = new CouponActivityPo();
         po.setId(id);
-        po.setState((byte) CouponActivity.State.CANCELLED.getCode());
+        po.setState((byte) CouponActivity.State.OFFLINE.getCode());
         try {
             int ret = couponActivityMapper.updateByPrimaryKeySelective(po);
             if (ret == 0) {

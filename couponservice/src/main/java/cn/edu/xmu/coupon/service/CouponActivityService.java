@@ -7,6 +7,7 @@ import com.github.pagehelper.PageInfo;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -34,11 +35,11 @@ public interface CouponActivityService {
     /**
      * @description:查看所有上线的优惠活动（不需要登录）
      */
-    ReturnObject<PageInfo<VoObject>> getCouponActivities(Long shopId, Integer timelineCode, Integer page, Integer pagesize);
+    ReturnObject<PageInfo<VoObject>> getCouponActivities(Long shopId, LocalDateTime beginTime, LocalDateTime endTime, Integer page, Integer pageSize);
 
-    /**
-     * @description:查看所以下线的优惠活动（只能查看本店的）
-     */
+        /**
+         * @description:查看所以下线的优惠活动（只能查看本店的）
+         */
     ReturnObject<PageInfo<VoObject>> getInvalidCouponActivities(Integer page, Integer pagesize, Long shopId);
 
     /**

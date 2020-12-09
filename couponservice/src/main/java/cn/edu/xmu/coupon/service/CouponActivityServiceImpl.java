@@ -25,6 +25,7 @@ import cn.edu.xmu.ooad.util.ResponseCode;
 import cn.edu.xmu.ooad.util.ReturnObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import io.swagger.models.auth.In;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,11 +35,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.sql.Time;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author Feiyan Liu
@@ -148,7 +151,7 @@ public class CouponActivityServiceImpl implements CouponActivityService {
 
     /**
      * @param page
-     * @param pagesize
+     * @param pageSize
      * @description:获取上线活动列表 无需登录
      * @return: cn.edu.xmu.ooad.util.ReturnObject<com.github.pagehelper.PageInfo < cn.edu.xmu.ooad.model.VoObject>>
      * @author: Feiyan Liu
@@ -156,26 +159,15 @@ public class CouponActivityServiceImpl implements CouponActivityService {
      */
     @Transactional
     @Override
-    public ReturnObject<PageInfo<VoObject>> getCouponActivities(Long shopId, Integer timelineCode, Integer page, Integer pagesize) {
+    public ReturnObject<PageInfo<VoObject>> getCouponActivities(Long shopId, LocalDateTime beginTime,LocalDateTime endTime, Integer page, Integer pageSize) {
         try {
-            List<CouponActivityPo> couponActivitiesPos = couponActivityDao.getCouponActivity(shopId);
-            List<VoObject> couponActivityVos = new ArrayList<>(couponActivitiesPos.size());
-            for (CouponActivityPo po : couponActivitiesPos) {
-                if(timelineCode==null)
-                {
-                    CouponActivity couponActivity = new CouponActivity(po);
-                    couponActivityVos.add(couponActivity);
-                }
-                else if(timelineCode!=null&&CouponActivity.Timeline.getTypeByTime(po.getBeginTime(),po.getEndTime()).getCode()==timelineCode)
-                {
-                        CouponActivity couponActivity = new CouponActivity(po);
-                        couponActivityVos.add(couponActivity);
-                }
-                else
-                    continue;
-            }
-            PageHelper.startPage(page, pagesize);
-            PageInfo<VoObject> returnObject = new PageInfo<>(couponActivityVos);
+            PageInfo<CouponActivityPo> couponActivitiesPos = couponActivityDao.getCouponActivity(shopId,beginTime,endTime,page,pageSize);
+            List<VoObject> couponActivities = couponActivitiesPos.getList().stream().map(CouponActivity::new).collect(Collectors.toList());
+            PageInfo<VoObject> returnObject = new PageInfo<>(couponActivities);
+            returnObject.setPages(couponActivitiesPos.getPages());
+            returnObject.setPageNum(couponActivitiesPos.getPageNum());
+            returnObject.setPageSize(couponActivitiesPos.getPageSize());
+            returnObject.setTotal(couponActivitiesPos.getTotal());
             return new ReturnObject<>(returnObject);
         } catch (Exception e) {
             logger.error("发生了严重的服务器内部错误：" + e.getMessage());
@@ -185,7 +177,7 @@ public class CouponActivityServiceImpl implements CouponActivityService {
 
     /**
      * @param page
-     * @param pagesize
+     * @param pageSize
      * @description:获取本店下线活动列表
      * @return: cn.edu.xmu.ooad.util.ReturnObject<com.github.pagehelper.PageInfo < cn.edu.xmu.ooad.model.VoObject>>
      * @author: Feiyan Liu
@@ -193,16 +185,15 @@ public class CouponActivityServiceImpl implements CouponActivityService {
      */
     @Transactional
     @Override
-    public ReturnObject<PageInfo<VoObject>> getInvalidCouponActivities(Integer page, Integer pagesize, Long shopId) {
+    public ReturnObject<PageInfo<VoObject>> getInvalidCouponActivities(Integer page, Integer pageSize, Long shopId) {
         try {
-            List<CouponActivityPo> couponActivitiesPos = couponActivityDao.getInvalidCouponActivity(shopId);
-            List<VoObject> couponActivityVos = new ArrayList<>(couponActivitiesPos.size());
-            for (CouponActivityPo po : couponActivitiesPos) {
-                CouponActivity couponActivity = new CouponActivity(po);
-                couponActivityVos.add(couponActivity.createVo());
-            }
-            PageHelper.startPage(page, pagesize);
-            PageInfo<VoObject> returnObject = new PageInfo<>(couponActivityVos);
+            PageInfo<CouponActivityPo> couponActivitiesPos = couponActivityDao.getInvalidCouponActivity(shopId,page,pageSize);
+            List<VoObject> couponActivities = couponActivitiesPos.getList().stream().map(CouponActivity::new).collect(Collectors.toList());
+            PageInfo<VoObject> returnObject = new PageInfo<>(couponActivities);
+            returnObject.setPages(couponActivitiesPos.getPages());
+            returnObject.setPageNum(couponActivitiesPos.getPageNum());
+            returnObject.setPageSize(couponActivitiesPos.getPageSize());
+            returnObject.setTotal(couponActivitiesPos.getTotal());
             return new ReturnObject<>(returnObject);
         } catch (Exception e) {
             logger.error("发生了严重的服务器内部错误：" + e.getMessage());
@@ -248,7 +239,6 @@ public class CouponActivityServiceImpl implements CouponActivityService {
                 }
                 couponSkuDao.addCouponSku(id, activityId);
             }
-
         } catch (Exception e) {
             logger.error("发生了严重的服务器内部错误：" + e.getMessage());
             return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR);
@@ -288,7 +278,7 @@ public class CouponActivityServiceImpl implements CouponActivityService {
     /**
      * @param id
      * @param page
-     * @param pagesize
+     * @param pageSize
      * @description: 查看优惠活动中的商品
      * @return: cn.edu.xmu.ooad.util.ReturnObject<com.github.pagehelper.PageInfo < cn.edu.xmu.ooad.model.VoObject>>
      * @author: Feiyan Liu
@@ -296,20 +286,23 @@ public class CouponActivityServiceImpl implements CouponActivityService {
      */
     @Transactional
     @Override
-    public ReturnObject<PageInfo<VoObject>> getCouponSku(Long id, Integer page, Integer pagesize) {
+    public ReturnObject<PageInfo<VoObject>> getCouponSku(Long id, Integer page, Integer pageSize) {
         try {
             CouponActivityPo couponActivityPo = couponActivityDao.getCouponActivityById(id);
             if (couponActivityPo == null)
                 return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
-            List<CouponSkuPo> couponSkuPos = couponSkuDao.getCouponSkuListByActivityId(id);
-            List<VoObject> couponSkuVos = new ArrayList<>(couponSkuPos.size());
-            for (CouponSkuPo po : couponSkuPos) {
-                CouponSku couponSku = new CouponSku(po);
-                couponSkuVos.add(couponSku.createSimpleVo());
-            }
-            PageHelper.startPage(page, pagesize);
-            PageInfo<VoObject> returnObject = new PageInfo<>(couponSkuVos);
+            PageInfo<CouponSkuPo> couponSkuPos = couponSkuDao.getCouponSkuListByActivityId(id,page,pageSize);
+
+            List<VoObject> couponSkus = couponSkuPos.getList().stream().map(CouponSku::new).collect(Collectors.toList());
+
+            PageInfo<VoObject> returnObject = new PageInfo<>(couponSkus);
+            returnObject.setPages(couponSkuPos.getPages());
+            returnObject.setPageNum(couponSkuPos.getPageNum());
+            returnObject.setPageSize(couponSkuPos.getPageSize());
+            returnObject.setTotal(couponSkuPos.getTotal());
+
             return new ReturnObject<>(returnObject);
+
         } catch (Exception e) {
             logger.error("发生了严重的服务器内部错误：" + e.getMessage());
             return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR);
@@ -375,7 +368,7 @@ public class CouponActivityServiceImpl implements CouponActivityService {
 
 
     /**
-     * @param SkuId
+     * @param skuId
      * @param beginTime
      * @param endTime
      * @description: 判断商品在一个时间段内 是否已经参加了优惠活动
@@ -383,10 +376,10 @@ public class CouponActivityServiceImpl implements CouponActivityService {
      * @author: Feiyan Liu
      * @date: Created at 2020/11/30 20:06
      */
-    public ReturnObject checkCouponActivityParticipation(Long SkuId, LocalDateTime beginTime, LocalDateTime endTime) {
+    public ReturnObject checkCouponActivityParticipation(Long skuId, LocalDateTime beginTime, LocalDateTime endTime) {
         try {
             //检测活动商品表中，此商品是否已参加此活动
-            List<CouponSkuPo> couponSkuPos = couponSkuDao.getCouponSkuListBySkuId(SkuId);
+            List<CouponSkuPo> couponSkuPos = couponSkuDao.getCouponSkuListBySkuId(skuId);
             for (CouponSkuPo po : couponSkuPos) {
                 //判断商品参与的活动与即将加入的活动时间是否冲突
                 CouponActivityPo couponActivityPo = couponActivityDao.getCouponActivityById(po.getActivityId());
@@ -506,7 +499,7 @@ public class CouponActivityServiceImpl implements CouponActivityService {
      * @param id
      * @param state
      * @param page
-     * @param pagesize
+     * @param pageSize
      * @description: 买家获取自己的优惠券列表
      * @return: cn.edu.xmu.ooad.util.ReturnObject<com.github.pagehelper.PageInfo < cn.edu.xmu.ooad.model.VoObject>>
      * @author: Feiyan Liu
@@ -514,27 +507,14 @@ public class CouponActivityServiceImpl implements CouponActivityService {
      */
     @Transactional
     @Override
-    public ReturnObject<PageInfo<VoObject>> getCouponByUserId(Long id, Integer state, Integer page, Integer pagesize) {
+    public ReturnObject<PageInfo<VoObject>> getCouponByUserId(Long id, Integer state, Integer page, Integer pageSize) {
         PageInfo<VoObject> returnObject = null;
         try {
-            List<CouponPo> couponPos = couponDao.getCouponListByUserId(id, state);
-            List<VoObject> couponVos = new ArrayList<>(couponPos.size());
-            for (CouponPo po : couponPos) {
-                //根据活动id获取活动详情 和优惠券信息一起组装成vo返回
-                CouponActivityPo couponActivityPo = couponActivityDao.getCouponActivityById(po.getActivityId());
-                Coupon coupon = new Coupon(po, couponActivityPo);
-                couponVos.add(coupon.createSimpleVo());
-            }
-            PageHelper.startPage(page, pagesize);
-            logger.error("发生了严重的服务器内部错误：pagehelper" );
-            returnObject = new PageInfo<>(couponVos);
-            logger.error("发生了严重的服务器内部错误 返回失败：" );
-            return new ReturnObject<>(returnObject);
+           return new ReturnObject<>(couponDao.getCouponListByUserId(id,state,page,pageSize));
         } catch (Exception e) {
             logger.error("发生了严重的服务器内部错误ha：" + e.getMessage());
             return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR);
         }
-
     }
 
     /**

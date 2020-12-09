@@ -6,6 +6,9 @@ import cn.edu.xmu.coupon.model.po.CouponSkuPo;
 import cn.edu.xmu.coupon.model.po.CouponSkuPoExample;
 import cn.edu.xmu.ooad.util.ResponseCode;
 import cn.edu.xmu.ooad.util.ReturnObject;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -70,36 +73,22 @@ public class CouponSkuDao implements InitializingBean {
      * @author: Feiyan Liu
      * @date: Created at 2020/11/30 22:17
      */
-    public List<CouponSkuPo> getCouponSkuListByActivityId(Long id) {
+    public PageInfo<CouponSkuPo> getCouponSkuListByActivityId(Long id,Integer page,Integer pageSize) {
+        PageHelper.startPage(page,pageSize);
         CouponSkuPoExample example = new CouponSkuPoExample();
         CouponSkuPoExample.Criteria criteria = example.createCriteria();
         criteria.andActivityIdEqualTo(id);
-        List<CouponSkuPo> couponSkuPos = null;
-        try {
-            couponSkuPos = couponSkuMapper.selectByExample(example);
-            if (couponSkuPos.isEmpty()) {
-                logger.debug("getCouponSkuByActivityId: Not Found");
-            } else logger.debug("getCouponSkuByActivityId: retCouponSku" + couponSkuPos);
-        } catch (Exception e) {
-            logger.error("发生了严重的服务器内部错误：" + e.getMessage());
-        }
-        return couponSkuPos;
+        List<CouponSkuPo> couponSkuPos = couponSkuMapper.selectByExample(example);
+        logger.debug("getCouponSkuByActivityId: retCouponSku" + couponSkuPos);
+        return new PageInfo<>(couponSkuPos);
     }
 
     public List<CouponSkuPo> getCouponSkuListBySkuId(Long id) {
         CouponSkuPoExample example = new CouponSkuPoExample();
         CouponSkuPoExample.Criteria criteria = example.createCriteria();
         criteria.andSkuIdEqualTo(id);
-        List<CouponSkuPo> couponSkuPos = null;
-        try {
-            couponSkuPos = couponSkuMapper.selectByExample(example);
-            if (couponSkuPos.isEmpty()) {
-                logger.debug("getCouponSkuByActivityId: Not Found");
-            }
-            logger.debug("getCouponSkuByActivityId: retCouponSku" + couponSkuPos);
-        } catch (Exception e) {
-            logger.error("发生了严重的服务器内部错误：" + e.getMessage());
-        }
+        List<CouponSkuPo> couponSkuPos = couponSkuMapper.selectByExample(example);
+        logger.debug("getCouponSkuByActivityId: retCouponSku" + couponSkuPos);
         return couponSkuPos;
     }
 
