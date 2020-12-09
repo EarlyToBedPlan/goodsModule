@@ -3,17 +3,18 @@ package cn.edu.xmu.goods.service;
 import cn.edu.xmu.goods.dao.BrandDao;
 import cn.edu.xmu.goods.dao.GoodsSkuDao;
 import cn.edu.xmu.goods.dao.GoodsSpuDao;
-import cn.edu.xmu.goods.model.bo.Brand;
-import cn.edu.xmu.goods.model.bo.GoodsSku;
-import cn.edu.xmu.goods.model.bo.GoodsSpu;
+import cn.edu.xmu.goods.model.bo.*;
 import cn.edu.xmu.goods.model.po.GoodsSkuPo;
 import cn.edu.xmu.goods.model.po.GoodsSpuPo;
 import cn.edu.xmu.goods.model.vo.*;
 import cn.edu.xmu.ooad.model.VoObject;
 import cn.edu.xmu.ooad.util.ImgHelper;
+import cn.edu.xmu.ooad.util.JacksonUtil;
 import cn.edu.xmu.ooad.util.ResponseCode;
 import cn.edu.xmu.ooad.util.ReturnObject;
+import cn.edu.xmu.shop.dao.ShopDao;
 import cn.edu.xmu.shop.model.bo.Shop;
+import cn.edu.xmu.shop.model.po.ShopPo;
 import cn.edu.xmu.shop.model.vo.ShopSimpleVo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import cn.edu.xmu.shop.service.*;
+import cn.edu.xmu.shop.model.vo.ShopVo;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -52,6 +54,9 @@ public class GoodsSpuServiceImpl implements GoodsSpuService{
     @Autowired
     GoodsSkuDao goodsSkuDao;
 
+    @Autowired
+    ShopDao shopDao;
+
     //@Autowired
     //ShopService shopService;
 
@@ -78,8 +83,9 @@ public class GoodsSpuServiceImpl implements GoodsSpuService{
         if(goodsSpuPo != null) {
             logger.info("findSpuById : " + returnObject);
             GoodsSpuRetVo goodsSpuRetVo = new GoodsSpuRetVo(new GoodsSpu(goodsSpuPo));
-            goodsSpuRetVo.setCategory(categoryService.findSimpleCategory(goodsSpuPo.getCategoryId()).getData());
-            Shop shop = shopService.getShopById(goodsSpuPo.getShopId()).getData();
+            goodsSpuRetVo.setCategory(categoryService.findCategorySimpleVoById(goodsSpuPo.getCategoryId()).getData());
+            ShopPo shopPo = shopDao.getShopById(goodsSpuPo.getShopId());
+            Shop shop = new Shop(shopPo);
             ShopSimpleVo shopSimpleVo = shop.createSimpleVo();
             goodsSpuRetVo.setShop(shopSimpleVo);
             Brand brand = brandDao.getBrandById(goodsSpuPo.getBrandId()).getData();
@@ -92,6 +98,14 @@ public class GoodsSpuServiceImpl implements GoodsSpuService{
             else logger.info("brand!=null");
             goodsSpuRetVo.setBrand(brandSimpleRetVo);
             goodsSpuRetVo.setFreightId(goodsSpuPo.getFreightId());
+            Spec s = new Spec();
+            String specJson = goodsSpuPo.getSpec();
+            s.setName(JacksonUtil.parseObject(specJson,"name",String.class));
+            s.setId(JacksonUtil.parseObject(specJson,"id",Long.class));
+            List<SpecItems> l = JacksonUtil.parseObjectList(specJson,"specItems",SpecItems.class);
+            s.setSpecItems(JacksonUtil.parseObjectList(specJson,"specItems",SpecItems.class));
+            goodsSpuRetVo.setSpec(s);
+
             List<GoodsSkuPo> Skus = goodsSkuDao.getSkuBySpuId(goodsSpuPo.getId());
             List<GoodsSkuSimpleRetVo> retSkus = new ArrayList<>();
             for( GoodsSkuPo goodsSkuPo : Skus) {
@@ -194,4 +208,14 @@ public class GoodsSpuServiceImpl implements GoodsSpuService{
         }
         return returnObject;
     }
+
+
+
+    @Override
+    public ReturnObject<VoObject> setCategoryDefault(Long id,Long defaultValue){
+        return goodsSpuDao.setCategoryIdDefault(id,defaultValue);
+    }
+
+
+
 }

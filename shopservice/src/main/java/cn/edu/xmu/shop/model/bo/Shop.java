@@ -3,6 +3,7 @@ package cn.edu.xmu.shop.model.bo;
 import cn.edu.xmu.shop.model.po.ShopPo;
 import cn.edu.xmu.ooad.model.VoObject;
 import cn.edu.xmu.shop.model.vo.ShopSimpleVo;
+import cn.edu.xmu.shop.model.vo.ShopVo;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -21,6 +22,10 @@ public class Shop implements VoObject{
     Byte state=(byte) State.UNAUDITED.code;
     LocalDateTime gmtCreate;
     LocalDateTime gmtModified;
+
+    public Shop() {
+
+    }
 
     public enum State {
         UNAUDITED(0, "未审核"),
@@ -61,23 +66,18 @@ public class Shop implements VoObject{
         }
     }
 
-<<<<<<< HEAD
-    long id;
-
-    String shopName;
-
-    Byte state=(byte) State.UNAUDITED.code;
-
     public Shop(ShopPo po){
-        this.id=po.getId();
-        this.shopName = po.getName();
+        this.setId(po.getId());
+        this.setShopName(po.getName());
+        this.setState(po.getState());
+        this.setGmtCreate(po.getGmtCreate());
+        this.setGmtModified(po.getGmtModified());
     }
-=======
->>>>>>> 346295d4bdc832d301fdf5bf9ae70dbae953fb08
+
 
     @Override
-    public VoObject createVo() {
-        return null;
+    public ShopVo createVo() {
+        return new ShopVo(this);
     }
 
     @Override

@@ -1,9 +1,13 @@
 package cn.edu.xmu.goods.service;
 
 import cn.edu.xmu.goods.dao.GoodsCategoryDao;
+import cn.edu.xmu.goods.dao.GoodsSpuDao;
 import cn.edu.xmu.goods.model.bo.GoodsCategory;
 import cn.edu.xmu.goods.model.po.GoodsCategoryPo;
+import cn.edu.xmu.goods.model.po.GoodsSpuPo;
 import cn.edu.xmu.goods.model.vo.GoodsCategoryRetVo;
+import cn.edu.xmu.goods.model.vo.GoodsCategorySimpleVo;
+import cn.edu.xmu.ooad.model.VoObject;
 import cn.edu.xmu.ooad.util.ResponseCode;
 import cn.edu.xmu.ooad.util.ReturnObject;
 import org.slf4j.Logger;
@@ -24,6 +28,9 @@ public class GoodsCategoryServiceImpl implements GoodsCategoryService{
 
     @Autowired
     GoodsCategoryDao goodsCategoryDao;
+
+    @Autowired
+    GoodsSpuDao goodsSpuDao;
 
     /**
      * @Author：谢沛辰
@@ -47,7 +54,7 @@ public class GoodsCategoryServiceImpl implements GoodsCategoryService{
         GoodsCategory goodsCategory=new GoodsCategory();
         goodsCategory.setPId(pid);
         goodsCategory.setName(name);
-        goodsCategory.setGmtGreated(LocalDateTime.now());
+        goodsCategory.setGmtGreate(LocalDateTime.now());
         goodsCategory.setGmtModified(LocalDateTime.now());
         ReturnObject<GoodsCategoryPo> media=goodsCategoryDao.insertSubcategory(goodsCategory);
         ReturnObject<GoodsCategoryRetVo> result=null;
@@ -90,9 +97,16 @@ public class GoodsCategoryServiceImpl implements GoodsCategoryService{
      * @Return: ReturnObject<Object>
      * @Description: 删除类别
      */
-    //！！！！！！彦丞必看，此处需要加入一个接口，这个接口传入categoryId，将所有对应的sku中的categoryID全部清0
+
     @Override
     public ReturnObject<Object> deleteCategory(long id){
+        ReturnObject<Object> returnObject = goodsSpuDao.setCategoryIdDefault(id,0l);
         return goodsCategoryDao.deleteCategory(id);
+    }
+
+    @Override
+    public ReturnObject<GoodsCategorySimpleVo> findCategorySimpleVoById(Long categoryId){
+        ReturnObject<GoodsCategory> ret = goodsCategoryDao.getCategoryById(categoryId);
+        return new ReturnObject<>(ret.getData().createSimpleVo());
     }
 }

@@ -109,7 +109,7 @@ public class GoodsServiceControllerTest5 {
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType("application/json;charset=UTF-8"))
                 .andReturn().getResponse().getContentAsString();
-        String expectedResponse1 = "{\"errno\":0,\"errmsg\":\"该ID对应的SKU不存在\"}";
+        String expectedResponse1 = "{\"sn\":\"s_114514\",\"name\":\"name\",\"originalPrice\":114514,\"configuration\":\"conf\",\"weight\":80,\"imageUrl\":null,\"inventory\":114514,\"detail\":\"Detail set\"}\n";
         JSONAssert.assertEquals(responseString1,expectedResponse1, true);
 
 

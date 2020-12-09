@@ -45,4 +45,6 @@ public interface GoodsSkuService {
     public ReturnObject<VoObject> updateSkuOnShelves(Long shopId,Long id);
 
     public ReturnObject<VoObject> updateSkuOffShelves(Long shopId,Long id);
+
+    public Integer getPriceById(Long goodsSkuId);
 }

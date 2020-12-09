@@ -30,11 +30,9 @@ public interface GoodsSpuService {
 
     public ReturnObject<VoObject> updateSpu(GoodsSpu vo,Long shopId,Long id);
 
-
-
     public ReturnObject<VoObject> revokeSpu(Long id);
 
-
+    public ReturnObject<VoObject> setCategoryDefault(Long id,Long defaultValue);
 
     public ReturnObject uploadSpuImg(Long id, MultipartFile multipartFile);
 }

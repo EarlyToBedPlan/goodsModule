@@ -1,7 +1,9 @@
 package cn.edu.xmu.goods.service;
 
+import cn.edu.xmu.goods.dao.FloatPriceDao;
 import cn.edu.xmu.goods.dao.GoodsSkuDao;
 import cn.edu.xmu.goods.dao.GoodsSpuDao;
+import cn.edu.xmu.goods.model.bo.FloatPrice;
 import cn.edu.xmu.goods.model.bo.GoodsSku;
 import cn.edu.xmu.goods.model.bo.GoodsSpu;
 import cn.edu.xmu.goods.model.po.GoodsSkuPo;
@@ -12,6 +14,10 @@ import cn.edu.xmu.ooad.model.VoObject;
 import cn.edu.xmu.ooad.util.ImgHelper;
 import cn.edu.xmu.ooad.util.ResponseCode;
 import cn.edu.xmu.ooad.util.ReturnObject;
+import cn.edu.xmu.shop.dao.ShopDao;
+import cn.edu.xmu.shop.model.bo.Shop;
+import cn.edu.xmu.shop.model.po.ShopPo;
+import cn.edu.xmu.shop.model.vo.ShopVo;
 import cn.edu.xmu.shop.service.ShopService;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -24,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,6 +51,12 @@ public class GoodsSkuServiceImpl implements GoodsSkuService {
     GoodsSpuDao goodsSpuDao;
 
     @Autowired
+    GoodsCategoryService goodsCategoryService;
+
+    @Autowired
+    FloatPriceDao floatPriceDao;
+
+    @Autowired
     ShopService shopService;
     @Value("${goodsservice.dav.username}")
     private String davUsername;
@@ -53,6 +66,9 @@ public class GoodsSkuServiceImpl implements GoodsSkuService {
 
     @Value("${goodsservice.dav.baseUrl}")
     private String baseUrl;
+
+    @Autowired
+    ShopDao shopDao;
 
     /** 
     * @Description: 分页获取sku信息 
@@ -196,14 +212,11 @@ public class GoodsSkuServiceImpl implements GoodsSkuService {
             logger.info("GoodsSku != null");
         }
         GoodsSkuRetVo retVo = goodsSku.createVo();
-            logger.info("skuponame = "+goodsSkuReturnObject.getData().getName());
-            logger.info("sku name == " + goodsSku.getName());
-            logger.info("retvo name == " + retVo.getName());
-            logger.info("retvo skusn == "+retVo.getSkuSn());
         GoodsSpuPo goodsSpuPo = goodsSpuDao.getGoodsSpuPoBySkuId(id).getData();
         GoodsSpu goodsSpu = new GoodsSpu(goodsSpuPo);
         GoodsSpuRetVo goodsSpuRetVo = goodsSpu.createVo();
         retVo.setGoodsSpu(goodsSpuRetVo);
+        retVo.setPrice(getPriceById(id));
         if(retVo.getGoodsSpu() != null){
             logger.info("GoodsSpu != null");
         }
@@ -297,8 +310,33 @@ public class GoodsSkuServiceImpl implements GoodsSkuService {
 
     }
 
+    public ShopVo getShopBySkuId(Long skuId){
+        GoodsSkuPo goodsSkuPo = goodsSkuDao.getSkuById(skuId).getData();
+        Long spuId = goodsSkuPo.getGoodsSpuId();
+        GoodsSpuPo goodsSpuPo = goodsSpuDao.getGoodsSpuPoById(spuId).getData();
+        Long shopId = goodsSpuPo.getShopId();
+        ShopPo po = shopDao.getShopById(shopId);
+        ShopVo shopVo = new ShopVo(new Shop(po));
+        return shopVo;
+    }
+
     public List<GoodsSku> getSkuListByShopId(Long shopId) {
         return goodsSkuDao.getSkuListByShopId(shopId);
+    }
+
+    @Override
+    @Transactional
+    public Integer getPriceById(Long goodsSkuId) {
+        Integer result=null;
+        ReturnObject<List> listReturnObject = floatPriceDao.getFloatPriceBySkuId(goodsSkuId);
+        List<FloatPrice> target=listReturnObject.getData();
+        for(FloatPrice aFloatPrice : target){
+            if(LocalDateTime.now().isAfter(aFloatPrice.getBeginTime())&&LocalDateTime.now().isBefore(aFloatPrice.getEndTime())){
+                Integer item= Math.toIntExact(aFloatPrice.getActivityPrive());
+                result = item;
+            }
+        }
+        return result;
     }
 
 }

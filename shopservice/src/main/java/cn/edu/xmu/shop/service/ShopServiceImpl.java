@@ -45,8 +45,8 @@ public class ShopServiceImpl implements ShopService {
                 return new ReturnObject<>(ResponseCode.USER_HASSHOP);
             }
             ShopPo newShopPo=shopDao.insertShop(shop);
-            VoObject returnVo=shop.createVo();
-            return new ReturnObject<>(returnVo);
+            VoObject returnVo=(VoObject)shop.createVo();
+            return new ReturnObject<VoObject>(returnVo);
 
         } catch (Exception e) {
             logger.error("发生了严重的服务器内部错误：" + e.getMessage());

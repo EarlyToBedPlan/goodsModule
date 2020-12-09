@@ -1,5 +1,6 @@
 package cn.edu.xmu.goods.model.vo;
 
+import cn.edu.xmu.goods.model.bo.GoodsCategory;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -16,5 +17,6 @@ public class GoodsCategorySimpleVo {
     Long id;
     @ApiModelProperty(value = "名称")
     String name;
+
 
 }
