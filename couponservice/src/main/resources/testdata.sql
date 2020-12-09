@@ -38,9 +38,9 @@ UNLOCK TABLES;
 -- Dumping data for table `coupon_spu`
 --
 
-LOCK TABLES `coupon_spu` WRITE;
-/*!40000 ALTER TABLE `coupon_spu` DISABLE KEYS */;
-/*!40000 ALTER TABLE `coupon_spu` ENABLE KEYS */;
+LOCK TABLES `coupon_sku` WRITE;
+/*!40000 ALTER TABLE `coupon_sku` DISABLE KEYS */;
+/*!40000 ALTER TABLE `coupon_sku` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

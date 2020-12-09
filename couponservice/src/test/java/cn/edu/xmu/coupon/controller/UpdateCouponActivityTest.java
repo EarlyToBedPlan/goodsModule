@@ -31,8 +31,6 @@ public class UpdateCouponActivityTest {
     @Autowired
     private MockMvc mvc;
 
-    @Autowired
-    private WebApplicationContext wac;
     private static final Logger logger = LoggerFactory.getLogger(CouponServiceApplication.class);
 
     private final String creatTestToken(Long userId, Long departId, int expireTime) {

@@ -28,6 +28,13 @@ public class GoodsCategoryDao {
     @Autowired
     GoodsCategoryPoMapper goodsCategoryPoMapper;
 
+    /**
+     * @Author：谢沛辰
+     * @Date: 2020/12/8
+      * @Param: Long pid
+     * @Return: ReturnObject<List>
+     * @Description:根据父类id查找子类
+     */
     public ReturnObject<List> getCategoryByPID(Long pid){
         GoodsCategoryPoExample example=new GoodsCategoryPoExample();
         GoodsCategoryPoExample.Criteria criteria= example.createCriteria();
@@ -36,7 +43,7 @@ public class GoodsCategoryDao {
         try {
             goodsCategorys= goodsCategoryPoMapper.selectByExample(example);
         } catch (DataAccessException e) {
-            StringBuilder message = new StringBuilder().append("getUserByName: ").append(e.getMessage());
+            StringBuilder message = new StringBuilder().append("getCategoryByPID: ").append(e.getMessage());
             logger.error(message.toString());
         }
         if(goodsCategorys==null || goodsCategorys.isEmpty())
@@ -50,12 +57,25 @@ public class GoodsCategoryDao {
         return new ReturnObject<>(list);
     }
 
+    /**
+     * @Author：谢沛辰
+     * @Date: 2020/12/8
+      * @Param: GoodsCategory goodsCategory
+     * @Return: ReturnObject<GoodsCategoryPo>
+     * @Description:新建子类
+     */
     public ReturnObject<GoodsCategoryPo> insertSubcategory(GoodsCategory goodsCategory){
         GoodsCategoryPo goodsCategoryPo=goodsCategory.createPo();
         ReturnObject<GoodsCategoryPo> retObj=null;
 
         try{
-            retObj=new ReturnObject<>(goodsCategoryPoMapper.selectByPrimaryKey((long)goodsCategoryPoMapper.insert(goodsCategoryPo)));
+            int ret=goodsCategoryPoMapper.insertSelective(goodsCategoryPo);
+            if(ret!=0) {
+                retObj=new ReturnObject<>(goodsCategoryPo);
+            } else{
+                retObj=new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
+            }
+            //retObj=new ReturnObject<>(goodsCategoryPoMapper.selectByPrimaryKey((long)goodsCategoryPoMapper.insertSelective(goodsCategoryPo)));
         }
         catch (DataAccessException e) {
             // 其他数据库错误
@@ -70,6 +90,13 @@ public class GoodsCategoryDao {
         return retObj;
     }
 
+    /**
+     * @Author: 谢沛辰
+     * @Date: 2020/12/8
+      * @Param: Long id
+     * @Return: ReturnObject<Object>
+     * @Description:
+     */
     public ReturnObject<Object> deleteCategory(Long id){
         ReturnObject<Object> retObj = null;
         try{
@@ -79,7 +106,15 @@ public class GoodsCategoryDao {
                 logger.debug("deleteCategory: id not exist = " + id);
                 retObj = new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST, String.format("id不存在：" + id));
             }else {
-            retObj=new ReturnObject<>();
+                ReturnObject<List> media=getCategoryByPID(id);
+                GoodsCategoryPo tool=new GoodsCategoryPo();
+                List<GoodsCategoryPo> needToModified=media.getData();
+                for(int i=0;i<needToModified.size();i++){
+                    tool=needToModified.get(i);
+                    tool.setPid((long) 0);
+                    goodsCategoryPoMapper.updateByPrimaryKey(tool);
+                }
+                retObj=new ReturnObject<>();
             }
         }
         catch(DataAccessException e)
@@ -96,6 +131,13 @@ public class GoodsCategoryDao {
         return retObj;
     }
 
+    /**
+     * @Author：谢沛辰
+     * @Date: 2020/12/8
+      * @Param: GoodsCategory goodsCategory
+     * @Return: ReturnObject<Object>
+     * @Description:更新类别
+     */
     public ReturnObject<Object> updateCategory(GoodsCategory goodsCategory){
         ReturnObject<Object> retObj =null;
         GoodsCategoryPo categoryPo=goodsCategory.createPo();
@@ -123,6 +165,13 @@ public class GoodsCategoryDao {
         return retObj;
     }
 
+    /**
+     * @Author：谢沛辰
+     * @Date: 2020/12/8
+      * @Param: Long id
+     * @Return: ReturnObject<GoodsCategory>
+     * @Description:根据id获取类别
+     */
     public ReturnObject<GoodsCategory> getCategoryById(Long id){
         GoodsCategoryPo categoryPo= null;
         List<GoodsCategoryPo> goodsCategorys=null;

@@ -45,7 +45,7 @@ public class GetCouponSpuTest {
      */
     @Test
     public void getCouponSpu1() throws Exception {
-    String responseString = this.mvc.perform(get("/coupon/couponactivities/1/spus"))
+    String responseString = this.mvc.perform(get("/coupon/couponactivities/1/skus"))
             .andExpect(status().isOk())
             .andExpect(content().contentType("application/json;charset=UTF-8"))
             .andReturn().getResponse().getContentAsString();
@@ -59,8 +59,8 @@ public class GetCouponSpuTest {
      * @date: Created at 2020/12/3 15:30
      */
     @Test
-    public void getCouponSpu2() throws Exception {
-        String responseString = this.mvc.perform(get("/coupon/couponactivities/100/spus"))
+    public void getCouponSku2() throws Exception {
+        String responseString = this.mvc.perform(get("/coupon/couponactivities/100/skus"))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType("application/json;charset=UTF-8"))
                 .andReturn().getResponse().getContentAsString();

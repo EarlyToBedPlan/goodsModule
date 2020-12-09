@@ -73,7 +73,7 @@
             targetPackage/targetProject:同javaModelGenerator
         -->
         <sqlMapGenerator targetPackage="cn.edu.xmu.coupon.mapper"
-                         targetProject="src/main/resources/cn">
+                         targetProject="src/main/resources">
             <property name="enableSubPackages" value="false" />
         </sqlMapGenerator>
 
@@ -150,7 +150,7 @@
             <generatedKey column="id" sqlStatement="Mysql" identity="true"/>
         </table>
 
-        <table tableName="coupon_spu" domainObjectName="CouponSpuPo"
+        <table tableName="coupon_sku" domainObjectName="CouponSkuPo"
                enableCountByExample="false" enableUpdateByExample="false"
                enableDeleteByExample="false" enableSelectByExample="true"
                selectByExampleQueryId="false">

@@ -22,12 +22,12 @@ public interface CouponActivityService {
     /**
      * @description:创建优惠活动
      */
-    ReturnObject<VoObject> createCouponActivity(Long shopId, Long spuId, CouponActivity couponActivity);
+    ReturnObject<VoObject> createCouponActivity(Long shopId, Long SkuId, CouponActivity couponActivity);
 
     /**
      * @description:查看所有上线的优惠活动（不需要登录）
      */
-    ReturnObject<PageInfo<VoObject>> getCouponActivities(Long shopId, Integer stateCode, Integer page, Integer pagesize);
+    ReturnObject<PageInfo<VoObject>> getCouponActivities(Long shopId, Integer timelineCode, Integer page, Integer pagesize);
 
     /**
      * @description:查看所以下线的优惠活动（只能查看本店的）
@@ -37,12 +37,12 @@ public interface CouponActivityService {
     /**
      * @description:管理员为己方已有优惠活动新增商品范围
      */
-    ReturnObject addCouponSpu(Long shopId, Long spuId, Long activityId);
+    ReturnObject addCouponSku(Long shopId, Long[] SkuArray, Long activityId);
 
     /**
      * @description:查看优惠活动中的商品
      */
-    ReturnObject<PageInfo<VoObject>> getCouponSpu(Long id, Integer page, Integer pagesize);
+    ReturnObject<PageInfo<VoObject>> getCouponSku(Long id, Integer page, Integer pagesize);
 
     /**
      * @description:上传图片
@@ -52,12 +52,12 @@ public interface CouponActivityService {
     /**
      * @description:管理员下线优惠活动
      */
-    ReturnObject deleteCouponActivity(Long id);
+    ReturnObject deleteCouponActivity(Long shopId,Long id);
 
     /**
      * @description:店家删除已方某优惠券活动的某限定范围
      */
-    ReturnObject deleteCouponSpu(Long id);
+    ReturnObject deleteCouponSku(Long shopId,Long id);
 
     /**
      * @description:修改优惠活动信息
@@ -78,7 +78,7 @@ public interface CouponActivityService {
     /**
      * @description:买家领取活动优惠券
      */
-    ReturnObject getCoupon(Long userId, Long id);
+    ReturnObject userGetCoupon(Long userId, Long id);
 
     /**
      * @description:优惠券退回

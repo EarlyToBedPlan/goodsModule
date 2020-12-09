@@ -5,6 +5,7 @@ import cn.edu.xmu.ooad.model.VoObject;
 import cn.edu.xmu.shop.model.vo.ShopSimpleVo;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,8 +15,12 @@ import java.util.Map;
 @Data
 public class Shop implements VoObject{
 
-    public void setState(State state) {
-    }
+
+    long id;
+    String shopName;
+    Byte state=(byte) State.UNAUDITED.code;
+    LocalDateTime gmtCreate;
+    LocalDateTime gmtModified;
 
     public enum State {
         UNAUDITED(0, "未审核"),
@@ -56,6 +61,7 @@ public class Shop implements VoObject{
         }
     }
 
+<<<<<<< HEAD
     long id;
 
     String shopName;
@@ -66,9 +72,11 @@ public class Shop implements VoObject{
         this.id=po.getId();
         this.shopName = po.getName();
     }
+=======
+>>>>>>> 346295d4bdc832d301fdf5bf9ae70dbae953fb08
 
     @Override
-    public Object createVo() {
+    public VoObject createVo() {
         return null;
     }
 
