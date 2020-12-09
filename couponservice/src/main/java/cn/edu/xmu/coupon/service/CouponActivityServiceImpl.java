@@ -207,7 +207,6 @@ public class CouponActivityServiceImpl implements CouponActivityService {
      * @author: Feiyan Liu
      * @date: Created at 2020/12/8 22:50
      */
-
     @Transactional
     @Override
     public ReturnObject addCouponSku(Long shopId, Long[] skuIds, Long activityId) {
@@ -658,6 +657,8 @@ public class CouponActivityServiceImpl implements CouponActivityService {
     public ReturnObject returnCoupon(Long id) {
         try {
             CouponPo couponPo = couponDao.getCouponById(id);
+            if(couponPo==null)
+                return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
             return couponDao.updateCouponState(id, Coupon.State.CLAIMED.getCode());
         } catch (Exception e) {
             logger.error("发生了严重的服务器内部错误：" + e.getMessage());
