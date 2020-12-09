@@ -1,13 +1,11 @@
 package cn.edu.xmu.goods.model.bo;
 
 import cn.edu.xmu.goods.model.po.GoodsSpuPo;
-import cn.edu.xmu.goods.model.vo.GoodsSpuRetVo;
-import cn.edu.xmu.goods.model.vo.GoodsSpuSimpleRetVo;
+import cn.edu.xmu.goods.model.vo.*;
 import cn.edu.xmu.ooad.model.VoObject;
 import cn.edu.xmu.goods.model.po.*;
 import lombok.Data;
-import cn.edu.xmu.goods.model.vo.GoodsSkuRetVo;
-import cn.edu.xmu.goods.model.vo.GoodsSkuSimpleRetVo;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -103,6 +101,19 @@ public class GoodsSku implements VoObject, Serializable {
         goodsSkuPo.setGmtCreate(gmtCreate);
     }
 
+    public GoodsSku(GoodsSkuPostVo goodsSkuPostVo){
+        this.goodsSkuPo = new GoodsSkuPo();
+        this.setSkuSn(goodsSkuPostVo.getSn());
+        this.setName(goodsSkuPostVo.getName());
+        this.setOriginalPrice(goodsSkuPostVo.getOriginalPrice());
+        this.setConfiguration(goodsSkuPostVo.getConfiguration());
+        this.setWeight(goodsSkuPostVo.getWeight());
+        this.setImageUrl(goodsSkuPostVo.getImageUrl());
+        this.setInventory(goodsSkuPostVo.getInventory());
+        this.setDetail(goodsSkuPostVo.getDetail());
+        this.setGmtCreate(LocalDateTime.now());
+        this.setGmtModified(LocalDateTime.now());
+    }
 
     /**
     * @Description: Vo构造 
@@ -112,6 +123,7 @@ public class GoodsSku implements VoObject, Serializable {
     * @Date: 2020/12/3 15:41
     */
     public GoodsSku(GoodsSkuRetVo goodsSkuRetVo){
+        this.goodsSkuPo = new GoodsSkuPo();
         this.state = State.WAITING;
         this.goodsSkuPo.setDetail(goodsSkuRetVo.getDetail());
         this.goodsSkuPo.setDisabled(goodsSkuRetVo.getDisabled());
@@ -126,6 +138,10 @@ public class GoodsSku implements VoObject, Serializable {
         this.goodsSkuPo.setInventory(goodsSkuRetVo.getInventory());
         this.goodsSkuPo.setGmtCreate(goodsSkuRetVo.getGmtCreate());
         this.goodsSkuPo.setGmtModified(goodsSkuRetVo.getGmtModified());
+    }
+
+    public GoodsSku(OrderItemVo vo){
+        setId(vo.getSkuId());
     }
     /** 
     * @Description: 得到Po 

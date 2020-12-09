@@ -39,11 +39,11 @@ public class GoodsServiceControllerTest {
     @Test
     public void getAllSkuStates() throws Exception{
         //String token = this.login("13088admin", "123456");
-        String responseString = this.mvc.perform(get("/cn/edu/xmu/goods/skus/states"))
+        String responseString = this.mvc.perform(get("/goods/skus/states"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json;charset=UTF-8"))
                 .andReturn().getResponse().getContentAsString();
-        String expectedResponse = "{\"errno\":\"0\",\"errmsg\":\"成功\",\"data\":[{\"code\":0,\"name\":\"未上架\"},{\"code\":4,\"name\":\"上架\"},{\"code\":6,\"name\":\"已删除\"}]}";
+        String expectedResponse = "{\"errno\":0,\"data\":[{\"code\":0,\"name\":\"未上架\"},{\"code\":4,\"name\":\"上架\"},{\"code\":6,\"name\":\"已删除\"}],\"errmsg\":\"成功\"}";
         JSONAssert.assertEquals(expectedResponse, responseString, true);
     }
 

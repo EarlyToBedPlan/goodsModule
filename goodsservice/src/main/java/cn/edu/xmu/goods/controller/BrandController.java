@@ -5,6 +5,7 @@ import cn.edu.xmu.goods.model.bo.GoodsSku;
 import cn.edu.xmu.goods.model.vo.BrandRetVo;
 import cn.edu.xmu.goods.model.vo.GoodsSkuRetVo;
 import cn.edu.xmu.goods.model.vo.GoodsSpuRetVo;
+import cn.edu.xmu.goods.model.vo.UpdateBrandVoBody;
 import cn.edu.xmu.goods.service.BrandService;
 import cn.edu.xmu.ooad.annotation.Audit;
 import cn.edu.xmu.ooad.annotation.LoginUser;
@@ -23,6 +24,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -71,6 +73,21 @@ public class BrandController {
 
     }
 
+    @ApiOperation(value = "获得Brand信息")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name="id", required = true, dataType="Long", paramType="path")
+    })
+    @ApiResponses({
+            @ApiResponse(code = 0, message = "成功"),
+            @ApiResponse(code = 404,message = "资源不存在")
+    })
+    @GetMapping("/brands/{id}")
+    public Object getBrands(@PathVariable Long id){
+        ReturnObject<Brand> returnObject = brandService.getBrandById(id);
+        return Common.decorateReturnObject(returnObject);
+    }
+
+
     @ApiOperation(value = "修改品牌信息")
     @ApiImplicitParams({
             @ApiImplicitParam(name="authorization", value="Token", required = true, dataType="String", paramType="header"),
@@ -82,24 +99,26 @@ public class BrandController {
     })
     @Audit
     @PutMapping("/shops/{shopId}/brands/{id}")
-    public Object changePriv(@PathVariable Long id,
-                             @Validated @RequestBody BrandRetVo vo,
+    public Object updateBrand(@PathVariable Long id,
+                              @PathVariable Long shopId,
+                             @Validated @RequestBody UpdateBrandVoBody vo,
                              BindingResult bindingResult,
-                             @PathVariable Long shopId,
                              HttpServletResponse httpServletResponse){
-
+        logger.debug("Brand update c:");
         Object o = Common.processFieldErrors(bindingResult, httpServletResponse);
         if(o != null){
+
             return o;
         }
-
         Brand brand = new Brand(vo);
+        brand.setGmtModified(LocalDateTime.now());
+        logger.debug("Brand update c: id = "+id.toString());
         ReturnObject<VoObject> returnObject = brandService.updateBrand(brand, shopId, id);
-
+        logger.debug("Brand update c: updateout id = "+id.toString());
         if (returnObject.getCode() == ResponseCode.OK) {
-            return Common.getRetObject(returnObject);
+            return Common.decorateReturnObject(new ReturnObject(ResponseCode.OK));
         } else {
-            return Common.decorateReturnObject(returnObject);
+            return Common.decorateReturnObject(new ReturnObject(ResponseCode.RESOURCE_ID_NOTEXIST));
         }
     }
 

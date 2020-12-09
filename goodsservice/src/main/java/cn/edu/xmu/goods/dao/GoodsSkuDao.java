@@ -3,12 +3,10 @@ package cn.edu.xmu.goods.dao;
 import cn.edu.xmu.goods.mapper.GoodsSkuPoMapper;
 import cn.edu.xmu.goods.mapper.GoodsSpuPoMapper;
 import cn.edu.xmu.goods.model.bo.GoodsSku;
-import cn.edu.xmu.goods.model.bo.Shop;
 import cn.edu.xmu.goods.model.po.GoodsSkuPo;
 import cn.edu.xmu.goods.model.po.GoodsSkuPoExample;
 import cn.edu.xmu.goods.model.po.GoodsSpuPo;
 import cn.edu.xmu.goods.model.po.GoodsSpuPoExample;
-import cn.edu.xmu.goods.model.vo.BrandRetVo;
 import cn.edu.xmu.goods.model.vo.GoodsSkuRetVo;
 import cn.edu.xmu.goods.model.vo.GoodsSkuSimpleRetVo;
 import cn.edu.xmu.ooad.model.VoObject;
@@ -21,8 +19,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * @author Yancheng Lai
@@ -108,17 +106,7 @@ public class GoodsSkuDao {
         }
         return true;
     }
-    /** 
-    * @Description: 待完善 等底层完成
-    * @Param: [id] 
-    * @return: cn.edu.xmu.ooad.util.ReturnObject<cn.edu.xmu.ooad.model.VoObject> 
-    * @Author: Yancheng Lai
-    * @Date: 2020/12/3 0:05
-    */
-    public ReturnObject<VoObject> getShopById(Long id){
-        Shop shop =new Shop();
-        return new ReturnObject<>(shop);
-    }
+
 
     /** 
     * @Description: 逻辑删除 
@@ -191,7 +179,7 @@ public class GoodsSkuDao {
     * @Date: 2020/12/3 17:27
     */
 
-    public ReturnObject<VoObject> updateSku(GoodsSku goodsSku,Long shopId, Long id){
+    public ReturnObject<VoObject> updateSku(GoodsSku goodsSku, Long id){
         GoodsSkuPo po = goodsSkuPoMapper.selectByPrimaryKey(id);
         goodsSkuPoMapper.updateByPrimaryKeySelective(goodsSku.getGoodsSkuPo());
         return new ReturnObject<VoObject>();
@@ -207,12 +195,22 @@ public class GoodsSkuDao {
 
     public ReturnObject<GoodsSkuPo> getSkuById(Long id){
         logger.info("dao: get Sku by id: "+ id);
-        GoodsSkuPo goodsSkuPo = goodsSkuPoMapper.selectByPrimaryKey(id);
+        GoodsSkuPo goodsSkuPo = null;
+        try {
+            goodsSkuPo = goodsSkuPoMapper.selectByPrimaryKey(id);
+        } catch (DataAccessException e) {
+            //database error
+            return new ReturnObject(ResponseCode.INTERNAL_SERVER_ERR,
+                    String.format("Database Exception: %s", e.getMessage()));
+        } catch (Exception e) {
+            return new ReturnObject(ResponseCode.INTERNAL_SERVER_ERR,
+                    String.format("Unknown Exception: %s", e.getMessage()));
+        }
         if(goodsSkuPo == null){
             logger.info("po = null "+ id);
             return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
         }
-        logger.info("po != null "+ id);
+        logger.info("po != null "+ goodsSkuPo.getId());
         return new  ReturnObject<> (goodsSkuPo);
     }
 
@@ -260,4 +258,84 @@ public class GoodsSkuDao {
         }
         return new ReturnObject<>(ResponseCode.OK);
     }
+
+    public ReturnObject deductStock(Long skuId,Integer quantity) {
+        GoodsSkuPo goodsSkuPo = goodsSkuPoMapper.selectByPrimaryKey(skuId);
+        logger.info("ddfor "+skuId+" quan = "+quantity);
+        if (goodsSkuPo == null) {
+            //not found
+            return new ReturnObject(ResponseCode.RESOURCE_ID_NOTEXIST);
+        } else {
+            int inventory = goodsSkuPo.getInventory();
+            try{
+                goodsSkuPo.setInventory(inventory - quantity);
+                goodsSkuPoMapper.updateByPrimaryKeySelective(goodsSkuPo);
+            }catch (DataAccessException e) {
+                //database error
+                return new ReturnObject(ResponseCode.INTERNAL_SERVER_ERR,
+                        String.format("Database Exception: %s", e.getMessage()));
+            } catch (Exception e) {
+                return new ReturnObject(ResponseCode.INTERNAL_SERVER_ERR,
+                        String.format("Unknown Exception: %s", e.getMessage()));
+            }
+        return new ReturnObject<>(ResponseCode.OK);
+    }}
+
+    public ReturnObject<Boolean> checkStock(Long skuId,Integer quantity) {
+        GoodsSkuPo goodsSkuPo = goodsSkuPoMapper.selectByPrimaryKey(skuId);
+        logger.info("checkfor "+skuId+" quan = "+quantity+"inv = "+goodsSkuPo.getInventory());
+        if (goodsSkuPo == null) {
+            return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
+        } else {
+            int inventory = goodsSkuPo.getInventory();
+            if (inventory < quantity) {
+                //not enough
+                return new ReturnObject(ResponseCode.SKU_NOTENOUGH);
+            } else {
+
+            }
+        }
+        return new ReturnObject<>(true);
+    }
+
+    public List<GoodsSku> getSkuListByShopId(Long shopId){
+        GoodsSpuPoExample example = new GoodsSpuPoExample();
+        GoodsSpuPoExample.Criteria criteria = example.createCriteria();
+        criteria.andShopIdEqualTo(shopId);
+        List<GoodsSpuPo> goodsSpuPos = goodsSpuPoMapper.selectByExample(example);
+
+        List<GoodsSku> goodsSkus = new ArrayList<>();
+        for(GoodsSpuPo goodsSpuPo:goodsSpuPos){
+            GoodsSkuPoExample goodsSkuPoExample = new GoodsSkuPoExample();
+            GoodsSkuPoExample.Criteria criteria1 = goodsSkuPoExample.createCriteria();
+            criteria1.andGoodsSpuIdEqualTo(goodsSpuPo.getId());
+            List<GoodsSkuPo> goodsSkuPos = goodsSkuPoMapper.selectByExample(goodsSkuPoExample);
+            for(GoodsSkuPo goodsSkuPo : goodsSkuPos ){
+                goodsSkus.add(new GoodsSku(goodsSkuPo));
+            }
+
+        }
+        return goodsSkus;
+    }
+
+    public List<Long> getSkuIdListByShopId(Long shopId){
+        GoodsSpuPoExample example = new GoodsSpuPoExample();
+        GoodsSpuPoExample.Criteria criteria = example.createCriteria();
+        criteria.andShopIdEqualTo(shopId);
+        List<GoodsSpuPo> goodsSpuPos = goodsSpuPoMapper.selectByExample(example);
+
+        List<Long> goodsSkuids = new ArrayList<>();
+        for(GoodsSpuPo goodsSpuPo:goodsSpuPos){
+            GoodsSkuPoExample goodsSkuPoExample = new GoodsSkuPoExample();
+            GoodsSkuPoExample.Criteria criteria1 = goodsSkuPoExample.createCriteria();
+            criteria1.andGoodsSpuIdEqualTo(goodsSpuPo.getId());
+            List<GoodsSkuPo> goodsSkuPos = goodsSkuPoMapper.selectByExample(goodsSkuPoExample);
+            for(GoodsSkuPo goodsSkuPo : goodsSkuPos ){
+                goodsSkuids.add(goodsSkuPo.getId());
+            }
+
+        }
+        return goodsSkuids;
+    }
+
 }

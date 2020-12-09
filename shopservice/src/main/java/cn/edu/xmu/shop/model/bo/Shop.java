@@ -2,6 +2,7 @@ package cn.edu.xmu.shop.model.bo;
 
 import cn.edu.xmu.shop.model.po.ShopPo;
 import cn.edu.xmu.ooad.model.VoObject;
+import cn.edu.xmu.shop.model.vo.ShopSimpleVo;
 import lombok.Data;
 
 import java.util.HashMap;
@@ -63,6 +64,7 @@ public class Shop implements VoObject{
 
     public Shop(ShopPo po){
         this.id=po.getId();
+        this.shopName = po.getName();
     }
 
     @Override
@@ -71,8 +73,8 @@ public class Shop implements VoObject{
     }
 
     @Override
-    public Object createSimpleVo() {
-        return null;
+    public ShopSimpleVo createSimpleVo() {
+        return new ShopSimpleVo(this);
     }
 
     public ShopPo createPo(){

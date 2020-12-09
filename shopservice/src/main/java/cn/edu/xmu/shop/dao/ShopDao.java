@@ -29,7 +29,7 @@ public class ShopDao implements InitializingBean{
 
     private  static  final Logger logger = LoggerFactory.getLogger(ShopDao.class);
 
-    @Value("${privilegeservice.initialization}")
+    @Value("${shopservice.initialization}")
     private Boolean initialization;
 
     @Override

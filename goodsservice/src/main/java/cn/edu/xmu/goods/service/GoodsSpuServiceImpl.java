@@ -6,23 +6,23 @@ import cn.edu.xmu.goods.dao.GoodsSpuDao;
 import cn.edu.xmu.goods.model.bo.Brand;
 import cn.edu.xmu.goods.model.bo.GoodsSku;
 import cn.edu.xmu.goods.model.bo.GoodsSpu;
-import cn.edu.xmu.goods.model.bo.Shop;
 import cn.edu.xmu.goods.model.po.GoodsSkuPo;
 import cn.edu.xmu.goods.model.po.GoodsSpuPo;
-import cn.edu.xmu.goods.model.po.GoodsSpuPoExample;
 import cn.edu.xmu.goods.model.vo.*;
 import cn.edu.xmu.ooad.model.VoObject;
 import cn.edu.xmu.ooad.util.ImgHelper;
 import cn.edu.xmu.ooad.util.ResponseCode;
 import cn.edu.xmu.ooad.util.ReturnObject;
+import cn.edu.xmu.shop.model.bo.Shop;
+import cn.edu.xmu.shop.model.vo.ShopSimpleVo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.multipart.MultipartFile;
+import cn.edu.xmu.shop.service.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -37,6 +37,8 @@ import java.util.List;
 @Service
 public class GoodsSpuServiceImpl implements GoodsSpuService{
     private Logger logger = LoggerFactory.getLogger(GoodsSpuService.class);
+    @Autowired
+    ShopService shopService;
 
     @Autowired
     GoodsSpuDao goodsSpuDao;
@@ -77,6 +79,9 @@ public class GoodsSpuServiceImpl implements GoodsSpuService{
             logger.info("findSpuById : " + returnObject);
             GoodsSpuRetVo goodsSpuRetVo = new GoodsSpuRetVo(new GoodsSpu(goodsSpuPo));
             goodsSpuRetVo.setCategory(categoryService.findSimpleCategory(goodsSpuPo.getCategoryId()).getData());
+            Shop shop = shopService.getShopById(goodsSpuPo.getShopId()).getData();
+            ShopSimpleVo shopSimpleVo = shop.createSimpleVo();
+            goodsSpuRetVo.setShop(shopSimpleVo);
             Brand brand = brandDao.getBrandById(goodsSpuPo.getBrandId()).getData();
             if(brand == null)
                 logger.info("brand == null");

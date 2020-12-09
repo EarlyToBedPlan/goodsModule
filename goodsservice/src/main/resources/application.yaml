@@ -93,6 +93,8 @@ goodsservice:
 pagehelper:
   helper-dialect: mysql
 
-
+shopservice:
+  #是否对数据库中的未初始化的数据初始化
+  initialization: false
 
 

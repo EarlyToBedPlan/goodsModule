@@ -3,26 +3,17 @@ package cn.edu.xmu.goods.dao;
 import cn.edu.xmu.goods.mapper.BrandPoMapper;
 import cn.edu.xmu.goods.mapper.GoodsSkuPoMapper;
 import cn.edu.xmu.goods.mapper.GoodsSpuPoMapper;
-import cn.edu.xmu.goods.model.bo.GoodsSku;
 import cn.edu.xmu.goods.model.bo.GoodsSpu;
-import cn.edu.xmu.goods.model.bo.Shop;
 import cn.edu.xmu.goods.model.po.*;
 import cn.edu.xmu.ooad.model.VoObject;
 import cn.edu.xmu.ooad.util.ResponseCode;
 import cn.edu.xmu.ooad.util.ReturnObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
-import org.springframework.validation.beanvalidation.SpringConstraintValidatorFactory;
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
 
-import java.util.ArrayList;
 import java.util.List;
 /**
  * SPU Dao
@@ -114,8 +105,8 @@ public class GoodsSpuDao {
             StringBuilder message = new StringBuilder().append("getGoodsSpuPoById: ").append(e.getMessage());
             logger.error(message.toString());
         }
-        if (null == goodsSpuPos || goodsSpuPos.isEmpty()) {
-            return new ReturnObject<>();
+        if (null == goodsSpuPos ) {
+            return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
         } else {
             return new ReturnObject<>(goodsSpuPos.get(0));
         }
@@ -201,4 +192,45 @@ public class GoodsSpuDao {
             return new ReturnObject<>();
 
     }
+
+    public ReturnObject changeGoodsFreightWeight(Long FreightId, Long defaultFreightId){
+        GoodsSpuPoExample example = new GoodsSpuPoExample();
+        GoodsSpuPoExample.Criteria criteria = example.createCriteria();
+        criteria.andFreightIdEqualTo(FreightId);
+
+        try{
+            List<GoodsSpuPo> goodsSpuPos = goodsSpuPoMapper.selectByExample(example);
+            if (goodsSpuPos == null) {
+                //not found
+                return new ReturnObject(ResponseCode.RESOURCE_ID_NOTEXIST);
+            } else {
+                try {
+                    for (GoodsSpuPo goodsSpuPo : goodsSpuPos){
+                        goodsSpuPo.setFreightId(defaultFreightId);
+                        goodsSpuPoMapper.updateByPrimaryKeySelective(goodsSpuPo);
+                    }
+                } catch (DataAccessException e) {
+                    //database error
+                    return new ReturnObject(ResponseCode.INTERNAL_SERVER_ERR,
+                            String.format("Database Exception: %s", e.getMessage()));
+                } catch (Exception e) {
+                    return new ReturnObject(ResponseCode.INTERNAL_SERVER_ERR,
+                            String.format("Unknown Exception: %s", e.getMessage()));
+                }
+            }
+        }
+        catch (DataAccessException e) {
+            //database error
+            return new ReturnObject(ResponseCode.INTERNAL_SERVER_ERR,
+                    String.format("Database Exception: %s", e.getMessage()));
+        } catch (Exception e) {
+            return new ReturnObject(ResponseCode.INTERNAL_SERVER_ERR,
+                    String.format("Unknown Exception: %s", e.getMessage()));
+        }
+
+
+        return new ReturnObject<>(ResponseCode.OK);
+    }
+
+
 }

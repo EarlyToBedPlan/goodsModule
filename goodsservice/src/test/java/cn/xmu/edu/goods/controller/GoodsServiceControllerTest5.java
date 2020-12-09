@@ -1,7 +1,14 @@
 package cn.xmu.edu.goods.controller;
 
 import cn.edu.xmu.goods.GoodsServiceApplication;
+import cn.edu.xmu.goods.model.vo.GoodsSkuPostVo;
+import cn.edu.xmu.goods.model.vo.GoodsSpuRetVo;
+import cn.edu.xmu.goods.model.vo.UpdateBrandVoBody;
+import cn.edu.xmu.ooad.util.JacksonUtil;
 import cn.edu.xmu.ooad.util.JwtHelper;
+import com.alibaba.fastjson.JSONException;
+import org.junit.jupiter.api.Test;
+import org.skyscreamer.jsonassert.JSONAssert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +16,10 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * @author Yancheng Lai
@@ -29,5 +40,85 @@ public class GoodsServiceControllerTest5 {
         logger.debug(token);
         return token;
     }
+
+    @Test
+    public void postSkuTest1() throws Exception {
+        GoodsSkuPostVo goodsSkuPostVo = new GoodsSkuPostVo();
+        goodsSkuPostVo.setDetail("Detail set");
+        goodsSkuPostVo.setConfiguration("conf");
+        goodsSkuPostVo.setName("name");
+        goodsSkuPostVo.setInventory(114514);
+        goodsSkuPostVo.setOriginalPrice(114514l);
+        goodsSkuPostVo.setSn("s_114514");
+        goodsSkuPostVo.setWeight(80l);
+        String token = creatTestToken(1L, 0L, 100);
+        String brandJson = JacksonUtil.toJson(goodsSkuPostVo);
+        String expectedResponse = "";
+        String responseString = null;
+        try {
+            responseString = this.mvc.perform(post("/goods/shops/0/spus/300/skus").header("authorization", token).contentType("application/json;charset=UTF-8").content(brandJson))
+                    .andExpect(status().isCreated())
+                    .andExpect(content().contentType("application/json;charset=UTF-8"))
+                    .andReturn().getResponse().getContentAsString();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        expectedResponse = "{\"errno\":0,\"errmsg\":\"成功\"}";
+        try {
+            JSONAssert.assertEquals(expectedResponse, responseString, true);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+
+    }
+
+    @Test
+    public void putSkuTest1() throws Exception {
+        GoodsSkuPostVo goodsSkuPostVo = new GoodsSkuPostVo();
+        goodsSkuPostVo.setDetail("Detail set");
+        goodsSkuPostVo.setConfiguration("conf");
+        goodsSkuPostVo.setName("name");
+        goodsSkuPostVo.setInventory(114514);
+        goodsSkuPostVo.setOriginalPrice(114514l);
+        goodsSkuPostVo.setSn("s_114514");
+        goodsSkuPostVo.setWeight(80l);
+        String token = creatTestToken(1L, 0L, 100);
+        String brandJson = JacksonUtil.toJson(goodsSkuPostVo);
+        String expectedResponse = "";
+        String responseString = null;
+        try {
+            responseString = this.mvc.perform(put("/goods/shops/0/skus/300")
+                    .header("authorization", token).contentType("application/json;charset=UTF-8").content(brandJson))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType("application/json;charset=UTF-8"))
+                    .andReturn().getResponse().getContentAsString();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        expectedResponse = "{\"errno\":0,\"errmsg\":\"成功\"}";
+        try {
+            JSONAssert.assertEquals(expectedResponse, responseString, true);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+        String responseString1 = this.mvc.perform(get("/goods/skus/300"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType("application/json;charset=UTF-8"))
+                .andReturn().getResponse().getContentAsString();
+        String expectedResponse1 = "{\"errno\":0,\"errmsg\":\"该ID对应的SKU不存在\"}";
+        JSONAssert.assertEquals(responseString1,expectedResponse1, true);
+
+
+
+
+    }
+
+
+
+
 
 }
