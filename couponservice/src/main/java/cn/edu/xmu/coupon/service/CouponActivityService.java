@@ -70,18 +70,17 @@ public interface CouponActivityService {
     ReturnObject<PageInfo<VoObject>> getCouponByUserId(Long id, Integer state, Integer page, Integer pagesize);
 
     /**
-     * @description:买家使用自己的优惠券
-     */
-    ReturnObject useCoupon(Long id, Long userId);
-
-
-    /**
      * @description:买家领取活动优惠券
      */
     ReturnObject userGetCoupon(Long userId, Long id);
 
-    /**
-     * @description:优惠券退回
-     */
-    ReturnObject returnCoupon(Long id);
+//    /**
+//     * @description:买家使用自己的优惠券
+//     */
+//    ReturnObject useCoupon(Long id, Long userId);
+
+//    /**
+//     * @description:优惠券退回
+//     */
+//    ReturnObject returnCoupon(Long id);
 }

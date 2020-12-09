@@ -526,38 +526,7 @@ public class CouponActivityServiceImpl implements CouponActivityService {
 
     }
     
-    /**
-     * @param id
-     * @param userId
-     * @description: 用户使用优惠券下单
-     * @return: cn.edu.xmu.ooad.util.ReturnObject
-     * @author: Feiyan Liu
-     * @date: Created at 2020/12/4 14:46
-     */
-    @Override
-    @Transactional
-    public ReturnObject useCoupon(Long id, Long userId) {
-        CouponPo couponPo=null;
-        try {
-            couponPo = couponDao.getCouponById(id);
-            //判断优惠券id是否存在
-            if(couponPo==null)
-                return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
-            //判断优惠券是否属于客户
-            if (couponPo.getCustomerId() != userId)
-                return new ReturnObject<>(ResponseCode.RESOURCE_ID_OUTSCOPE);
-            //若优惠券已使用或者是失效了
-            if (couponPo.getState() != (byte)Coupon.State.CLAIMED.getCode())
-                return new ReturnObject<>(ResponseCode.COUPON_STATENOTALLOW);
-            //若优惠券已过期或者是还未到有效时间
-            if(couponPo.getBeginTime().isAfter(LocalDateTime.now())||couponPo.getEndTime().isBefore(LocalDateTime.now()))
-                return new ReturnObject<>(ResponseCode.COUPON_STATENOTALLOW);
-            else return couponDao.updateCouponState(id, Coupon.State.USED.getCode());
-        } catch (Exception e) {
-            logger.error("发生了严重的服务器内部错误：" + e.getMessage());
-            return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR);
-        }
-    }
+
 
     /**
      * @param userId
@@ -646,26 +615,56 @@ public class CouponActivityServiceImpl implements CouponActivityService {
         return couponPo;
     }
 
-    /**
-     * @param id
-     * @description: 退回优惠券
-     * @return: cn.edu.xmu.ooad.util.ReturnObject
-     * @author: Feiyan Liu
-     * @date: Created at 2020/12/3 23:18
-     */
-    @Override
-    public ReturnObject returnCoupon(Long id) {
-        try {
-            CouponPo couponPo = couponDao.getCouponById(id);
-            if(couponPo==null)
-                return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
-            return couponDao.updateCouponState(id, Coupon.State.CLAIMED.getCode());
-        } catch (Exception e) {
-            logger.error("发生了严重的服务器内部错误：" + e.getMessage());
-            return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR);
-        }
-
-    }
-
+//    /**
+//     * @param id
+//     * @description: 退回优惠券 这也是内部API
+//     * @return: cn.edu.xmu.ooad.util.ReturnObject
+//     * @author: Feiyan Liu
+//     * @date: Created at 2020/12/3 23:18
+//     */
+//    @Override
+//    public ReturnObject returnCoupon(Long id) {
+//        try {
+//            CouponPo couponPo = couponDao.getCouponById(id);
+//            if(couponPo==null)
+//                return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
+//            return couponDao.updateCouponState(id, Coupon.State.CLAIMED.getCode());
+//        } catch (Exception e) {
+//            logger.error("发生了严重的服务器内部错误：" + e.getMessage());
+//            return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR);
+//        }
+//    }
+//    /**
+//     * @param id
+//     * @param userId
+//     * @description: 用户使用优惠券下单 这个应该是内部API
+//     * @return: cn.edu.xmu.ooad.util.ReturnObject
+//     * @author: Feiyan Liu
+//     * @date: Created at 2020/12/4 14:46
+//     */
+//    @Override
+//    @Transactional
+//    public ReturnObject useCoupon(Long id, Long userId) {
+//        CouponPo couponPo=null;
+//        try {
+//            couponPo = couponDao.getCouponById(id);
+//            //判断优惠券id是否存在
+//            if(couponPo==null)
+//                return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
+//            //判断优惠券是否属于客户
+//            if (couponPo.getCustomerId() != userId)
+//                return new ReturnObject<>(ResponseCode.RESOURCE_ID_OUTSCOPE);
+//            //若优惠券已使用或者是失效了
+//            if (couponPo.getState() != (byte)Coupon.State.CLAIMED.getCode())
+//                return new ReturnObject<>(ResponseCode.COUPON_STATENOTALLOW);
+//            //若优惠券已过期或者是还未到有效时间
+//            if(couponPo.getBeginTime().isAfter(LocalDateTime.now())||couponPo.getEndTime().isBefore(LocalDateTime.now()))
+//                return new ReturnObject<>(ResponseCode.COUPON_STATENOTALLOW);
+//            else return couponDao.updateCouponState(id, Coupon.State.USED.getCode());
+//        } catch (Exception e) {
+//            logger.error("发生了严重的服务器内部错误：" + e.getMessage());
+//            return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR);
+//        }
+//    }
 
 }
