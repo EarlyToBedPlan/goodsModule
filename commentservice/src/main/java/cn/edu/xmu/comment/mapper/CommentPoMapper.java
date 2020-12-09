@@ -2,7 +2,12 @@ package cn.edu.xmu.comment.mapper;
 
 import cn.edu.xmu.comment.model.po.CommentPo;
 import cn.edu.xmu.comment.model.po.CommentPoExample;
+
 import java.util.List;
+
+/**
+ * @author Ruzhen Chang
+ */
 
 public interface CommentPoMapper {
     /**
