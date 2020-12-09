@@ -27,6 +27,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class GetInvalidCouponActivitiesTest {
     @Autowired
     private MockMvc mvc;
+
+    @Autowired
+    private WebApplicationContext wac;
     private static final Logger logger = LoggerFactory.getLogger(CouponServiceApplication.class);
 
     private final String creatTestToken(Long userId, Long departId, int expireTime) {
