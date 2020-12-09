@@ -29,7 +29,13 @@ public class FloatPriceDao {
 
     @Autowired
     FloatPricePoMapper floatPricePoMapper;
-
+    /**
+     * @Author：谢沛辰
+     * @Date: 2020/12/8
+      * @Param: FloatPrice floatPrice
+     * @Return: ReturnObject<Object>
+     * @Description:逻辑删除价格浮动
+     */
     public ReturnObject<Object> logicallyDeleteFloatPrice(FloatPrice floatPrice){
         ReturnObject<Object> retObj=null;
         FloatPricePo floatPricePo=floatPrice.createPo();
@@ -55,6 +61,13 @@ public class FloatPriceDao {
         return retObj;
     }
 
+    /**
+     * @Author：谢沛辰
+     * @Date: 2020/12/8
+      * @Param: FloatPrice floatPrice
+     * @Return: ReturnObject<FloatPrice>
+     * @Description:创建价格浮动
+     */
     public ReturnObject<FloatPrice> insertFloatPrice(FloatPrice floatPrice){
         FloatPricePo floatPricePo=floatPrice.createPo();
         ReturnObject<FloatPrice> retObj=null;
@@ -79,6 +92,13 @@ public class FloatPriceDao {
         return retObj;
     }
 
+    /**
+     * @Author：谢沛辰
+     * @Date: 2020/12/8
+      * @Param: Long id
+     * @Return: ReturnObject<FloatPrice>
+     * @Description:根据价格浮动id查找价格浮动
+     */
     public ReturnObject<FloatPrice> getFloatPriceById(Long id){
         FloatPricePo floatPricePo= null;
         List<FloatPricePo> floatPricePos=null;
@@ -96,6 +116,13 @@ public class FloatPriceDao {
         return new ReturnObject<>(floatPrice);
     }
 
+    /**
+     * @Author：test
+     * @Date: 2020/12/8
+      * @Param: long skuId
+     * @Return: ReturnObject<List>
+     * @Description:根据SKUID查找价格浮动
+     */
     public ReturnObject<List> getFloatPriceBySkuId(long skuId){
         List<FloatPricePo> floatPricePos=null;
         FloatPricePoExample example=new FloatPricePoExample();
