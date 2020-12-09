@@ -91,8 +91,8 @@ public enum ResponseCode {
     COUPON_FINISH(910,"优惠卷领罄"),
     COUPON_END(911,"优惠卷活动终止"),
 
-    SPU_PARTICIPATE(912,"商品已经参与了活动");
-
+    SKU_PARTICIPATE(912,"商品已经参与了活动"),
+     USER_HASCOUPON (913,"用户已有优惠券");
     private int code;
     private String message;
     ResponseCode(int code, String message){
