@@ -132,6 +132,7 @@ public class CouponActivity implements VoObject {
         CANCELLED(1, "被取消");
         private static final Map<Integer, CouponActivity.State> stateMap;
 
+        public static int STATE_SIZE=2;
         static { //由类加载机制，静态块初始加载对应的枚举属性到map中，而不用每次取属性时，遍历一次所有枚举值
             stateMap = new HashMap();
             for (CouponActivity.State enum1 : values()) {

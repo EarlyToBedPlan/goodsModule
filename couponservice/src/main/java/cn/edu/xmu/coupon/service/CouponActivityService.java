@@ -14,6 +14,13 @@ import java.util.List;
  * @date Created at 2020/11/29 15:33
  */
 public interface CouponActivityService {
+
+    /**
+     * @description:获取所有优惠活动所有状态
+     * @author: Feiyan Liu
+     * @date: Created at 2020/12/9 10:27
+     */
+    ReturnObject<List> getAllState();
     /**
      * @description:根据活动id获取活动详情（只能查看本店的）
      */

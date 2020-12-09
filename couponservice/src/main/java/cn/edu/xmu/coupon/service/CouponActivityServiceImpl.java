@@ -15,6 +15,7 @@ import cn.edu.xmu.goods.model.bo.GoodsSku;
 import cn.edu.xmu.goods.model.bo.GoodsSpu;
 import cn.edu.xmu.goods.model.po.GoodsSkuPo;
 import cn.edu.xmu.goods.model.vo.GoodsSkuRetVo;
+import cn.edu.xmu.goods.model.vo.StateVo;
 import cn.edu.xmu.goods.service.GoodsSkuService;
 import cn.edu.xmu.ooad.model.VoObject;
 import cn.edu.xmu.ooad.util.ImgHelper;
@@ -25,6 +26,7 @@ import com.github.pagehelper.PageInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -53,19 +55,31 @@ public class CouponActivityServiceImpl implements CouponActivityService {
     @Autowired
     GoodsSkuService goodsSkuService;
 
-//     * @author 24320182203218
-//     **/
-//    @Value("${couponservice.imglocation}")
-//    private String imgLocation;
-//
-//    @Value("${couponservice.dav.sername}")
-//    private String davUserName;
-//
-//    @Value("${couponservice.dav.password}")
-//    private String davPassword;
-//
-//    @Value("${couponservice.dav.baseUrl}")
-//    private String baseUrl;
+    /** @author 24320182203218
+     **/
+    @Value("${couponservice.imglocation}")
+    private String imgLocation;
+
+    @Value("${couponservice.dav.sername}")
+    private String davUserName;
+
+    @Value("${couponservice.dav.password}")
+    private String davPassword;
+
+    @Value("${couponservice.dav.baseUrl}")
+    private String baseUrl;
+
+
+    @Override
+    @Transactional
+    public ReturnObject<List> getAllState()
+    {
+        List<CouponActivity.State> states=new ArrayList<>(CouponActivity.State.STATE_SIZE);
+        for (CouponActivity.State state : CouponActivity.State.values()) {
+            states.add(state);
+        }
+        return new ReturnObject<>(states);
+    }
 
     /**
      * @param id
@@ -92,10 +106,6 @@ public class CouponActivityServiceImpl implements CouponActivityService {
 
     }
 
-    @Override
-    public ReturnObject<VoObject> createCouponActivity(Long shopId, Long SkuId, CouponActivity couponActivity) {
-        return null;
-    }
 
     /**
      * @param SkuId
@@ -105,34 +115,34 @@ public class CouponActivityServiceImpl implements CouponActivityService {
      * @author: Feiyan Liu
      * @date: Created at 2020/11/30 4:33
      */
-//    @Transactional
-//    @Override
-//    public ReturnObject createCouponActivity(Long shopId, Long SkuId, CouponActivity couponActivity) {
-//        ReturnObject ret = new ReturnObject();
-//        //判断商品是否存在
-//        try {
-//            GoodsSkuRetVo vo = goodsSkuService.findSkuById(SkuId).getData();
-//            if (vo.getId() == null)
-//                return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST, String.format("新增优惠商品失败，优惠商品不存在 id：" + SkuId));
+    @Transactional
+    @Override
+    public ReturnObject createCouponActivity(Long shopId, Long SkuId, CouponActivity couponActivity) {
+        ReturnObject ret = new ReturnObject();
+        //判断商品是否存在
+        try {
+            GoodsSkuRetVo vo = goodsSkuService.getSkuById(SkuId).getData();
+            if (vo.getId() == null)
+                return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST, String.format("新增优惠商品失败，优惠商品不存在 id：" + SkuId));
 //            //判断商品是否属于此商铺
 //            if (vo.getShop().getId() != shopId)
 //                return new ReturnObject<>(ResponseCode.RESOURCE_ID_OUTSCOPE, String.format("创建优惠活动失败，商品非用户店铺的商品"));
-//            //判断商品同一时段是否有其他活动（不同时间段有不同活动是可以的）
-//            boolean result = (Boolean) checkActivityParticipation(SkuId, couponActivity.getBeginTime(), couponActivity.getEndTime()).getData();
-//            if (result) {
-//                logger.debug("the Sku id=" + SkuId + " already has other activity at the same time.");
-//                return new ReturnObject<>(ResponseCode.Sku_PARTICIPATE);
-//            }
-//            CouponActivityPo newPo = couponActivityDao.addCouponActivity(couponActivity, SkuId);
-//            couponSkuDao.addCouponSku(SkuId, newPo.getId());
-//            couponActivity.setId(newPo.getId());
-//            VoObject retVo = couponActivity.createVo();
-//            return new ReturnObject(retVo);
-//        } catch (Exception e) {
-//            logger.error("发生了严重的服务器内部错误：" + e.getMessage());
-//            return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR);
-//        }
-//    }
+            //判断商品同一时段是否有其他活动（不同时间段有不同活动是可以的）
+            boolean result = (Boolean) checkActivityParticipation(SkuId, couponActivity.getBeginTime(), couponActivity.getEndTime()).getData();
+            if (result) {
+                logger.debug("the Sku id=" + SkuId + " already has other activity at the same time.");
+                return new ReturnObject<>(ResponseCode.SKU_PARTICIPATE);
+            }
+            CouponActivityPo newPo = couponActivityDao.addCouponActivity(couponActivity, SkuId);
+            couponSkuDao.addCouponSku(SkuId, newPo.getId());
+            couponActivity.setId(newPo.getId());
+            VoObject retVo = couponActivity.createVo();
+            return new ReturnObject(retVo);
+        } catch (Exception e) {
+            logger.error("发生了严重的服务器内部错误：" + e.getMessage());
+            return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR);
+        }
+    }
 
     /**
      * @param page
@@ -305,10 +315,6 @@ public class CouponActivityServiceImpl implements CouponActivityService {
         }
     }
 
-    @Override
-    public ReturnObject uploadImg(Long id, MultipartFile multipartFile) {
-        return null;
-    }
 
     /**
      * @param id1
@@ -394,51 +400,51 @@ public class CouponActivityServiceImpl implements CouponActivityService {
             return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR);
         }
     }
-//    /**
-//     * @param id
-//     * @param multipartFile
-//     * @description: 优惠活动上传图片
-//     * @return: cn.edu.xmu.ooad.util.ReturnObject
-//     * @author: Feiyan Liu
-//     * @date: Created at 2020/12/1 13:39
-//     */
-//    @Transactional
-//    @Override
-//    public ReturnObject uploadImg(Long id, MultipartFile multipartFile) {
-//        CouponActivity couponActivity = new CouponActivity(couponActivityDao.getCouponActivityById(id));
-//        if (couponActivity == null) {
-//            return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST, String.format("查询的优惠活动不存在 id：" + id));
-//        }
-//        ReturnObject returnObject = new ReturnObject();
-//        try {
-//            returnObject = ImgHelper.remoteSaveImg(multipartFile, 2, davUserName, davPassword, baseUrl);
-//
-//            //文件上传错误
-//            if (returnObject.getCode() != ResponseCode.OK) {
-//                logger.debug(returnObject.getErrmsg());
-//                return returnObject;
-//            }
-//            String oldFileName = couponActivity.getImg();
-//
-//            couponActivity.setImg(returnObject.getData().toString());
-//            ReturnObject updateReturnObject = couponActivityDao.updateCouponActivityImg(couponActivity);
-//
-//            //数据库更新失败，需删除新增的图片
-//            if (updateReturnObject.getCode() == ResponseCode.RESOURCE_ID_NOTEXIST) {
-//                ImgHelper.deleteRemoteImg(returnObject.getData().toString(), davUserName, davPassword, baseUrl);
-//                return updateReturnObject;
-//            }
-//
-//            //数据库更新成功需删除旧图片，未设置则不删除
-//            if (oldFileName != null) {
-//                ImgHelper.deleteRemoteImg(oldFileName, davUserName, davPassword, baseUrl);
-//            }
-//        } catch (IOException e) {
-//            logger.debug("uploadImg: I/O Error:" + baseUrl);
-//            return new ReturnObject(ResponseCode.FILE_NO_WRITE_PERMISSION);
-//        }
-//        return returnObject;
-//    }
+    /**
+     * @param id
+     * @param multipartFile
+     * @description: 优惠活动上传图片
+     * @return: cn.edu.xmu.ooad.util.ReturnObject
+     * @author: Feiyan Liu
+     * @date: Created at 2020/12/1 13:39
+     */
+    @Transactional
+    @Override
+    public ReturnObject uploadImg(Long id, MultipartFile multipartFile) {
+        CouponActivity couponActivity = new CouponActivity(couponActivityDao.getCouponActivityById(id));
+        if (couponActivity == null) {
+            return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST, String.format("查询的优惠活动不存在 id：" + id));
+        }
+        ReturnObject returnObject = new ReturnObject();
+        try {
+            returnObject = ImgHelper.remoteSaveImg(multipartFile, 2, davUserName, davPassword, baseUrl);
+
+            //文件上传错误
+            if (returnObject.getCode() != ResponseCode.OK) {
+                logger.debug(returnObject.getErrmsg());
+                return returnObject;
+            }
+            String oldFileName = couponActivity.getImg();
+
+            couponActivity.setImg(returnObject.getData().toString());
+            ReturnObject updateReturnObject = couponActivityDao.updateCouponActivityImg(couponActivity);
+
+            //数据库更新失败，需删除新增的图片
+            if (updateReturnObject.getCode() == ResponseCode.RESOURCE_ID_NOTEXIST) {
+                ImgHelper.deleteRemoteImg(returnObject.getData().toString(), davUserName, davPassword, baseUrl);
+                return updateReturnObject;
+            }
+
+            //数据库更新成功需删除旧图片，未设置则不删除
+            if (oldFileName != null) {
+                ImgHelper.deleteRemoteImg(oldFileName, davUserName, davPassword, baseUrl);
+            }
+        } catch (IOException e) {
+            logger.debug("uploadImg: I/O Error:" + baseUrl);
+            return new ReturnObject(ResponseCode.FILE_NO_WRITE_PERMISSION);
+        }
+        return returnObject;
+    }
 
     /**
      * @param couponActivity 修改内容
@@ -525,8 +531,6 @@ public class CouponActivityServiceImpl implements CouponActivityService {
         }
 
     }
-    
-
 
     /**
      * @param userId
@@ -547,18 +551,13 @@ public class CouponActivityServiceImpl implements CouponActivityService {
             return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
         boolean effective=false;
         LocalDateTime now=LocalDateTime.now();
-        //如果活动是在待上线或者进行中，即活动时间有效
-        if (now.isAfter(couponActivityPo.getEndTime()) || now.isAfter(couponActivityPo.getBeginTime()) && now.isBefore(couponActivityPo.getEndTime())) {
-            //如果活动状态不是已下线（因为有可能时间是有效，但被管理员下线了）
-            if (couponActivityPo.getState().byteValue() != (byte) CouponActivity.State.CANCELLED.getCode()) {
-               effective=true;
-            }
-        }
-        if(effective==false)
-            return new ReturnObject(ResponseCode.COUPONACT_STATENOTALLOW);
-        //若领取优惠券的时间还没到
-        if(couponActivityPo.getCouponTime().isAfter(now))
-            return new ReturnObject(ResponseCode.COUPON_STATENOTALLOW);
+        //优惠券活动终止
+        if (couponActivityPo.getState().byteValue() != (byte) CouponActivity.State.CANCELLED.getCode()
+        ||now.isAfter(couponActivityPo.getEndTime()) )
+            return new ReturnObject(ResponseCode.COUPON_END);
+        //领券时间还没到
+        if(now.isBefore(couponActivityPo.getCouponTime()))
+            return new ReturnObject(ResponseCode.COUPON_NOTBEGIN);
         int quantityType = couponActivityPo.getQuantitiyType();
         ReturnObject returnObject = null;
         try {
@@ -580,6 +579,7 @@ public class CouponActivityServiceImpl implements CouponActivityService {
                     for (int i = 0; i < couponActivityPo.getQuantity(); i++)
                         returnObject = couponDao.addCoupon(couponPo);//这里返回值循环赋值？？？
                 } else if (quantityType == 1) {
+                    //判断数量是否足够
                     CouponPo couponPo = createCoupon(userId, id, couponActivityPo);
                     returnObject = couponDao.addCoupon(couponPo);
                     //用户领取完优惠券之后要减优惠券数量

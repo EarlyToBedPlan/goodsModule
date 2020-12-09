@@ -286,25 +286,26 @@ public class CouponController {
             return Common.getNullRetObj(new ReturnObject<>(returnObject.getCode(), returnObject.getErrmsg()), httpServletResponse);
         }
     }
-    @ApiOperation(value = "买家使用优惠券列表")
-    @ApiImplicitParams({
-            @ApiImplicitParam(paramType = "header", dataType = "String", name = "authorization", value = "Token", required = true),
-            @ApiImplicitParam(paramType = "path", dataType = "Integer", name = "优惠券id", value = "state", required = true),
-    })
-    @ApiResponses({
-            @ApiResponse(code = 0, message = "成功"),
-    })
-    @Audit
-    @PutMapping("/coupons/{id}")
-    public Object useCoupon(@PathVariable Long id, @LoginUser Long userId) {
-
-        ReturnObject returnObject = couponActivityService.useCoupon(id,userId);
-        if (returnObject.getData() != null)
-            return ResponseUtil.ok(returnObject.getData());
-        else {
-            return Common.getNullRetObj(new ReturnObject<>(returnObject.getCode(), returnObject.getErrmsg()), httpServletResponse);
-        }
-    }
+//    内部API
+//    @ApiOperation(value = "买家使用优惠券列表")
+//    @ApiImplicitParams({
+//            @ApiImplicitParam(paramType = "header", dataType = "String", name = "authorization", value = "Token", required = true),
+//            @ApiImplicitParam(paramType = "path", dataType = "Integer", name = "优惠券id", value = "state", required = true),
+//    })
+//    @ApiResponses({
+//            @ApiResponse(code = 0, message = "成功"),
+//    })
+//    @Audit
+//    @PutMapping("/coupons/{id}")
+//    public Object useCoupon(@PathVariable Long id, @LoginUser Long userId) {
+//
+//        ReturnObject returnObject = couponActivityService.useCoupon(id,userId);
+//        if (returnObject.getData() != null)
+//            return ResponseUtil.ok(returnObject.getData());
+//        else {
+//            return Common.getNullRetObj(new ReturnObject<>(returnObject.getCode(), returnObject.getErrmsg()), httpServletResponse);
+//        }
+//    }
     @ApiOperation(value = "用户领取优惠券")
     @ApiImplicitParams({
             @ApiImplicitParam(paramType = "header", dataType = "String", name = "authorization", value = "Token", required = true),
