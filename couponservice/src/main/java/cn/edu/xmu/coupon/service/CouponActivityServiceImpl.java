@@ -11,12 +11,14 @@ import cn.edu.xmu.coupon.model.po.CouponPo;
 import cn.edu.xmu.coupon.model.po.CouponSkuPo;
 //import cn.edu.xmu.goods.model.vo.GoodsSkuRetVo;
 //import cn.edu.xmu.goods.service.GoodsSkuServiceClass;
+import cn.edu.xmu.coupon.model.vo.CouponStateVo;
 import cn.edu.xmu.goods.model.bo.GoodsSku;
 import cn.edu.xmu.goods.model.bo.GoodsSpu;
 import cn.edu.xmu.goods.model.po.GoodsSkuPo;
 import cn.edu.xmu.goods.model.vo.GoodsSkuRetVo;
 import cn.edu.xmu.goods.model.vo.StateVo;
 import cn.edu.xmu.goods.service.GoodsSkuService;
+import cn.edu.xmu.goods.service.GoodsSkuServiceImpl;
 import cn.edu.xmu.ooad.model.VoObject;
 import cn.edu.xmu.ooad.util.ImgHelper;
 import cn.edu.xmu.ooad.util.ResponseCode;
@@ -55,28 +57,29 @@ public class CouponActivityServiceImpl implements CouponActivityService {
     @Autowired
     GoodsSkuService goodsSkuService;
 
-    /** @author 24320182203218
-     **/
-    @Value("${couponservice.imglocation}")
-    private String imgLocation;
-
-    @Value("${couponservice.dav.sername}")
-    private String davUserName;
-
-    @Value("${couponservice.dav.password}")
-    private String davPassword;
-
-    @Value("${couponservice.dav.baseUrl}")
-    private String baseUrl;
+//    /** @author 24320182203218
+//     **/
+//    @Value("${couponservice.imglocation}")
+//    private String imgLocation;
+//
+//    @Value("${couponservice.dav.sername}")
+//    private String davUserName;
+//
+//    @Value("${couponservice.dav.password}")
+//    private String davPassword;
+//
+//    @Value("${couponservice.dav.baseUrl}")
+//    private String baseUrl;
 
 
     @Override
     @Transactional
-    public ReturnObject<List> getAllState()
+    public ReturnObject<List> getCouponAllState()
     {
-        List<CouponActivity.State> states=new ArrayList<>(CouponActivity.State.STATE_SIZE);
-        for (CouponActivity.State state : CouponActivity.State.values()) {
-            states.add(state);
+        List<CouponStateVo> states=new ArrayList<>(Coupon.State.values().length);
+        for (Coupon.State state : Coupon.State.values()) {
+            CouponStateVo stateVo=new CouponStateVo(state);
+            states.add(stateVo);
         }
         return new ReturnObject<>(states);
     }
@@ -105,7 +108,6 @@ public class CouponActivityServiceImpl implements CouponActivityService {
         }
 
     }
-
 
     /**
      * @param SkuId
@@ -223,8 +225,8 @@ public class CouponActivityServiceImpl implements CouponActivityService {
         try {
             //1. 判断活动状态是否待上线
             CouponActivityPo couponActivityPo = couponActivityDao.getCouponActivityById(activityId);
-            if (CouponActivity.Timeline.getTypeByTime(couponActivityPo.getBeginTime(),couponActivityPo.getEndTime())==CouponActivity.Timeline.WAITING)
-                return new ReturnObject<>(ResponseCode.COUPONACT_STATENOTALLOW);
+            if(couponActivityPo.getState()!=CouponActivity.State.OFFLINE.getCode())
+                return new ReturnObject(ResponseCode.COUPONACT_STATENOTALLOW);
             //2.判断商品是否存在
             //若商品不存在
             for(Long id:skuIds)
@@ -272,11 +274,10 @@ public class CouponActivityServiceImpl implements CouponActivityService {
             if (couponSkuPo == null)
                 return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
             CouponActivityPo couponActivityPo = couponActivityDao.getCouponActivityById(couponSkuPo.getActivityId());
-            //判断活动状态是否为待上线
-            CouponActivity.Timeline timeline=CouponActivity.Timeline.getTypeByTime(couponActivityPo.getBeginTime(),couponActivityPo.getEndTime());
-            if (timeline!=CouponActivity.Timeline.WAITING||timeline!=CouponActivity.Timeline.TOMORROW_ONLINE)
-                return new ReturnObject<>(ResponseCode.COUPONACT_STATENOTALLOW, String.format("优惠活动非待上线,不允许修改限定范围 id：" + couponSkuPo.getActivityId()));
-            couponSkuDao.deleteCouponSku(id);
+            //判断活动状态是否为下线
+            if(couponActivityPo.getState()!=CouponActivity.State.OFFLINE.getCode())
+                return new ReturnObject(ResponseCode.COUPONACT_STATENOTALLOW);
+          couponSkuDao.deleteCouponSku(id);
             return new ReturnObject();
         } catch (Exception e) {
             logger.error("发生了严重的服务器内部错误：" + e.getMessage());
@@ -389,7 +390,7 @@ public class CouponActivityServiceImpl implements CouponActivityService {
             for (CouponSkuPo po : couponSkuPos) {
                 //判断商品参与的活动与即将加入的活动时间是否冲突
                 CouponActivityPo couponActivityPo = couponActivityDao.getCouponActivityById(po.getActivityId());
-                if (couponActivityPo.getState()!=CouponActivity.State.CANCELLED.getCode()
+                if (couponActivityPo.getState()!=CouponActivity.State.DELETED.getCode()
                         && timeClash(couponActivityPo.getBeginTime(), couponActivityPo.getEndTime(), beginTime, endTime)) {
                     return new ReturnObject<>(true);
                 }
@@ -400,51 +401,51 @@ public class CouponActivityServiceImpl implements CouponActivityService {
             return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR);
         }
     }
-    /**
-     * @param id
-     * @param multipartFile
-     * @description: 优惠活动上传图片
-     * @return: cn.edu.xmu.ooad.util.ReturnObject
-     * @author: Feiyan Liu
-     * @date: Created at 2020/12/1 13:39
-     */
-    @Transactional
-    @Override
-    public ReturnObject uploadImg(Long id, MultipartFile multipartFile) {
-        CouponActivity couponActivity = new CouponActivity(couponActivityDao.getCouponActivityById(id));
-        if (couponActivity == null) {
-            return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST, String.format("查询的优惠活动不存在 id：" + id));
-        }
-        ReturnObject returnObject = new ReturnObject();
-        try {
-            returnObject = ImgHelper.remoteSaveImg(multipartFile, 2, davUserName, davPassword, baseUrl);
-
-            //文件上传错误
-            if (returnObject.getCode() != ResponseCode.OK) {
-                logger.debug(returnObject.getErrmsg());
-                return returnObject;
-            }
-            String oldFileName = couponActivity.getImg();
-
-            couponActivity.setImg(returnObject.getData().toString());
-            ReturnObject updateReturnObject = couponActivityDao.updateCouponActivityImg(couponActivity);
-
-            //数据库更新失败，需删除新增的图片
-            if (updateReturnObject.getCode() == ResponseCode.RESOURCE_ID_NOTEXIST) {
-                ImgHelper.deleteRemoteImg(returnObject.getData().toString(), davUserName, davPassword, baseUrl);
-                return updateReturnObject;
-            }
-
-            //数据库更新成功需删除旧图片，未设置则不删除
-            if (oldFileName != null) {
-                ImgHelper.deleteRemoteImg(oldFileName, davUserName, davPassword, baseUrl);
-            }
-        } catch (IOException e) {
-            logger.debug("uploadImg: I/O Error:" + baseUrl);
-            return new ReturnObject(ResponseCode.FILE_NO_WRITE_PERMISSION);
-        }
-        return returnObject;
-    }
+//    /**
+//     * @param id
+//     * @param multipartFile
+//     * @description: 优惠活动上传图片
+//     * @return: cn.edu.xmu.ooad.util.ReturnObject
+//     * @author: Feiyan Liu
+//     * @date: Created at 2020/12/1 13:39
+//     */
+//    @Transactional
+//    @Override
+//    public ReturnObject uploadImg(Long id, MultipartFile multipartFile) {
+//        CouponActivity couponActivity = new CouponActivity(couponActivityDao.getCouponActivityById(id));
+//        if (couponActivity == null) {
+//            return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST, String.format("查询的优惠活动不存在 id：" + id));
+//        }
+//        ReturnObject returnObject = new ReturnObject();
+//        try {
+//            returnObject = ImgHelper.remoteSaveImg(multipartFile, 2, davUserName, davPassword, baseUrl);
+//
+//            //文件上传错误
+//            if (returnObject.getCode() != ResponseCode.OK) {
+//                logger.debug(returnObject.getErrmsg());
+//                return returnObject;
+//            }
+//            String oldFileName = couponActivity.getImg();
+//
+//            couponActivity.setImg(returnObject.getData().toString());
+//            ReturnObject updateReturnObject = couponActivityDao.updateCouponActivityImg(couponActivity);
+//
+//            //数据库更新失败，需删除新增的图片
+//            if (updateReturnObject.getCode() == ResponseCode.RESOURCE_ID_NOTEXIST) {
+//                ImgHelper.deleteRemoteImg(returnObject.getData().toString(), davUserName, davPassword, baseUrl);
+//                return updateReturnObject;
+//            }
+//
+//            //数据库更新成功需删除旧图片，未设置则不删除
+//            if (oldFileName != null) {
+//                ImgHelper.deleteRemoteImg(oldFileName, davUserName, davPassword, baseUrl);
+//            }
+//        } catch (IOException e) {
+//            logger.debug("uploadImg: I/O Error:" + baseUrl);
+//            return new ReturnObject(ResponseCode.FILE_NO_WRITE_PERMISSION);
+//        }
+//        return returnObject;
+//    }
 
     /**
      * @param couponActivity 修改内容
@@ -459,9 +460,11 @@ public class CouponActivityServiceImpl implements CouponActivityService {
         try {
             CouponActivityPo po = couponActivityDao.getCouponActivityById(couponActivity.getId());
             if (po == null)
-                return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST, String.format("优惠活动不存在 id：" + couponActivity.getId()));
+                return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
             if (po.getShopId() != couponActivity.getShopId())
-                return new ReturnObject<>(ResponseCode.RESOURCE_ID_OUTSCOPE, String.format("无权限修改此店的优惠活动"));
+                return new ReturnObject<>(ResponseCode.RESOURCE_ID_OUTSCOPE);
+            if(po.getState()!=CouponActivity.State.OFFLINE.getCode())
+                return new ReturnObject(ResponseCode.COUPONACT_STATENOTALLOW);
             return couponActivityDao.updateCouponActivity(couponActivity);
         } catch (Exception e) {
             logger.error("发生了严重的服务器内部错误：" + e.getMessage());
@@ -483,9 +486,11 @@ public class CouponActivityServiceImpl implements CouponActivityService {
         try {
             CouponActivityPo couponActivityPo=couponActivityDao.getCouponActivityById(id);
             if (couponActivityPo == null)
-                return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST, String.format("优惠活动不存在 id：" + id));
+                return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
             if(couponActivityPo.getShopId()!=shopId)
-                return new ReturnObject<>(ResponseCode.RESOURCE_ID_OUTSCOPE, String.format("无权限删除此店的优惠活动"));
+                return new ReturnObject<>(ResponseCode.RESOURCE_ID_OUTSCOPE);
+            if(couponActivityPo.getState()!=CouponActivity.State.ONLINE.getCode())
+                return new ReturnObject(ResponseCode.COUPONACT_STATENOTALLOW);
             couponActivityDao.deleteCouponActivity(id);
             //直接删了优惠券吗？还是将状态改为不可用？
             //暂时删了优惠券
@@ -552,7 +557,7 @@ public class CouponActivityServiceImpl implements CouponActivityService {
         boolean effective=false;
         LocalDateTime now=LocalDateTime.now();
         //优惠券活动终止
-        if (couponActivityPo.getState().byteValue() != (byte) CouponActivity.State.CANCELLED.getCode()
+        if (couponActivityPo.getState().byteValue() != (byte) CouponActivity.State.DELETED.getCode()
         ||now.isAfter(couponActivityPo.getEndTime()) )
             return new ReturnObject(ResponseCode.COUPON_END);
         //领券时间还没到

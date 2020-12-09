@@ -20,7 +20,7 @@ public interface CouponActivityService {
      * @author: Feiyan Liu
      * @date: Created at 2020/12/9 10:27
      */
-    ReturnObject<List> getAllState();
+    ReturnObject<List> getCouponAllState();
     /**
      * @description:根据活动id获取活动详情（只能查看本店的）
      */
@@ -54,7 +54,7 @@ public interface CouponActivityService {
     /**
      * @description:上传图片
      */
-    ReturnObject uploadImg(Long id, MultipartFile multipartFile);
+    //ReturnObject uploadImg(Long id, MultipartFile multipartFile);
 
     /**
      * @description:管理员下线优惠活动
