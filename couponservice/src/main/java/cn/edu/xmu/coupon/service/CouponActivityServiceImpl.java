@@ -113,7 +113,7 @@ public class CouponActivityServiceImpl implements CouponActivityService {
     }
 
     /**
-     * @param SkuId
+     * @param skuId
      * @param couponActivity
      * @description:新建己方优惠活动 bug：要判断是否要插入优惠券 优惠券的生成形式还没设计 是最初就全部生成吗？
      * @return: cn.edu.xmu.ooad.util.ReturnObject
@@ -122,24 +122,24 @@ public class CouponActivityServiceImpl implements CouponActivityService {
      */
     @Transactional
     @Override
-    public ReturnObject createCouponActivity(Long shopId, Long SkuId, CouponActivity couponActivity) {
+    public ReturnObject createCouponActivity(Long shopId, Long skuId, CouponActivity couponActivity) {
         ReturnObject ret = new ReturnObject();
         //判断商品是否存在
         try {
-            GoodsSkuRetVo vo = goodsSkuService.getSkuById(SkuId).getData();
+            GoodsSkuRetVo vo = goodsSkuService.getSkuById(skuId).getData();
             if (vo.getId() == null)
-                return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST, String.format("新增优惠商品失败，优惠商品不存在 id：" + SkuId));
+                return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST, String.format("新增优惠商品失败，优惠商品不存在 id：" + skuId));
 //            //判断商品是否属于此商铺
 //            if (vo.getShop().getId() != shopId)
 //                return new ReturnObject<>(ResponseCode.RESOURCE_ID_OUTSCOPE, String.format("创建优惠活动失败，商品非用户店铺的商品"));
             //判断商品同一时段是否有其他活动（不同时间段有不同活动是可以的）
-            boolean result = (Boolean) checkActivityParticipation(SkuId, couponActivity.getBeginTime(), couponActivity.getEndTime()).getData();
+            boolean result = (Boolean) checkCouponActivityParticipation(skuId, couponActivity.getBeginTime(), couponActivity.getEndTime()).getData();
             if (result) {
-                logger.debug("the Sku id=" + SkuId + " already has other activity at the same time.");
+                logger.debug("the Sku id=" + skuId + " already has other activity at the same time.");
                 return new ReturnObject<>(ResponseCode.SKU_PARTICIPATE);
             }
-            CouponActivityPo newPo = couponActivityDao.addCouponActivity(couponActivity, SkuId);
-            couponSkuDao.addCouponSku(SkuId, newPo.getId());
+            CouponActivityPo newPo = couponActivityDao.addCouponActivity(couponActivity, skuId);
+            couponSkuDao.addCouponSku(skuId, newPo.getId());
             couponActivity.setId(newPo.getId());
             VoObject retVo = couponActivity.createVo();
             return new ReturnObject(retVo);
@@ -232,7 +232,7 @@ public class CouponActivityServiceImpl implements CouponActivityService {
                 //4.判断商品同一时段是否有其他活动（不同时间段有不同活动是可以的）
                 ReturnObject<CouponActivity> couponActivityReturnObject = getCouponActivityById(activityId);
                 CouponActivity couponActivity = couponActivityReturnObject.getData();
-                Boolean result = (Boolean) checkActivityParticipation(id, couponActivity.getBeginTime(), couponActivity.getEndTime()).getData();
+                Boolean result = (Boolean) checkCouponActivityParticipation(id, couponActivity.getBeginTime(), couponActivity.getEndTime()).getData();
                 if (result) {
                     logger.debug("the Sku id=" + id + " already has other activity at the same time.");
                     return new ReturnObject<>(ResponseCode.SKU_PARTICIPATE);
@@ -342,29 +342,7 @@ public class CouponActivityServiceImpl implements CouponActivityService {
     }
 
 
-    /**
-     * @param SkuId
-     * @param beginTime
-     * @param endTime
-     * @description: 判断Sku在某个时间段内是否参加了活动
-     * @return: cn.edu.xmu.ooad.util.ReturnObject
-     * @author: Feiyan Liu
-     * @date: Created at 2020/12/5 17:24
-     */
-    public ReturnObject checkActivityParticipation(Long SkuId, LocalDateTime beginTime, LocalDateTime endTime) {
-        try {
-            Boolean participateCouponActivity = (Boolean) checkCouponActivityParticipation(SkuId, beginTime, endTime).getData();
-            //这里需要调用三个活动的service的接口
-            boolean participateGroupon = false;
-            boolean participatePreSale = false;
-            boolean participateFlashSale = false;
-            Boolean result = participateCouponActivity && participateFlashSale && participatePreSale && participateGroupon;
-            return new ReturnObject<>(result);
-        } catch (Exception e) {
-            logger.error("发生了严重的服务器内部错误：" + e.getMessage());
-            return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR);
-        }
-    }
+
 
 
     /**
@@ -516,7 +494,6 @@ public class CouponActivityServiceImpl implements CouponActivityService {
             return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR);
         }
     }
-
     /**
      * @param userId
      * @param id
