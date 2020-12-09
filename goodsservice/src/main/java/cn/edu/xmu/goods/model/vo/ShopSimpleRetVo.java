@@ -1,6 +1,6 @@
 package cn.edu.xmu.goods.model.vo;
 
-import cn.edu.xmu.goods.model.bo.Shop;
+import cn.edu.xmu.shop.model.bo.Shop;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -21,6 +21,6 @@ public class ShopSimpleRetVo {
 
     public ShopSimpleRetVo(Shop shop){
         this.id = shop.getId();
-        this.name = shop.getName();
+        this.name = shop.getShopName();
     }
 }

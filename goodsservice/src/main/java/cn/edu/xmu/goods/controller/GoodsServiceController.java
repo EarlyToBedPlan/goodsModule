@@ -2,10 +2,7 @@ package cn.edu.xmu.goods.controller;
 
 import cn.edu.xmu.goods.model.bo.GoodsSku;
 import cn.edu.xmu.goods.model.bo.GoodsSpu;
-import cn.edu.xmu.goods.model.vo.GoodsSkuRetVo;
-import cn.edu.xmu.goods.model.vo.GoodsSkuSimpleRetVo;
-import cn.edu.xmu.goods.model.vo.GoodsSpuRetVo;
-import cn.edu.xmu.goods.model.vo.StateVo;
+import cn.edu.xmu.goods.model.vo.*;
 import cn.edu.xmu.goods.service.BrandService;
 import cn.edu.xmu.goods.service.GoodsSkuService;
 import cn.edu.xmu.goods.service.GoodsSpuService;
@@ -31,6 +28,7 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import javax.servlet.http.HttpServletResponse;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -235,7 +233,7 @@ public class GoodsServiceController {
     })
     //@Audit
     @PostMapping("/shops/{shopId}/spus/{id}/skus")
-    public Object insertSku(@Validated @RequestBody GoodsSkuRetVo vo, BindingResult bindingResult,
+    public Object insertSku(@Validated @RequestBody GoodsSkuPostVo vo, BindingResult bindingResult,
                              @LoginUser @ApiIgnore @RequestParam(required = false) Long userId,
                              @PathVariable("shopId") Long shopId,
                              @PathVariable("id") Long id) {
@@ -247,7 +245,8 @@ public class GoodsServiceController {
         }
         GoodsSku goodsSku = new GoodsSku(vo);
         goodsSku.setDisabled((byte)0);
-        logger.info("sku binding");
+        goodsSku.setGmtCreate(LocalDateTime.now());
+        goodsSku.setGmtModified(LocalDateTime.now());
         ReturnObject<GoodsSkuSimpleRetVo> retObject = goodsSkuService.insertGoodsSku(goodsSku, shopId, id);
         if (retObject.getData() != null) {
             httpServletResponse.setStatus(HttpStatus.CREATED.value());
@@ -290,7 +289,7 @@ public class GoodsServiceController {
     @Audit
     @PutMapping("/shops/{shopId}/skus/{id}")
     public Object changePriv(@PathVariable Long id,
-                             @Validated @RequestBody GoodsSkuRetVo vo,
+                             @Validated @RequestBody GoodsSkuPostVo vo,
                              BindingResult bindingResult,
                              @PathVariable Long shopId,
                              HttpServletResponse httpServletResponse){
@@ -649,5 +648,6 @@ public class GoodsServiceController {
         ReturnObject returnObject = brandService.uploadBrandImg(id, multipartFile);
         return Common.getNullRetObj(returnObject, httpServletResponse);
     }
+
 
 }

@@ -1,7 +1,10 @@
 package cn.xmu.edu.goods.controller;
 
 import cn.edu.xmu.goods.GoodsServiceApplication;
+import cn.edu.xmu.goods.model.vo.UpdateBrandVoBody;
+import cn.edu.xmu.ooad.util.JacksonUtil;
 import cn.edu.xmu.ooad.util.JwtHelper;
+import com.alibaba.fastjson.JSONException;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.slf4j.Logger;
@@ -26,6 +29,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 public class BrandServiceControllerTest {
 
+
+    private static final Logger logger = LoggerFactory.getLogger(BrandServiceControllerTest.class);
     @Autowired
     private MockMvc mvc;
 
@@ -35,7 +40,6 @@ public class BrandServiceControllerTest {
         return token;
     }
 
-    public static final Logger logger = LoggerFactory.getLogger(BrandServiceControllerTest.class);
     @Test
     //200
     public void getBrands1() throws Exception{
@@ -117,4 +121,66 @@ public class BrandServiceControllerTest {
     }
 
 
+    @Test
+    public void updateBrandTest1() throws Exception {
+        UpdateBrandVoBody updateBrandVo = new UpdateBrandVoBody();
+        updateBrandVo.setDetail("Description");
+        updateBrandVo.setName("中国队长");
+        String token = creatTestToken(1L, 0L, 100);
+        String brandJson = JacksonUtil.toJson(updateBrandVo);
+        String expectedResponse = "";
+        String responseString = null;
+        try {
+            responseString = this.mvc.perform(put("/brands/shops/0/brands/100").header("authorization", token).contentType("application/json;charset=UTF-8").content(brandJson))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType("application/json;charset=UTF-8"))
+                    .andReturn().getResponse().getContentAsString();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        expectedResponse = "{\"errno\":0,\"errmsg\":\"成功\"}";
+        try {
+            JSONAssert.assertEquals(expectedResponse, responseString, true);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        String responseString1 = this.mvc.perform(get("/brands/brands/100"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/json;charset=UTF-8"))
+                .andReturn().getResponse().getContentAsString();
+        String expectedResponse1 = "{\"errno\":0,\"data\":{\"brandPo\":{\"id\":100,\"name\":\"中国队长\",\"detail\":\"Description\",\"imageUrl\":null,\"gmtCreate\":\"2020-12-07T11:24:47\",\"gmtModified\":\"2020-12-07T11:24:47\"},\"name\":\"中国队长\",\"id\":100,\"detail\":\"Description\",\"imageUrl\":null,\"gmtModified\":\"2020-12-07T11:24:47\",\"gmtCreate\":\"2020-12-07T11:24:47\",\"po\":{\"id\":100,\"name\":\"中国队长\",\"detail\":\"Description\",\"imageUrl\":null,\"gmtCreate\":\"2020-12-07T11:24:47\",\"gmtModified\":\"2020-12-07T11:24:47\"}},\"errmsg\":\"成功\"}\n";
+        JSONAssert.assertEquals(responseString1,expectedResponse1, true);
+
+
+    }
+
+    @Test
+    public void updateBrandTest2() throws Exception {
+        UpdateBrandVoBody updateBrandVo = new UpdateBrandVoBody();
+        updateBrandVo.setDetail("Description");
+        updateBrandVo.setName("中国队长");
+        String token = creatTestToken(1L, 0L, 100);
+        String brandJson = JacksonUtil.toJson(updateBrandVo);
+        String expectedResponse = "";
+        String responseString = null;
+        try {
+            responseString = this.mvc.perform(put("/brands/shops/0/brands/114514").header("authorization", token).contentType("application/json;charset=UTF-8").content(brandJson))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType("application/json;charset=UTF-8"))
+                    .andReturn().getResponse().getContentAsString();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        expectedResponse = "{\"errno\":504,\"errmsg\":\"操作的资源id不存在\"}";
+        try {
+            JSONAssert.assertEquals(expectedResponse, responseString, true);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+
+
+    }
 }

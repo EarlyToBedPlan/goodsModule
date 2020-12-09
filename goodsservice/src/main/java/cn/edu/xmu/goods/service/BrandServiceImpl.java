@@ -13,6 +13,8 @@ import cn.edu.xmu.ooad.util.ResponseCode;
 import cn.edu.xmu.ooad.util.ReturnObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
@@ -23,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
+
 /**
  * @author Yancheng Lai
  * createdBy Yancheng Lai 2020/12/3 22:01
@@ -31,6 +34,8 @@ import java.io.IOException;
 @Service
 public class BrandServiceImpl implements BrandService{
 
+
+    public static final Logger logger = LoggerFactory.getLogger(BrandServiceImpl.class);
     @Autowired
     BrandDao brandDao;
 
@@ -56,8 +61,9 @@ public class BrandServiceImpl implements BrandService{
     }
     @Transactional
     public ReturnObject<VoObject> updateBrand(Brand brand, Long shopId, Long id){
-            brand.setId(id);
-            return brandDao.updateBrand(brand);
+        brand.setId(id);
+        logger.info("Service:update Brand id = "+id.toString());
+        return brandDao.updateBrand(brand);
     }
 
     @Transactional

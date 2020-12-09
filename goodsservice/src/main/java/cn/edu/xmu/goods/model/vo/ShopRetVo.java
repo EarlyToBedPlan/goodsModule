@@ -1,5 +1,6 @@
 package cn.edu.xmu.goods.model.vo;
 
+
 import cn.edu.xmu.goods.model.bo.Shop;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -21,7 +22,7 @@ public class ShopRetVo {
     @ApiModelProperty(value = "名称")
     private String name;
     @ApiModelProperty(value = "状态")
-    private Integer state;
+    private Byte state;
     @ApiModelProperty(value = "创建时间")
     private LocalDateTime gmtCreate;
     @ApiModelProperty(value = "编辑时间")
@@ -34,4 +35,6 @@ public class ShopRetVo {
         this.gmtCreate  =shop.getGmtCreate();
         this.gmtModified = shop.getGmtModified();
     }
+
+
 }

@@ -1,6 +1,7 @@
 package cn.edu.xmu.goods.model.vo;
 
 import cn.edu.xmu.goods.model.bo.*;
+import cn.edu.xmu.shop.model.vo.ShopSimpleVo;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.models.auth.In;
@@ -35,7 +36,7 @@ public class GoodsSpuRetVo {
     @ApiModelProperty(value = "运费模板id")
     private Long freightId;
     @ApiModelProperty(value = "店铺")
-    private ShopSimpleRetVo shop;
+    private ShopSimpleVo shop;
     @ApiModelProperty(value = "商品条码")
     private String goodsSn;
     @ApiModelProperty(value = "商品细节")
@@ -81,5 +82,7 @@ public class GoodsSpuRetVo {
         this.setGmtModified(goodsSpu.getGmtModified());
 
     }
+
+    public GoodsSpuRetVo(){}
 
 }

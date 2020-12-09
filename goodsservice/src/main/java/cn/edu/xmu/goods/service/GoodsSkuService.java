@@ -1,14 +1,10 @@
 package cn.edu.xmu.goods.service;
 
 import cn.edu.xmu.goods.model.bo.GoodsSku;
-import cn.edu.xmu.goods.model.vo.GoodsSkuRetVo;
-import cn.edu.xmu.goods.model.vo.GoodsSkuSimpleRetVo;
-import cn.edu.xmu.goods.model.vo.StateVo;
+import cn.edu.xmu.goods.model.vo.*;
 import cn.edu.xmu.ooad.model.VoObject;
 import cn.edu.xmu.ooad.util.ReturnObject;
 import com.github.pagehelper.PageInfo;
-import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -21,6 +17,12 @@ import java.util.List;
  **/
 
 public interface GoodsSkuService {
+
+    public Boolean changeGoodsFreightWeight(Long FreightId, Long defaultFreightId);
+
+    public InfoVo getWeightBySkuId(Long skuId);
+
+    public Boolean deductStock(List<OrderItemVo> vo);
 
     public ReturnObject<VoObject> revokeSku(Long id);
 

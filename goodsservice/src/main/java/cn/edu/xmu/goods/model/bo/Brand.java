@@ -3,6 +3,7 @@ package cn.edu.xmu.goods.model.bo;
 import cn.edu.xmu.goods.model.po.BrandPo;
 import cn.edu.xmu.goods.model.vo.BrandRetVo;
 import cn.edu.xmu.goods.model.vo.BrandSimpleRetVo;
+import cn.edu.xmu.goods.model.vo.UpdateBrandVoBody;
 import cn.edu.xmu.ooad.model.*;
 import lombok.Data;
 
@@ -35,11 +36,18 @@ public class Brand implements VoObject{
         this.brandPo = brandPo;
     }
 
+    public Brand(UpdateBrandVoBody vo) {
+        this.brandPo = new BrandPo();
+        this.brandPo.setDetail(vo.getDetail());
+        this.brandPo.setName(vo.getName());
+    }
+
     public BrandPo getPo(){
         return this.brandPo;
     }
 
     public Brand(BrandRetVo brandRetVo){
+        this.brandPo = new BrandPo();
         brandPo.setDetail(brandRetVo.getDetail());
         brandPo.setId(brandRetVo.getId());
         brandPo.setImageUrl(brandRetVo.getImageUrl());

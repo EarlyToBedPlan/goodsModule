@@ -2,21 +2,17 @@ package cn.edu.xmu.goods.service;
 
 import cn.edu.xmu.goods.dao.GoodsSkuDao;
 import cn.edu.xmu.goods.dao.GoodsSpuDao;
-import cn.edu.xmu.goods.mapper.GoodsSkuPoMapper;
 import cn.edu.xmu.goods.model.bo.GoodsSku;
 import cn.edu.xmu.goods.model.bo.GoodsSpu;
-import cn.edu.xmu.goods.model.bo.Shop;
 import cn.edu.xmu.goods.model.po.GoodsSkuPo;
 import cn.edu.xmu.goods.model.po.GoodsSpuPo;
 import cn.edu.xmu.goods.model.po.GoodsSpuPoExample;
-import cn.edu.xmu.goods.model.vo.GoodsSkuRetVo;
-import cn.edu.xmu.goods.model.vo.GoodsSkuSimpleRetVo;
-import cn.edu.xmu.goods.model.vo.GoodsSpuRetVo;
-import cn.edu.xmu.goods.model.vo.StateVo;
+import cn.edu.xmu.goods.model.vo.*;
 import cn.edu.xmu.ooad.model.VoObject;
 import cn.edu.xmu.ooad.util.ImgHelper;
 import cn.edu.xmu.ooad.util.ResponseCode;
 import cn.edu.xmu.ooad.util.ReturnObject;
+import cn.edu.xmu.shop.service.ShopService;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.slf4j.Logger;
@@ -25,13 +21,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * SKU Service接口
@@ -49,6 +43,8 @@ public class GoodsSkuServiceImpl implements GoodsSkuService {
     @Autowired
     GoodsSpuDao goodsSpuDao;
 
+    @Autowired
+    ShopService shopService;
     @Value("${goodsservice.dav.username}")
     private String davUsername;
 
@@ -111,7 +107,7 @@ public class GoodsSkuServiceImpl implements GoodsSkuService {
 //            logger.info("Service node 2");
 //            retObj = new ReturnObject<GoodsSkuSimpleRetVo>(ResponseCode.RESOURCE_ID_NOTEXIST, String.format("Insert false: Spu not in shop" + goodsSku.getName()));
 //        } else {
-            logger.info("Service node 3");
+//            logger.info("Service node 3");
             goodsSku.setGoodsSpuId(id);
 
             retObj = goodsSkuDao.insertGoodsSku(goodsSku);
@@ -131,7 +127,7 @@ public class GoodsSkuServiceImpl implements GoodsSkuService {
     @Transactional
     public ReturnObject<VoObject> updateSku(GoodsSku vo,Long shopId,Long id){
         if (goodsSkuDao.checkSkuId(shopId,id)) {
-            return goodsSkuDao.updateSku(vo, shopId, id);
+            return goodsSkuDao.updateSku(vo, id);
         } else {
             return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
         }
@@ -168,7 +164,7 @@ public class GoodsSkuServiceImpl implements GoodsSkuService {
             String oldFilename = goodsSku.getImageUrl();
             goodsSku.setImageUrl(returnObject.getData().toString());
 
-            ReturnObject updateReturnObject = goodsSkuDao.updateSku(goodsSku,((Shop)goodsSkuDao.getShopById(goodsSku.getId()).getData()).getId(),goodsSku.getId());
+            ReturnObject updateReturnObject = goodsSkuDao.updateSku(goodsSku,goodsSku.getId());
             if(updateReturnObject.getCode()==ResponseCode.FIELD_NOTVALID) {
                 ImgHelper.deleteRemoteImg(returnObject.getData().toString(), davUsername, davPassword, baseUrl);
                 return updateReturnObject;
@@ -241,6 +237,68 @@ public class GoodsSkuServiceImpl implements GoodsSkuService {
     @Transactional
     public ReturnObject<VoObject> updateSkuOffShelves(Long shopId,Long id){
             return goodsSkuDao.updateSkuOffShelves(id);
+    }
+
+    @Transactional
+    public Boolean deductStock(List<OrderItemVo> vo) {
+        for(OrderItemVo itemVo: vo){
+            logger.info("s: check for "+itemVo.getSkuId());
+            ReturnObject ret = goodsSkuDao.checkStock(itemVo.getSkuId(),itemVo.getQuantity());
+            if(ret.getCode() == ResponseCode.OK){
+                continue;
+            } else {
+                return false;
+            }
+        }
+        for(OrderItemVo itemVo: vo){
+            logger.info("s: deduck for "+itemVo.getSkuId());
+            ReturnObject ret = goodsSkuDao.deductStock(itemVo.getSkuId(),itemVo.getQuantity());
+            if(ret.getCode() == ResponseCode.OK){
+                continue;
+            } else {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Transactional
+    public InfoVo getWeightBySkuId(Long skuId) {
+        ReturnObject<GoodsSkuPo> retobj= goodsSkuDao.getSkuById(skuId);
+        ReturnObject<GoodsSpuPo> retspu= goodsSpuDao.getGoodsSpuPoBySkuId(skuId);
+        InfoVo infoVo = new InfoVo();
+        infoVo.setWeight(retobj.getData().getWeight().intValue());
+        infoVo.setFreightModelId(retspu.getData().getFreightId());
+            return infoVo;
+    }
+
+    @Transactional
+    public Boolean changeGoodsFreightWeight(Long FreightId, Long defaultFreightId) {
+        ReturnObject retobj= goodsSpuDao.changeGoodsFreightWeight(FreightId, defaultFreightId);
+        if(retobj.getCode()== ResponseCode.OK){
+            return true;
+        }
+        return false;
+    }
+
+    @Transactional
+    public GoodsSku getGoodsSkuById(Long skuid) {
+        GoodsSku goodsSku = new GoodsSku(goodsSkuDao.getSkuById(skuid).getData());
+        return goodsSku;
+    }
+
+    @Transactional
+    public Boolean checkSkuIdByShopId(Long shopId, Long skuId) {
+        return goodsSkuDao.checkSkuId(shopId,skuId);
+    }
+
+    public List<Long> getSkuIdListByShopId(Long shopId) {
+        return goodsSkuDao.getSkuIdListByShopId(shopId);
+
+    }
+
+    public List<GoodsSku> getSkuListByShopId(Long shopId) {
+        return goodsSkuDao.getSkuListByShopId(shopId);
     }
 
 }

@@ -19,9 +19,13 @@ import org.springframework.stereotype.Repository;
 import javax.accessibility.AccessibleRelation;
 import java.sql.Time;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 
 
+/**
+ * @author Ruzhen Chang
+ */
 @Repository
 public class ShopDao implements InitializingBean{
     @Autowired
@@ -29,7 +33,7 @@ public class ShopDao implements InitializingBean{
 
     private  static  final Logger logger = LoggerFactory.getLogger(ShopDao.class);
 
-    @Value("${privilegeservice.initialization}")
+    @Value("${shopservice.initialization}")
     private Boolean initialization;
 
     @Override
@@ -40,7 +44,6 @@ public class ShopDao implements InitializingBean{
      * 由店铺id获得店铺
      * @author Ruzhen Chang
      */
-
     public ShopPo getShopById(long shopId){
         ShopPo po=new ShopPo();
         try{
@@ -52,6 +55,7 @@ public class ShopDao implements InitializingBean{
         return po;
 
     }
+
     /**
      * 获得店铺所有状态
      * @author Ruzhen Chang
@@ -69,85 +73,54 @@ public class ShopDao implements InitializingBean{
         return shopState;
     }
 
-
     /**
-     * 店家申请店铺
+     * @Description 检查店铺名是否重复
      * @author Ruzhen Chang
      */
-    public ReturnObject applyNewShop(String shopName){
-        ReturnObject returnObject=null;
-        ShopPo shopPo=new ShopPo();
-        shopPo.setName(shopName);
+    public Boolean checkShopName(String shopName){
+        ShopPoExample example=new ShopPoExample();
+        ShopPoExample.Criteria criteria= example.createCriteria();
+        criteria.andStateNotEqualTo((byte)Shop.State.FAILED.getCode());
+        if(shopName!=null) {
+            criteria.andNameEqualTo(shopName);
+        }
+        boolean empty=false;
         try{
-            LocalDateTime localDateTime= LocalDateTime.now();
-            returnObject=new ReturnObject<>(shopPoMapper.insert(shopPo));
-            logger.debug(("success apply shop:")+shopPo.getId());
-            shopPo.setState((byte) 0);
-            shopPo.setGmtCreate(localDateTime);
-            shopPo.setGmtModified(localDateTime);
-        }catch (DataAccessException e){
-            if (Objects.requireNonNull(e.getMessage()).contains("auth_shop.shop_name_uindex")) {
-                //若有重复名则创建失败
-                logger.debug("insertShop: have same shop name= " + shopPo.getName());
-                returnObject = new ReturnObject<>(ResponseCode.ROLE_REGISTERED, String.format("用户名重复：" + shopPo.getName()));
-            } else {
-                logger.debug("sql exception : " + e.getMessage());
-                returnObject = new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR, String.format("数据库错误：%s", e.getMessage()));
-            }
+            List<ShopPo> shopPos=shopPoMapper.selectByExample(example);
+            empty=shopPos.isEmpty();
+        } catch (Exception e){
+            logger.error("发生严重服务器内部错误："+e.getMessage());
         }
-        catch (Exception e){
-            logger.error("other exception: "+e.getMessage());
-            returnObject=new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR,String.format("发生了严重的数据库错误：%s",e.getMessage()));
-
-        }
-        return returnObject;
+        return !empty;
     }
+
 
 
     /**
      * 店家修改店铺信息
      * @author Ruzhen Chang
      */
-    public ReturnObject<Shop> modifyShopById(long shopId){
-        ShopPo po=getShopById(shopId);
+    public ReturnObject<Shop> updateShop(Shop shop){
+        ShopPo shopPo= new ShopPo();
+        shopPo.setId(shop.getId());
+        shopPo.setName(shop.getShopName());
+        shopPo.setGmtModified(shop.getGmtModified());
         ReturnObject<Shop> returnObject=null;
-        ShopPoExample shopPoExample=new ShopPoExample();
-        ShopPoExample.Criteria criteria=shopPoExample.createCriteria();
-        criteria.andIdEqualTo(shopId);
-        try{
-            int ret = shopPoMapper.updateByPrimaryKey(po);
-//
-            if(ret==0){
-            //修改失败
-            logger.debug("updateRole: update role fail : " + po.toString());
-            returnObject = new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST, String.format("角色id不存在：" + po.getId()));
-        } else {
-            //修改成功
-            logger.debug("updateRole: update role = " + po.toString());
-            returnObject = new ReturnObject<>();
-        }}
-        catch (DataAccessException e) {
-            if (Objects.requireNonNull(e.getMessage()).contains("auth_role.auth_role_name_uindex")) {
-                //若有重复的角色名则修改失败
-                logger.debug("updateRole: have same role name = " + po.getName());
-                returnObject = new ReturnObject<>(ResponseCode.ROLE_REGISTERED, String.format("角色名重复：" + po.getName()));
+        try {
+            int ret = shopPoMapper.updateByPrimaryKeySelective(shopPo);
+            if (ret == 0) {
+                logger.debug("updateShop: update fail. shopId: " + shop.getId());
+                returnObject = new ReturnObject(ResponseCode.RESOURCE_ID_NOTEXIST);
             } else {
-                // 其他数据库错误
-                logger.debug("other sql exception : " + e.getMessage());
-                returnObject = new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR, String.format("数据库错误：%s", e.getMessage()));
+                logger.debug("updateShop: update shop success : " + shop.toString());
+                returnObject = new ReturnObject();
             }
-        }
-        catch (Exception e) {
-            // 其他Exception错误
-            logger.error("other exception : " + e.getMessage());
-            returnObject = new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR, String.format("发生了严重的数据库错误：%s", e.getMessage()));
+        } catch (Exception e) {
+            logger.error("发生了严重的服务器内部错误：" + e.getMessage());
         }
         return returnObject;
 
     }
-
-
-
 
 
     /**
@@ -155,30 +128,30 @@ public class ShopDao implements InitializingBean{
      * @author Ruzhen Chang
      */
     public ReturnObject closeShop(long shopId){
-        ReturnObject retObj=null;
-        ShopPo shopPo=new ShopPo();
+        ReturnObject returnObject = null;
+        ShopPo shopPo = new ShopPo();
         shopPo.setId(shopId);
-        shopPo.setState((byte) Shop.State.DELETE.getCode());
 
-
-        ShopPoExample shopPoExample=new ShopPoExample();
-        ShopPoExample.Criteria criteria=shopPoExample.createCriteria();
-
-        criteria.andIdEqualTo(shopId);
-        try{
-            int ret=shopPoMapper.deleteByPrimaryKey(shopId);
-            if(ret==0){
-                logger.debug("closeShop: id not exist ="+shopId);
-                retObj=new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST,String.format("店铺id不存在："+shopId));
-
-            } else {
-                logger.debug("closeShop: close shop id ="+shopId);
-                retObj=new ReturnObject();
+        try {
+            int ret;
+            if(shopPo.getState()==Shop.State.UNAUDITED.getCode()) {
+                ret = shopPoMapper.deleteByPrimaryKey(shopId);
             }
-        } catch (Exception e){
-            logger.error("发生了严重的服务器内部错误："+e.getMessage());
+            else{
+                shopPo.setState((byte) Shop.State.DELETE.getCode());
+                ret = shopPoMapper.updateByPrimaryKeySelective(shopPo);
+            }
+            if (ret == 0) {
+                logger.debug("closeShop fail. shopId: " + shopId);
+                returnObject = new ReturnObject(ResponseCode.RESOURCE_ID_NOTEXIST);
+            } else {
+                logger.debug("closeShop success. shopId: " + shopId);
+                returnObject = new ReturnObject();
+            }
+        } catch (Exception e) {
+            logger.error("发生了严重的服务器内部错误：" + e.getMessage());
         }
-        return retObj;
+        return returnObject;
     }
 
 
@@ -187,33 +160,27 @@ public class ShopDao implements InitializingBean{
      * @author Ruzhen Chang
      */
     public ReturnObject<Object> auditShop(long shopId,boolean conclusion){
-        ReturnObject retObj=null;
-        ShopPo shopPo=new ShopPo();
+        ReturnObject returnObject = null;
+        ShopPo shopPo = new ShopPo();
         shopPo.setId(shopId);
-        if(conclusion)
-            shopPo.setState((byte) Shop.State.OFFLINE.getCode());
-        else
-            shopPo.setState((byte)Shop.State.FAILED.getCode());
-
-
-        ShopPoExample shopPoExample=new ShopPoExample();
-        ShopPoExample.Criteria criteria=shopPoExample.createCriteria();
-
-        criteria.andIdEqualTo(shopId);
-        try{
-            int ret=shopPoMapper.deleteByPrimaryKey(shopId);
-            if(ret==0){
-                logger.debug("auditShop: id not exist ="+shopId);
-                retObj=new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST,String.format("店铺id不存在："+shopId));
-
+        try {
+            if(conclusion) {
+                shopPo.setState((byte) Shop.State.OFFLINE.getCode());
             } else {
-                logger.debug("auditShop: audited shop id ="+shopId);
-                retObj=new ReturnObject();
+                shopPo.setState((byte)Shop.State.FAILED.getCode());
             }
-        } catch (Exception e){
-            logger.error("发生了严重的服务器内部错误："+e.getMessage());
+            int ret = shopPoMapper.updateByPrimaryKeySelective(shopPo);
+            if (ret == 0) {
+                logger.debug("closeShop fail. shopId: " + shopId);
+                returnObject = new ReturnObject(ResponseCode.RESOURCE_ID_NOTEXIST);
+            } else {
+                logger.debug("closeShop success. shopId: " + shopId);
+                returnObject = new ReturnObject();
+            }
+        } catch (Exception e) {
+            logger.error("发生了严重的服务器内部错误：" + e.getMessage());
         }
-        return retObj;
+        return returnObject;
 
     }
 
@@ -221,65 +188,68 @@ public class ShopDao implements InitializingBean{
      * 上线店铺
      * @author Ruzhen Chang
      */
-    public ReturnObject<Object> onlineShop(long shopId){
-        ReturnObject retObj=null;
-        ShopPo shopPo=new ShopPo();
+    public ReturnObject onShelvesShop(long shopId){
+        ReturnObject returnObject = null;
+        ShopPo shopPo = new ShopPo();
         shopPo.setId(shopId);
         shopPo.setState((byte) Shop.State.ONLINE.getCode());
-
-
-        ShopPoExample shopPoExample=new ShopPoExample();
-        ShopPoExample.Criteria criteria=shopPoExample.createCriteria();
-
-        criteria.andIdEqualTo(shopId);
-        try{
-            int ret=shopPoMapper.deleteByPrimaryKey(shopId);
-            if(ret==0){
-                logger.debug("onlineShop: id not exist ="+shopId);
-                retObj=new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST,String.format("店铺id不存在："+shopId));
-
+        try {
+            int ret = shopPoMapper.updateByPrimaryKeySelective(shopPo);
+            if (ret == 0) {
+                logger.debug("closeShop fail. shopId: " + shopId);
+                returnObject = new ReturnObject(ResponseCode.RESOURCE_ID_NOTEXIST);
             } else {
-                logger.debug("onlineShop: online shop id ="+shopId);
-                retObj=new ReturnObject();
+                logger.debug("closeShop success. shopId: " + shopId);
+                returnObject = new ReturnObject();
             }
-        } catch (Exception e){
-            logger.error("发生了严重的服务器内部错误："+e.getMessage());
+        } catch (Exception e) {
+            logger.error("发生了严重的服务器内部错误：" + e.getMessage());
         }
-        return retObj;
-
+        return returnObject;
     }
+
 
     /**
      * 下线店铺
      * @author Ruzhen Chang
      */
-    public ReturnObject<Object> offlineShop(long shopId){
-        ReturnObject retObj=null;
-        ShopPo shopPo=new ShopPo();
+    public ReturnObject offShelvesShop(long shopId){
+        ReturnObject returnObject = null;
+        ShopPo shopPo = new ShopPo();
         shopPo.setId(shopId);
         shopPo.setState((byte) Shop.State.OFFLINE.getCode());
-
-
-        ShopPoExample shopPoExample=new ShopPoExample();
-        ShopPoExample.Criteria criteria=shopPoExample.createCriteria();
-
-        criteria.andIdEqualTo(shopId);
-        try{
-            int ret=shopPoMapper.deleteByPrimaryKey(shopId);
-            if(ret==0){
-                logger.debug("offlineShop: id not exist ="+shopId);
-                retObj=new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST,String.format("店铺id不存在："+shopId));
-
+        try {
+            int ret = shopPoMapper.updateByPrimaryKeySelective(shopPo);
+            if (ret == 0) {
+                logger.debug("closeShop fail. shopId: " + shopId);
+                returnObject = new ReturnObject(ResponseCode.RESOURCE_ID_NOTEXIST);
             } else {
-                logger.debug("offlineShop: offline shop id ="+shopId);
-                retObj=new ReturnObject();
+                logger.debug("closeShop success. shopId: " + shopId);
+                returnObject = new ReturnObject();
             }
-        } catch (Exception e){
-            logger.error("发生了严重的服务器内部错误："+e.getMessage());
+        } catch (Exception e) {
+            logger.error("发生了严重的服务器内部错误：" + e.getMessage());
         }
-        return retObj;
-
+        return returnObject;
     }
+
+    /**
+     * @Description 新增店铺
+     * @author Ruzhen Chang
+     */
+    public ShopPo insertShop(Shop shop) {
+        ShopPo shopPo = shop.createPo();
+        try {
+            shopPoMapper.insert(shopPo);
+            //插入成功
+            logger.debug("insertShop: insert shop = " + shopPo.toString());
+        } catch (Exception e) {
+            shopPo = null;
+            logger.error("严重错误：" + e.getMessage());
+        }
+        return shopPo;
+    }
+
 
 
 }

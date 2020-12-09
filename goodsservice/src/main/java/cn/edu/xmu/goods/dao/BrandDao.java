@@ -60,12 +60,14 @@ public class BrandDao {
         return new ReturnObject<>(brand);
     }
     public ReturnObject<VoObject> updateBrand(Brand brand){
+        logger.info("Dao:update Brand id = "+brand.getId().toString());
         BrandPo po = brandPoMapper.selectByPrimaryKey(brand.getId());
         if (po != null) {
+            logger.info("Brand Po != null"+brand.getId().toString());
             brandPoMapper.updateByPrimaryKeySelective(brand.getBrandPo());
-            return new ReturnObject<VoObject>();
+            return new ReturnObject<VoObject>(ResponseCode.OK);
         }
-        return new ReturnObject<VoObject>();
+        return new ReturnObject<VoObject>(ResponseCode.RESOURCE_ID_NOTEXIST);
     }
 
     public ReturnObject<VoObject> revokeBrand(Long id){
