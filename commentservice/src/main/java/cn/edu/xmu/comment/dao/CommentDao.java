@@ -28,7 +28,7 @@ public class CommentDao implements InitializingBean{
 
     private static final Logger logger=LoggerFactory.getLogger(CommentDao.class);
 
-    @Value("${privilegeservice.initialization}")
+    @Value("${commentservice.initialization}")
     private Boolean initialization;
 
     @Override
