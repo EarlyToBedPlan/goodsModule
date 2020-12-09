@@ -3,10 +3,14 @@ package cn.edu.xmu.coupon.dao;
 import cn.edu.xmu.coupon.mapper.CouponPoMapper;
 
 import cn.edu.xmu.coupon.model.bo.Coupon;
+import cn.edu.xmu.coupon.model.po.CouponActivityPo;
 import cn.edu.xmu.coupon.model.po.CouponPo;
 import cn.edu.xmu.coupon.model.po.CouponPoExample;
+import cn.edu.xmu.ooad.model.VoObject;
 import cn.edu.xmu.ooad.util.ResponseCode;
 import cn.edu.xmu.ooad.util.ReturnObject;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -14,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -25,6 +30,10 @@ public class CouponDao implements InitializingBean {
     private static final Logger logger = LoggerFactory.getLogger(CouponActivityDao.class);
     @Autowired
     private CouponPoMapper couponMapper;
+
+    @Autowired
+    CouponActivityDao couponActivityDao;
+
     /**
      * 是否初始化，生成signature和加密
      */
@@ -43,24 +52,24 @@ public class CouponDao implements InitializingBean {
      * @author: Feiyan Liu
      * @date: Created at 2020/12/3 17:10
      */
-    public List<CouponPo> getCouponListByUserId(Long id,Integer state)
+    public PageInfo<VoObject> getCouponListByUserId(Long id, Integer state, Integer page, Integer pageSize)
     {
+        PageHelper.startPage(page, pageSize);
         CouponPoExample example=new CouponPoExample();
         CouponPoExample.Criteria criteria=example.createCriteria();
         criteria.andCustomerIdEqualTo(id);
         if(state!=null)
             criteria.andStateEqualTo((byte)state.intValue());
-        List<CouponPo> couponPos = null;
-        try {
-            couponPos = couponMapper.selectByExample(example);
-            if (couponPos.isEmpty()) {
-                logger.debug("getCouponSpuByActivityId: Not Found");
-            }
-            else logger.debug("getCouponSpuByActivityId: retCouponSpu" + couponPos);
-        } catch (Exception e) {
-            logger.error("发生了严重的服务器内部错误haha：" + e.getMessage());
+        List<CouponPo> couponPos =couponPos = couponMapper.selectByExample(example);
+        logger.debug("getCouponSpuByActivityId: retCouponSpu" + couponPos);
+        List<VoObject> couponVos = new ArrayList<>(couponPos.size());
+        for (CouponPo po : couponPos) {
+            //根据活动id获取活动详情 和优惠券信息一起组装成vo返回
+            CouponActivityPo couponActivityPo = couponActivityDao.getCouponActivityById(po.getActivityId());
+            Coupon coupon = new Coupon(po, couponActivityPo);
+            couponVos.add(coupon.createSimpleVo());
         }
-        return couponPos;
+        return new PageInfo<>(couponVos);
     }
 
     /**

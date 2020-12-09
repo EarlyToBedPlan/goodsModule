@@ -3,6 +3,7 @@ package cn.edu.xmu.coupon.controller;
 import cn.edu.xmu.coupon.model.bo.CouponActivity;
 import cn.edu.xmu.coupon.model.vo.CouponActivityVo;
 import cn.edu.xmu.coupon.service.CouponActivityService;
+import cn.edu.xmu.coupon.service.CouponActivityServiceImpl;
 import cn.edu.xmu.ooad.annotation.Audit;
 import cn.edu.xmu.ooad.annotation.Depart;
 import cn.edu.xmu.ooad.annotation.LoginUser;
@@ -23,7 +24,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -40,6 +43,78 @@ public class CouponController {
     @Autowired
     private HttpServletResponse httpServletResponse;
 
+    public enum Timeline {
+        WAITING(0, "待上线"),
+        TOMORROW_ONLINE(1, "明天开始"),
+        ONLINE(2,"正在进行"),
+        OFFLINE(3,"结束下线");
+        private static final Map<Integer, CouponController.Timeline> stateMap;
+
+        static { //由类加载机制，静态块初始加载对应的枚举属性到map中，而不用每次取属性时，遍历一次所有枚举值
+            stateMap = new HashMap();
+            for (CouponController.Timeline enum1 : values()) {
+                stateMap.put(enum1.code, enum1);
+            }
+        }
+        private int code;
+        private String description;
+        Timeline(int code, String description) {
+            this.code = code;
+            this.description = description;
+        }
+        public static CouponController.Timeline getTypeByTime(LocalDateTime beginTime,LocalDateTime endTime)
+        {
+            if(beginTime.isAfter(LocalDateTime.now()))
+                return Timeline.WAITING;
+            else if(LocalDateTime.now().minusDays(1).toLocalDate()==beginTime.toLocalDate())
+                return Timeline.TOMORROW_ONLINE;
+            else if(beginTime.isBefore(LocalDateTime.now())&&endTime.isAfter(LocalDateTime.now()))
+                return Timeline.ONLINE;
+            else
+                return Timeline.OFFLINE;
+        }
+        public static LocalDateTime getBeginTimeByCode(Integer code)
+        {
+            //如果是待上线 则开始时间必然比当前时间晚
+            if(code==Timeline.WAITING.getCode())
+                return LocalDateTime.now();
+            //如果是明天上线 则开始时间比当前时间+1天来得早，但又比当前时间来得晚
+            else if(code==Timeline.TOMORROW_ONLINE.getCode())
+                return LocalDateTime.now().plusDays(1);
+            //如果是在线的活动 则开始时间比当前时间早 结束时间比当前时间晚
+            else if(code==Timeline.ONLINE.getCode())
+                return LocalDateTime.now();
+            //如果是下线的活动 只要求结束时间比当前时间晚
+            else
+                return null;
+        }
+        public static LocalDateTime getEndTimeByCode(Integer code)
+        {
+            //如果是待上线 对结束时间没要求
+            if(code==Timeline.WAITING.getCode())
+                return null;
+            //如果是明天上线 对结束时间也没要求
+            else if(code==Timeline.TOMORROW_ONLINE.getCode())
+                return null;
+            //如果是在线的活动  结束时间比当前时间晚
+            else if(code==Timeline.ONLINE.getCode())
+                return LocalDateTime.now();
+            else //如果是下线的活动 只要求结束时间比当前时间晚
+            return LocalDateTime.now();
+        }
+
+        public static CouponController.Timeline getTypeByCode(Integer code) {
+            return stateMap.get(code);
+        }
+
+        public int getCode() {
+            return code;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+    }
     @ApiOperation(value = "查看优惠活动详情")
     @ApiImplicitParams({
             @ApiImplicitParam(paramType = "header", dataType = "String", name = "authorization", value = "Token", required = true),
@@ -112,7 +187,13 @@ public class CouponController {
                                           @RequestParam(required = false) Long shopId, @RequestParam(required = false) Integer timeline) {
         page = (page == null) ? 1 : page;
         pageSize = (pageSize == null) ? 10 : pageSize;
-        ReturnObject<PageInfo<VoObject>> returnObject = couponActivityService.getCouponActivities(shopId, timeline, page, pageSize);
+        LocalDateTime beginTime=null;
+        LocalDateTime endTime=null;
+        if(timeline!=null)
+        { beginTime=CouponController.Timeline.getBeginTimeByCode(timeline);
+           endTime=CouponController.Timeline.getEndTimeByCode(timeline);
+        }
+        ReturnObject<PageInfo<VoObject>> returnObject = couponActivityService.getCouponActivities(shopId, beginTime,endTime, page, pageSize);
         return ResponseUtil.ok(returnObject.getData());
     }
 
@@ -286,25 +367,26 @@ public class CouponController {
             return Common.getNullRetObj(new ReturnObject<>(returnObject.getCode(), returnObject.getErrmsg()), httpServletResponse);
         }
     }
-    @ApiOperation(value = "买家使用优惠券列表")
-    @ApiImplicitParams({
-            @ApiImplicitParam(paramType = "header", dataType = "String", name = "authorization", value = "Token", required = true),
-            @ApiImplicitParam(paramType = "path", dataType = "Integer", name = "优惠券id", value = "state", required = true),
-    })
-    @ApiResponses({
-            @ApiResponse(code = 0, message = "成功"),
-    })
-    @Audit
-    @PutMapping("/coupons/{id}")
-    public Object useCoupon(@PathVariable Long id, @LoginUser Long userId) {
-
-        ReturnObject returnObject = couponActivityService.useCoupon(id,userId);
-        if (returnObject.getData() != null)
-            return ResponseUtil.ok(returnObject.getData());
-        else {
-            return Common.getNullRetObj(new ReturnObject<>(returnObject.getCode(), returnObject.getErrmsg()), httpServletResponse);
-        }
-    }
+//    内部API
+//    @ApiOperation(value = "买家使用优惠券")
+//    @ApiImplicitParams({
+//            @ApiImplicitParam(paramType = "header", dataType = "String", name = "authorization", value = "Token", required = true),
+//            @ApiImplicitParam(paramType = "path", dataType = "Integer", name = "优惠券id", value = "state", required = true),
+//    })
+//    @ApiResponses({
+//            @ApiResponse(code = 0, message = "成功"),
+//    })
+//    @Audit
+//    @PutMapping("/coupons/{id}")
+//    public Object useCoupon(@PathVariable Long id, @LoginUser Long userId) {
+//
+//        ReturnObject returnObject = couponActivityService.useCoupon(id,userId);
+//        if (returnObject.getData() != null)
+//            return ResponseUtil.ok(returnObject.getData());
+//        else {
+//            return Common.getNullRetObj(new ReturnObject<>(returnObject.getCode(), returnObject.getErrmsg()), httpServletResponse);
+//        }
+//    }
     @ApiOperation(value = "用户领取优惠券")
     @ApiImplicitParams({
             @ApiImplicitParam(paramType = "header", dataType = "String", name = "authorization", value = "Token", required = true),
@@ -321,6 +403,24 @@ public class CouponController {
         if (returnObject.getData() != null) {
             return Common.getRetObject(returnObject);
         } else {
+            return Common.getNullRetObj(new ReturnObject<>(returnObject.getCode(), returnObject.getErrmsg()), httpServletResponse);
+        }
+    }
+
+    @ApiOperation(value = "获取优惠券的所有状态")
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "header", dataType = "String", name = "authorization", value = "Token", required = true),
+    })
+    @ApiResponses({
+            @ApiResponse(code = 0, message = "成功"),
+    })
+    @Audit
+    @GetMapping("/coupons/states")
+    public Object getCouponAllState() {
+        ReturnObject returnObject = couponActivityService.getCouponAllState();
+        if (returnObject.getData() != null)
+            return ResponseUtil.ok(returnObject.getData());
+         else {
             return Common.getNullRetObj(new ReturnObject<>(returnObject.getCode(), returnObject.getErrmsg()), httpServletResponse);
         }
     }

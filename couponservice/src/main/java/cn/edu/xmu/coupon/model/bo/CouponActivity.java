@@ -22,7 +22,7 @@ import java.util.Map;
 @Data
 public class CouponActivity implements VoObject {
     Long id;
-    Byte state = (byte) State.NEW.code;
+    Byte state = (byte) State.OFFLINE.code;
     String name;
     int quantity;
     Byte quantityType;
@@ -80,56 +80,15 @@ public class CouponActivity implements VoObject {
         po.setEndTime(this.endTime);
         po.setStrategy(this.strategy);
         po.setValidTerm(this.validTerm);
-        po.setState((byte) State.NEW.code);
+        po.setState((byte) State.OFFLINE.code);
         po.setGmtCreate(LocalDateTime.now());
         return po;
     }
-    public enum Timeline {
-        WAITING(0, "待上线"),
-        TOMORROW_ONLINE(1, "明天开始"),
-        ONLINE(2,"正在进行"),
-        OFFLINE(3,"结束下线");
-        private static final Map<Integer, CouponActivity.Timeline> stateMap;
 
-        static { //由类加载机制，静态块初始加载对应的枚举属性到map中，而不用每次取属性时，遍历一次所有枚举值
-            stateMap = new HashMap();
-            for (CouponActivity.Timeline enum1 : values()) {
-                stateMap.put(enum1.code, enum1);
-            }
-        }
-        private int code;
-        private String description;
-        Timeline(int code, String description) {
-            this.code = code;
-            this.description = description;
-        }
-        public static CouponActivity.Timeline getTypeByTime(LocalDateTime beginTime,LocalDateTime endTime)
-        {
-            if(beginTime.isAfter(LocalDateTime.now()))
-                return Timeline.WAITING;
-            else if(LocalDateTime.now().minusDays(1).toLocalDate()==beginTime.toLocalDate())
-                return Timeline.TOMORROW_ONLINE;
-            else if(beginTime.isBefore(LocalDateTime.now())&&endTime.isAfter(LocalDateTime.now()))
-                return Timeline.ONLINE;
-            else
-                return Timeline.OFFLINE;
-        }
-
-        public static CouponActivity.Timeline getTypeByCode(Integer code) {
-            return stateMap.get(code);
-        }
-
-        public int getCode() {
-            return code;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-    }
     public enum State {
-        NEW(0, "新建"),
-        CANCELLED(1, "被取消");
+        OFFLINE(0, "已下线"),
+        ONLINE(1, "已上线"),
+        DELETED(2,"已删除");
         private static final Map<Integer, CouponActivity.State> stateMap;
 
         static { //由类加载机制，静态块初始加载对应的枚举属性到map中，而不用每次取属性时，遍历一次所有枚举值

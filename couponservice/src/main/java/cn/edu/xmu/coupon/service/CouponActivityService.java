@@ -7,6 +7,7 @@ import com.github.pagehelper.PageInfo;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -14,6 +15,13 @@ import java.util.List;
  * @date Created at 2020/11/29 15:33
  */
 public interface CouponActivityService {
+
+    /**
+     * @description:获取所有优惠活动所有状态
+     * @author: Feiyan Liu
+     * @date: Created at 2020/12/9 10:27
+     */
+    ReturnObject<List> getCouponAllState();
     /**
      * @description:根据活动id获取活动详情（只能查看本店的）
      */
@@ -27,11 +35,11 @@ public interface CouponActivityService {
     /**
      * @description:查看所有上线的优惠活动（不需要登录）
      */
-    ReturnObject<PageInfo<VoObject>> getCouponActivities(Long shopId, Integer timelineCode, Integer page, Integer pagesize);
+    ReturnObject<PageInfo<VoObject>> getCouponActivities(Long shopId, LocalDateTime beginTime, LocalDateTime endTime, Integer page, Integer pageSize);
 
-    /**
-     * @description:查看所以下线的优惠活动（只能查看本店的）
-     */
+        /**
+         * @description:查看所以下线的优惠活动（只能查看本店的）
+         */
     ReturnObject<PageInfo<VoObject>> getInvalidCouponActivities(Integer page, Integer pagesize, Long shopId);
 
     /**
@@ -47,7 +55,7 @@ public interface CouponActivityService {
     /**
      * @description:上传图片
      */
-    ReturnObject uploadImg(Long id, MultipartFile multipartFile);
+    //ReturnObject uploadImg(Long id, MultipartFile multipartFile);
 
     /**
      * @description:管理员下线优惠活动
@@ -70,18 +78,17 @@ public interface CouponActivityService {
     ReturnObject<PageInfo<VoObject>> getCouponByUserId(Long id, Integer state, Integer page, Integer pagesize);
 
     /**
-     * @description:买家使用自己的优惠券
-     */
-    ReturnObject useCoupon(Long id, Long userId);
-
-
-    /**
      * @description:买家领取活动优惠券
      */
     ReturnObject userGetCoupon(Long userId, Long id);
 
-    /**
-     * @description:优惠券退回
-     */
-    ReturnObject returnCoupon(Long id);
+//    /**
+//     * @description:买家使用自己的优惠券
+//     */
+//    ReturnObject useCoupon(Long id, Long userId);
+
+//    /**
+//     * @description:优惠券退回
+//     */
+//    ReturnObject returnCoupon(Long id);
 }

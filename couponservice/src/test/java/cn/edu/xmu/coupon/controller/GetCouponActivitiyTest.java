@@ -32,6 +32,11 @@ public class GetCouponActivitiyTest {
 
     private static final Logger logger = LoggerFactory.getLogger(CouponServiceApplication.class);
 
+    private final String creatTestToken(Long userId, Long departId, int expireTime) {
+        String token = new JwtHelper().createToken(userId, departId, expireTime);
+        logger.debug(token);
+        return token;
+    }
     /**
      * @description:成功读取活动详情
      * @author: Feiyan Liu
@@ -63,11 +68,7 @@ public class GetCouponActivitiyTest {
         JSONAssert.assertEquals(expectedResponse, responseString, true);
 
     }
-    private final String creatTestToken(Long userId, Long departId, int expireTime) {
-        String token = new JwtHelper().createToken(userId, departId, expireTime);
-        logger.debug(token);
-        return token;
-    }
+
     /**
      * @description:shopId和departId不符合 无权限读取活动详情
      * @author: Feiyan Liu
