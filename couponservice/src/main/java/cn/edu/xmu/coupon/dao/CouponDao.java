@@ -134,15 +134,10 @@ public boolean haveCoupon(Long userId,Long activityId)
     CouponPoExample.Criteria criteria=example.createCriteria();
     criteria.andCustomerIdEqualTo(userId);
     criteria.andActivityIdEqualTo(activityId);
-    boolean empty=false;
-    try{
-        List<CouponPo> couponPos=couponMapper.selectByExample(example);
-        empty=couponPos.isEmpty();
-    }
-    catch (Exception e) {
-        logger.error("发生了严重的服务器内部错误：" + e.getMessage());
-    }
-    return !empty;
+    boolean havaCoupon=false;
+    List<CouponPo> couponPos=couponMapper.selectByExample(example);
+    havaCoupon=!couponPos.isEmpty();
+    return havaCoupon;
 }
 public ReturnObject deleteCouponByActivityId(Long id)
 {

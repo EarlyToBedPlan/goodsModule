@@ -73,9 +73,8 @@ public class FlashSaleDao implements InitializingBean {
      * @Author: LJP_3424
      * @Date: 2020/12/6 1:02
      */
-    public boolean getFlashSaleInActivities(Long goodsSpuId, LocalDateTime beginTime, LocalDateTime endTime) {
-        // 等待接口
-        List<Long> goodsSkuIds = goodsSpuIdsToSkuIds(goodsSpuId);
+    //! 临时更改,需要重新写
+    public FlashSaleItemPo getFlashSaleItemBetweenTimeByGoodsSkuId(Long goodsSkuId, LocalDateTime beginTime, LocalDateTime endTime) {
 
         // SKUId-->SaleId-->timeSegmentId-->beginTime&&endTime 耗时较长
         /* 取出所有的 timeSegmentID --> beginTime && endTime
@@ -87,25 +86,23 @@ public class FlashSaleDao implements InitializingBean {
         FlashSaleItemPoExample.Criteria criteriaItem = flashSaleItemPoExample.createCriteria();
         // List 转Map
         Map<Long, TimeSegmentPo> mappedTimeSegmentPo = timeSegmentPos.stream().collect(Collectors.toMap(TimeSegmentPo::getId, (p) -> p));
-        for (Long goodsSkuId : goodsSkuIds) {
-            criteriaItem.andGoodsSkuIdEqualTo(goodsSkuId);
-            List<FlashSaleItemPo> flashSaleItemPos = flashSaleItemPoMapper.selectByExample(flashSaleItemPoExample);
-            for (FlashSaleItemPo flashSaleItemPo : flashSaleItemPos) {
-                FlashSalePo flashSalePo = flashSalePoMapper.selectByPrimaryKey(flashSaleItemPo.getSaleId());
-                LocalDateTime timeSegmentBeginTime = mappedTimeSegmentPo.get(flashSalePo.getTimeSegId()).getBeginTime();
-                LocalDateTime timeSegmentEndTime = mappedTimeSegmentPo.get(flashSalePo.getTimeSegId()).getEndTime();
-                LocalDateTime flashSalePoBeginTime = LocalDateTime.of(flashSalePo.getFlashDate().getYear(),
-                        flashSalePo.getFlashDate().getMonth(), flashSalePo.getFlashDate().getDayOfMonth(),
-                        timeSegmentBeginTime.getHour(), timeSegmentBeginTime.getMinute(), timeSegmentBeginTime.getSecond());
-                LocalDateTime flashSalePoEndTime = LocalDateTime.of(flashSalePo.getFlashDate().getYear(),
-                        flashSalePo.getFlashDate().getMonth(), flashSalePo.getFlashDate().getDayOfMonth(),
-                        timeSegmentEndTime.getHour(), timeSegmentEndTime.getMinute(), timeSegmentEndTime.getSecond());
-                if (flashSalePoBeginTime.compareTo(endTime) < 0 && flashSalePoEndTime.compareTo(beginTime) > 0) {
-                    return true;
-                }
+        criteriaItem.andGoodsSkuIdEqualTo(goodsSkuId);
+        List<FlashSaleItemPo> flashSaleItemPos = flashSaleItemPoMapper.selectByExample(flashSaleItemPoExample);
+        for (FlashSaleItemPo flashSaleItemPo : flashSaleItemPos) {
+            FlashSalePo flashSalePo = flashSalePoMapper.selectByPrimaryKey(flashSaleItemPo.getSaleId());
+            LocalDateTime timeSegmentBeginTime = mappedTimeSegmentPo.get(flashSalePo.getTimeSegId()).getBeginTime();
+            LocalDateTime timeSegmentEndTime = mappedTimeSegmentPo.get(flashSalePo.getTimeSegId()).getEndTime();
+            LocalDateTime flashSalePoBeginTime = LocalDateTime.of(flashSalePo.getFlashDate().getYear(),
+                    flashSalePo.getFlashDate().getMonth(), flashSalePo.getFlashDate().getDayOfMonth(),
+                    timeSegmentBeginTime.getHour(), timeSegmentBeginTime.getMinute(), timeSegmentBeginTime.getSecond());
+            LocalDateTime flashSalePoEndTime = LocalDateTime.of(flashSalePo.getFlashDate().getYear(),
+                    flashSalePo.getFlashDate().getMonth(), flashSalePo.getFlashDate().getDayOfMonth(),
+                    timeSegmentEndTime.getHour(), timeSegmentEndTime.getMinute(), timeSegmentEndTime.getSecond());
+            if (flashSalePoBeginTime.compareTo(endTime) < 0 && flashSalePoEndTime.compareTo(beginTime) > 0) {
+                return flashSaleItemPo;
             }
         }
-        return false;
+        return null;
     }
 /*
 *
@@ -191,7 +188,7 @@ public class FlashSaleDao implements InitializingBean {
         FlashSalePo flashSalePo = new FlashSalePo();
         flashSalePo.setFlashDate(vo.getFlashDate());
         flashSalePo.setTimeSegId(id);
-        flashSalePo.setGmtCreated(LocalDateTime.now());
+        flashSalePo.setGmtCreate(LocalDateTime.now());
         flashSalePoMapper.insert(flashSalePo);
         return flashSalePo.getId();
     }
@@ -223,9 +220,9 @@ public class FlashSaleDao implements InitializingBean {
         flashSalePo.setGmtModified(LocalDateTime.now());
         flashSalePo.setId(id);
         int ret = flashSalePoMapper.updateByPrimaryKeySelective(flashSalePo);
-        if(ret == 0){
+        if (ret == 0) {
             return false;
-        }else{
+        } else {
             return true;
         }
     }
@@ -263,7 +260,7 @@ public class FlashSaleDao implements InitializingBean {
         flashSaleItemPo.setSaleId(id);
         flashSaleItemPo.setGoodsSkuId(newFlashSaleItemVo.getSkuId());
         flashSaleItemPo.setPrice(newFlashSaleItemVo.getPrice());
-        flashSaleItemPo.setGmtCreated(LocalDateTime.now());
+        flashSaleItemPo.setGmtCreate(LocalDateTime.now());
 
         flashSaleItemPoMapper.insert(flashSaleItemPo);
 

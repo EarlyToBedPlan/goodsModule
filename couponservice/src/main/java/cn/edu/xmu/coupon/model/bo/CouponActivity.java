@@ -42,19 +42,19 @@ public class CouponActivity implements VoObject {
         this.id = po.getId();
         this.state = po.getState();
         this.name = po.getName();
-//        this.quantity=po.getQuantity();
-//        this.quantityType=po.getQuantitiyType();
-//        this.validTerm=po.getValidTerm();
-//        this.beginTime=po.getBeginTime();
-//        this.endTime=po.getEndTime();
-//        this.couponTime=po.getCouponTime();
-//        this.strategy=po.getStrategy();
+        this.quantity=po.getQuantity();
+        this.quantityType=po.getQuantitiyType();
+        this.validTerm=po.getValidTerm();
+        this.beginTime=po.getBeginTime();
+        this.endTime=po.getEndTime();
+        this.couponTime=po.getCouponTime();
+        this.strategy=po.getStrategy();
         this.gmtCreated = po.getGmtCreate();
-//        this.modifiedBy.setId(po.getModiBy());
-//        this.createdBy.setId(po.getCreatedBy());
-//        this.modifiedBy.setName("哈哈");
-//        this.createdBy.setName("哈哈哈");
-//        this.img=po.getImageUrl();
+        this.modifiedBy.setId(po.getModiBy());
+        this.createdBy.setId(po.getCreatedBy());
+        this.modifiedBy.setName("哈哈");
+        this.createdBy.setName("哈哈哈");
+        this.img=po.getImageUrl();
     }
 
     public CouponActivity() {

@@ -222,16 +222,16 @@ public class CouponActivityDao implements InitializingBean {
 
     /**
      * @param id
-     * @description: 下线优惠活动
+     * @description: 修改优惠活动状态
      * @return: cn.edu.xmu.ooad.util.ReturnObject
      * @author: Feiyan Liu
      * @date: Created at 2020/12/2 10:35
      */
-    public ReturnObject deleteCouponActivity(Long id) {
+    public ReturnObject changeCouponActivityState(Long id,Integer state) {
         ReturnObject returnObject = null;
         CouponActivityPo po = new CouponActivityPo();
         po.setId(id);
-        po.setState((byte) CouponActivity.State.OFFLINE.getCode());
+        po.setState(state.byteValue());
         try {
             int ret = couponActivityMapper.updateByPrimaryKeySelective(po);
             if (ret == 0) {

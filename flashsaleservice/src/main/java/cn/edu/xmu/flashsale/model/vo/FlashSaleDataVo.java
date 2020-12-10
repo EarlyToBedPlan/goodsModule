@@ -100,7 +100,7 @@ public class FlashSaleDataVo {
 
     // 此处缺少一个GoodsSKuVo
     public FlashSaleDataVo(FlashSaleItemPo flashSaleItemPo) {
-        this.gmtCreated = flashSaleItemPo.getGmtCreated();
+        this.gmtCreated = flashSaleItemPo.getGmtCreate();
         this.gmtModified = flashSaleItemPo.getGmtModified();
         this.goodsSkuId = flashSaleItemPo.getGoodsSkuId();
         this.id = flashSaleItemPo.getId();
