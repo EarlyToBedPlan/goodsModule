@@ -34,7 +34,7 @@ public class FlashSaleRetItem implements VoObject {
         goodsSkuId = po.getGoodsSkuId();
         price = po.getPrice();
         quantity = po.getQuantity();
-        gmtCreated = po.getGmtCreated();
+        gmtCreated = po.getGmtCreate();
         gmtModified = po.getGmtModified();
     }
 

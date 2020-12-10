@@ -47,7 +47,7 @@ public class ShopDao implements InitializingBean{
     public ShopPo getShopById(long shopId){
         ShopPo po=new ShopPo();
         try{
-            po=shopPoMapper.selectByPrimaryKey(shopId);
+            po = shopPoMapper.selectByPrimaryKey(shopId);
         }catch (DataAccessException e){
             StringBuilder message=new StringBuilder().append("getShopById:").append(e.getMessage());
             logger.debug(message.toString());

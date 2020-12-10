@@ -232,5 +232,64 @@ public class GoodsSpuDao {
         return new ReturnObject<>(ResponseCode.OK);
     }
 
+    public ReturnObject setCategoryIdDefault(Long CategoryId, Long defaultId){
+        GoodsSpuPoExample example = new GoodsSpuPoExample();
+        GoodsSpuPoExample.Criteria criteria = example.createCriteria();
+        criteria.andCategoryIdEqualTo(CategoryId);
 
+        try{
+            List<GoodsSpuPo> goodsSpuPos = goodsSpuPoMapper.selectByExample(example);
+            if (goodsSpuPos == null) {
+                //not found
+                return new ReturnObject(ResponseCode.RESOURCE_ID_NOTEXIST);
+            } else {
+                try {
+                    for (GoodsSpuPo goodsSpuPo : goodsSpuPos){
+                        goodsSpuPo.setCategoryId(defaultId);
+                        goodsSpuPoMapper.updateByPrimaryKeySelective(goodsSpuPo);
+                    }
+                } catch (DataAccessException e) {
+                    //database error
+                    return new ReturnObject(ResponseCode.INTERNAL_SERVER_ERR,
+                            String.format("Database Exception: %s", e.getMessage()));
+                } catch (Exception e) {
+                    return new ReturnObject(ResponseCode.INTERNAL_SERVER_ERR,
+                            String.format("Unknown Exception: %s", e.getMessage()));
+                }
+            }
+        }
+        catch (DataAccessException e) {
+            //database error
+            return new ReturnObject(ResponseCode.INTERNAL_SERVER_ERR,
+                    String.format("Database Exception: %s", e.getMessage()));
+        } catch (Exception e) {
+            return new ReturnObject(ResponseCode.INTERNAL_SERVER_ERR,
+                    String.format("Unknown Exception: %s", e.getMessage()));
+        }
+
+
+        return new ReturnObject<>(ResponseCode.OK);
+    }
+
+    public ReturnObject<List<GoodsSpuPo>> getGoodsSpuPosByCaItegoryId(Long id){
+        GoodsSpuPoExample example = new GoodsSpuPoExample();
+        GoodsSpuPoExample.Criteria criteria = example.createCriteria();
+        criteria.andCategoryIdEqualTo(id);
+        List<GoodsSpuPo> goodsSpuPos = null;
+        try{
+            goodsSpuPos = goodsSpuPoMapper.selectByExample(example);
+            if( goodsSpuPos == null){
+                return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
+            } else {
+                return new ReturnObject<>(goodsSpuPos);
+            }
+        } catch (DataAccessException e) {
+            //database error
+            return new ReturnObject(ResponseCode.INTERNAL_SERVER_ERR,
+                    String.format("Database Exception: %s", e.getMessage()));
+        } catch (Exception e) {
+            return new ReturnObject(ResponseCode.INTERNAL_SERVER_ERR,
+                    String.format("Unknown Exception: %s", e.getMessage()));
+        }
+    }
 }

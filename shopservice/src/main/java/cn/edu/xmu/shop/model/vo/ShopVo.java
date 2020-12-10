@@ -23,6 +23,14 @@ public class ShopVo {
     @ApiModelProperty(value = "修改时间")
     LocalDateTime gmtModified;
 
+    public ShopVo(Shop shop) {
+        this.setId(shop.getId());
+        this.setShopName(shop.getShopName());
+        this.setState(shop.getState());
+        this.setGmtCreate(shop.getGmtCreate());
+        this.setGmtModified(shop.getGmtModified());
+    }
+
 
     public Shop createShop(){
         Shop shop=new Shop();

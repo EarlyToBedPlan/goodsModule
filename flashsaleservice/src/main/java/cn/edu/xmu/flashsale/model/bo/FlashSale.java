@@ -69,7 +69,7 @@ public class FlashSale implements VoObject {
     public FlashSale(FlashSalePo po) {
         id = po.getId();
         flashDate = po.getFlashDate();
-        gmtCreated = po.getGmtCreated();
+        gmtCreated = po.getGmtCreate();
         gmtModified = po.getGmtModified();
     }
 

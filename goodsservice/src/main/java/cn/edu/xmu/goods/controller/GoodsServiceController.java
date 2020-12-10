@@ -288,7 +288,7 @@ public class GoodsServiceController {
     })
     @Audit
     @PutMapping("/shops/{shopId}/skus/{id}")
-    public Object changePriv(@PathVariable Long id,
+    public Object updateSkus(@PathVariable Long id,
                              @Validated @RequestBody GoodsSkuPostVo vo,
                              BindingResult bindingResult,
                              @PathVariable Long shopId,

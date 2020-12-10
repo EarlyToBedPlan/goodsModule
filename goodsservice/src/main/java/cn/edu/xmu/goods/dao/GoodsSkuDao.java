@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -96,9 +97,9 @@ public class GoodsSkuDao {
         if (goodsSkuPo == null) {
             return false;
         }
-        if (goodsSkuPo.getDisabled() != 0) {
-            return false;
-        }
+//        if (goodsSkuPo.getDisabled() != 0) {
+//            return false;
+//        }
         Long spuId = goodsSkuPo.getGoodsSpuId();
         GoodsSpuPo goodsSpuPo = goodsSpuPoMapper.selectByPrimaryKey(spuId);
         if(goodsSpuPo.getShopId() != shopId){
@@ -179,10 +180,15 @@ public class GoodsSkuDao {
     * @Date: 2020/12/3 17:27
     */
 
-    public ReturnObject<VoObject> updateSku(GoodsSku goodsSku, Long id){
-        GoodsSkuPo po = goodsSkuPoMapper.selectByPrimaryKey(id);
-        goodsSkuPoMapper.updateByPrimaryKeySelective(goodsSku.getGoodsSkuPo());
-        return new ReturnObject<VoObject>();
+    public ReturnObject updateSku(GoodsSku goodsSku, Long id){
+        GoodsSkuPo newPo = goodsSku.getPo();
+        newPo.setId(id);
+        newPo.setGmtModified(LocalDateTime.now());
+        int upd = goodsSkuPoMapper.updateByPrimaryKeySelective(goodsSku.getGoodsSkuPo());
+        if(upd == 0){
+            return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
+        }
+        return new ReturnObject<>(ResponseCode.OK);
     }
 
     /** 
@@ -229,6 +235,7 @@ public class GoodsSkuDao {
         if(po == null){
             return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
         }
+        po.setGmtModified(LocalDateTime.now());
         po.setState((byte)GoodsSku.State.INVALID.getCode());
         po.setDisabled((byte)0);
         goodsSkuPoMapper.updateByPrimaryKeySelective(po);
@@ -242,6 +249,7 @@ public class GoodsSkuDao {
         }
         po.setState((byte)GoodsSku.State.WAITING.getCode());
         po.setDisabled((byte)1);
+        po.setGmtModified(LocalDateTime.now());
         goodsSkuPoMapper.updateByPrimaryKeySelective(po);
         return new ReturnObject<VoObject>();
     }

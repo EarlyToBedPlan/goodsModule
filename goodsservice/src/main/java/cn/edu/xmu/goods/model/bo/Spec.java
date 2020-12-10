@@ -32,7 +32,8 @@ public class Spec  {
 
      List<SpecItems> specItems;
 
-     SpecItems it;
+    // SpecItems it;
+
     public Spec(String jsonString) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
 
@@ -49,6 +50,8 @@ public class Spec  {
 
 
     }
+
+    public Spec (){}
 
 }
 

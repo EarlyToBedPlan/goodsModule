@@ -14,13 +14,13 @@ import java.io.Serializable;
 @Data
 public class SpecItems implements VoObject, Serializable {
 
-    private Integer specid;
+    private Integer id;
 
     private String name;
 
     public SpecItems(Integer id,String name){
         this.name = name;
-        this.specid = id;
+        this.id = id;
     }
     @Override
     public Object createVo() {

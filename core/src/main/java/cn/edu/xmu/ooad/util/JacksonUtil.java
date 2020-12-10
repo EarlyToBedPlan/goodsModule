@@ -60,6 +60,11 @@ public class JacksonUtil {
             node = mapper.readTree(body);
             JsonNode leaf = node.get(field);
 
+            if (leaf != null) {
+                return mapper.convertValue(leaf, new TypeReference<List<T>>() {});
+            }
+
+
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
         }
