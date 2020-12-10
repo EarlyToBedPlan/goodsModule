@@ -330,13 +330,35 @@ public class GoodsSkuServiceImpl implements GoodsSkuService {
         Integer result=null;
         ReturnObject<List> listReturnObject = floatPriceDao.getFloatPriceBySkuId(goodsSkuId);
         List<FloatPrice> target=listReturnObject.getData();
-        for(FloatPrice aFloatPrice : target){
-            if(LocalDateTime.now().isAfter(aFloatPrice.getBeginTime())&&LocalDateTime.now().isBefore(aFloatPrice.getEndTime())){
-                Integer item= Math.toIntExact(aFloatPrice.getActivityPrive());
-                result = item;
+        if(target != null){
+            for(FloatPrice aFloatPrice : target){
+                if(LocalDateTime.now().isAfter(aFloatPrice.getBeginTime())&&LocalDateTime.now().isBefore(aFloatPrice.getEndTime())){
+                    Integer item= Math.toIntExact(aFloatPrice.getActivityPrive());
+                    result = item;
+                }
             }
+        }
+
+        if(result == null){
+            return goodsSkuDao.getSkuById(goodsSkuId).getData().getOriginalPrice().intValue();
         }
         return result;
     }
 
+
+    @Override
+    @Transactional
+    public GoodsCartVo getCartByskuId(Long Sku) {
+        GoodsCartVo vo = new GoodsCartVo();
+        GoodsSkuPo goodsSkuPo = goodsSkuDao.getSkuById(Sku).getData();
+        GoodsSpuPo goodsSpuPo = goodsSpuDao.getGoodsSpuPoById(goodsSkuPo.getGoodsSpuId()).getData();
+        vo.setGoodsSkuId(Sku);
+        vo.setSkuName(goodsSkuPo.getName());
+        vo.setSpuName(goodsSpuPo.getName());
+        //vo.setQuantity(goodsSkuPo.getInventory());
+        vo.setPrice(getPriceById(Sku));
+        vo.setGmtCreate(goodsSkuPo.getGmtCreate());
+        vo.setGmtModified(goodsSkuPo.getGmtModified());
+        return vo;
+    }
 }

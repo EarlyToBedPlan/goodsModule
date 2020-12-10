@@ -131,13 +131,14 @@ public class GoodsSpuServiceImpl implements GoodsSpuService{
     * @Date: 2020/12/3 19:48
     */
     @Override
-    public ReturnObject<VoObject> insertGoodsSpu(GoodsSpu goodsSpu, Long id) {
+    public ReturnObject<GoodsSpuRetVo> insertGoodsSpu(GoodsSpu goodsSpu, Long id) {
 
-        ReturnObject<VoObject> retObj = null;
+        ReturnObject<GoodsSpuRetVo> retObj = null;
 
         goodsSpu.setShopId(id);
-        retObj = goodsSpuDao.insertGoodsSpu(goodsSpu);
-
+        GoodsSpu spu = goodsSpuDao.insertGoodsSpu(goodsSpu).getData();
+        GoodsSpuRetVo goodsSpuRetVo = spu.createVo();
+        retObj = new ReturnObject<>(goodsSpuRetVo);
         return retObj;
     }
 
@@ -216,6 +217,8 @@ public class GoodsSpuServiceImpl implements GoodsSpuService{
         return goodsSpuDao.setCategoryIdDefault(id,defaultValue);
     }
 
-
+    public GoodsCartVo getCartByskuId(Long Sku) {
+        return null;
+    }
 
 }

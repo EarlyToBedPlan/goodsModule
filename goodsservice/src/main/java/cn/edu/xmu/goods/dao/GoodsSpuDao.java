@@ -70,19 +70,26 @@ public class GoodsSpuDao {
     * @Author: Yancheng Lai
     * @Date: 2020/12/3 19:50
     */
-    public ReturnObject<VoObject> insertGoodsSpu(GoodsSpu goodsSpu) {
+    public ReturnObject<GoodsSpu> insertGoodsSpu(GoodsSpu goodsSpu) {
         GoodsSpuPo goodsSpuPo = goodsSpu.getGoodsSpuPo();
-        ReturnObject<VoObject> retObj = null;
+        GoodsSpuPoExample example = new GoodsSpuPoExample();
+        GoodsSpuPoExample.Criteria criteria = example.createCriteria();
+        criteria.andSpecEqualTo(goodsSpu.getSpec());
+        criteria.andNameEqualTo(goodsSpu.getName());
+        criteria.andDetailEqualTo(goodsSpu.getDetail());
+        ReturnObject<GoodsSpu> retObj = null;
         try{
             int ret = goodsSpuPoMapper.insertSelective(goodsSpuPo);
             if (ret == 0) {
-                retObj = new ReturnObject<VoObject>(ResponseCode.RESOURCE_ID_NOTEXIST, String.format("Insert false：" + goodsSpuPo.getName()));
+                retObj = new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST, String.format("Insert false：" + goodsSpuPo.getName()));
             } else {
-                retObj = new ReturnObject<VoObject>(goodsSpu);
+                List<GoodsSpuPo> retSpu = goodsSpuPoMapper.selectByExample(example);
+
+                retObj = new ReturnObject<>(new GoodsSpu(retSpu.get(0)));
             }
         }
         catch (DataAccessException e) {
-            retObj = new ReturnObject<VoObject>(ResponseCode.INTERNAL_SERVER_ERR, String.format("Database Eoor: %s", e.getMessage()));
+            retObj = new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR, String.format("Database Eoor: %s", e.getMessage()));
         }
         return retObj;
     }
@@ -130,7 +137,7 @@ public class GoodsSpuDao {
     }
 
     public ReturnObject<VoObject> updateSpu(GoodsSpu goodsSpu){
-        GoodsSpuPo po = goodsSpuPoMapper.selectByPrimaryKey(goodsSpu.getId());
+        //GoodsSpuPo po = goodsSpuPoMapper.selectByPrimaryKey(goodsSpu.getId());
 
         goodsSpuPoMapper.updateByPrimaryKeySelective(goodsSpu.getGoodsSpuPo());
         return new ReturnObject<VoObject>();

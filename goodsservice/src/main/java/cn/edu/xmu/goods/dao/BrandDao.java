@@ -91,4 +91,13 @@ public class BrandDao {
         }
         return new ReturnObject<>(ResponseCode.OK);
     }
+
+    public ReturnObject<Brand> addBrand(Brand brand){
+        BrandPo brandPo = brand.getBrandPo();
+        int res = brandPoMapper.insertSelective(brandPo);
+        if(res == 0){
+            return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR);
+        }
+        return new ReturnObject<>(brand);
+    }
 }

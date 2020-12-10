@@ -18,7 +18,7 @@ import cn.edu.xmu.goods.model.po.GoodsSkuPo;
 import cn.edu.xmu.goods.model.vo.GoodsSkuRetVo;
 import cn.edu.xmu.goods.model.vo.StateVo;
 import cn.edu.xmu.goods.service.GoodsSkuService;
-import cn.edu.xmu.goods.service.GoodsSkuServiceImpl;
+//import cn.edu.xmu.goods.service.GoodsSkuServiceImpl;
 import cn.edu.xmu.ooad.model.VoObject;
 import cn.edu.xmu.ooad.util.ImgHelper;
 import cn.edu.xmu.ooad.util.ResponseCode;

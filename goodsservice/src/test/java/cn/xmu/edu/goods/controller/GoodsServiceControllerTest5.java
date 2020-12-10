@@ -2,6 +2,7 @@ package cn.xmu.edu.goods.controller;
 
 import cn.edu.xmu.goods.GoodsServiceApplication;
 import cn.edu.xmu.goods.model.vo.GoodsSkuPostVo;
+import cn.edu.xmu.goods.model.vo.GoodsSpuPostVo;
 import cn.edu.xmu.goods.model.vo.GoodsSpuRetVo;
 import cn.edu.xmu.goods.model.vo.UpdateBrandVoBody;
 import cn.edu.xmu.ooad.util.JacksonUtil;
@@ -117,8 +118,66 @@ public class GoodsServiceControllerTest5 {
 
     }
 
+    @Test
+    public void postSpuTest1() throws Exception {
+        GoodsSpuPostVo goodsSpuPostVo = new GoodsSpuPostVo();
+        goodsSpuPostVo.setDescription("DETAIL");
+        goodsSpuPostVo.setName("NAME");
+        goodsSpuPostVo.setSpecs("{\"id\":0,\"name\":\"string\",\"specItems\":[{\"id\":114514,\"name\":\"string\"},{\"id\":1,\"name\":\"String\"}]}");
+        String token = creatTestToken(1L, 0L, 100);
+        String brandJson = JacksonUtil.toJson(goodsSpuPostVo);
+        String expectedResponse = "";
+        String responseString = null;
+        try {
+            responseString = this.mvc.perform(post("/goods/shops/0/spus").header("authorization", token).contentType("application/json;charset=UTF-8").content(brandJson))
+                    .andExpect(status().isCreated())
+                    .andExpect(content().contentType("application/json;charset=UTF-8"))
+                    .andReturn().getResponse().getContentAsString();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        expectedResponse = "{\"errno\":0,\"errmsg\":\"成功\"}";
+        try {
+            JSONAssert.assertEquals(expectedResponse, responseString, true);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
 
+
+    }
+
+    @Test
+    public void putSpuTest1() throws Exception {
+        GoodsSpuPostVo goodsSpuPostVo = new GoodsSpuPostVo();
+        goodsSpuPostVo.setDescription("DETAIL");
+        goodsSpuPostVo.setName("NAME");
+        goodsSpuPostVo.setSpecs("{\"id\":0,\"name\":\"string\",\"specItems\":[{\"id\":114514,\"name\":\"string\"},{\"id\":1,\"name\":\"String\"}]}");
+        String token = creatTestToken(1L, 0L, 100);
+        String brandJson = JacksonUtil.toJson(goodsSpuPostVo);
+        String expectedResponse = "";
+        String responseString = null;
+        responseString = this.mvc.perform(put("/goods/shops/0/spus/300").header("authorization", token).contentType("application/json;charset=UTF-8").content(brandJson))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType("application/json;charset=UTF-8"))
+                    .andReturn().getResponse().getContentAsString();
+
+        expectedResponse = "{\"errno\":0,\"errmsg\":\"成功\"}";
+        try {
+            JSONAssert.assertEquals(expectedResponse, responseString, true);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        String responseString1 = this.mvc.perform(get("/goods/spus/300"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/json;charset=UTF-8"))
+                .andReturn().getResponse().getContentAsString();
+        String expectedResponse1 = "";
+        JSONAssert.assertEquals(responseString1,expectedResponse1, true);
+
+
+    }
 
 
 }

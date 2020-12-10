@@ -44,6 +44,13 @@ public class GoodsSpu implements VoObject, Serializable {
         this.goodsSpuPo = goodsSpuPo;
     }
 
+    public GoodsSpu(GoodsSpuPostVo goodsSpuPostVo) {
+        this.goodsSpuPo = new GoodsSpuPo();
+        this.setName(goodsSpuPostVo.getName());
+        this.setDetail(goodsSpuPostVo.getDescription());
+        this.setSpec(goodsSpuPostVo.getSpecs());
+    }
+
     //注意 注意 由于集成的历史原因 这里的FreightModel还没有初始化
     @Override
     public GoodsSpuRetVo createVo() {

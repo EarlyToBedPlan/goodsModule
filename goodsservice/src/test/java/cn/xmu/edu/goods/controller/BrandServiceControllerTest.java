@@ -183,4 +183,33 @@ public class BrandServiceControllerTest {
 
 
     }
+
+    @Test
+    public void postBrandTest2() throws Exception {
+        UpdateBrandVoBody updateBrandVo = new UpdateBrandVoBody();
+        updateBrandVo.setDetail("Description");
+        updateBrandVo.setName("中国队长");
+        String token = creatTestToken(1L, 0L, 100);
+        String brandJson = JacksonUtil.toJson(updateBrandVo);
+        String expectedResponse = "";
+        String responseString = null;
+        try {
+            responseString = this.mvc.perform(post("/brands/shops/0/brands").header("authorization", token).contentType("application/json;charset=UTF-8").content(brandJson))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType("application/json;charset=UTF-8"))
+                    .andReturn().getResponse().getContentAsString();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        expectedResponse = "{\"errno\":504,\"errmsg\":\"操作的资源id不存在\"}";
+        try {
+            JSONAssert.assertEquals(expectedResponse, responseString, true);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+
+
+    }
 }

@@ -148,5 +148,37 @@ public class BrandController {
         return Common.decorateReturnObject(brandService.revokeBrand(id));
     }
 
+    @ApiOperation(value = "管理员新增品牌")
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "header", dataType = "String", name = "authorization", value = "Token", required = true),
+            @ApiImplicitParam(name="id", value="店铺Id", required = true, dataType="Long", paramType="path"),
+    })
+    @ApiResponses({
+            @ApiResponse(code = 0, message = "成功"),
+            @ApiResponse(code = 504, message = "操作id不存在"),
+            @ApiResponse(code = 503, message = "字段不合法")
+
+    })
+    @Audit
+    @PostMapping("/shops/{id}/brands")
+    public Object addBrand( @PathVariable Long id,@Validated @RequestBody UpdateBrandVoBody vo,
+                            BindingResult bindingResult){
+        Object o = Common.processFieldErrors(bindingResult, httpServletResponse);
+        if(o != null){
+
+            return o;
+        }
+        Brand brand = new Brand(vo);
+        brand.setGmtModified(LocalDateTime.now());
+        logger.debug("Brand update c: id = "+id.toString());
+        ReturnObject<BrandRetVo> returnObject = brandService.addBrand(brand, id);
+        logger.debug("Brand update c: updateout id = "+id.toString());
+        if (returnObject.getCode() == ResponseCode.OK) {
+            return Common.decorateReturnObject(returnObject);
+        } else {
+            return Common.decorateReturnObject(new ReturnObject(ResponseCode.RESOURCE_ID_NOTEXIST));
+        }
+    }
+
 
 }

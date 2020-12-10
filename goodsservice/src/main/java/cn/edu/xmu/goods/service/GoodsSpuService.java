@@ -26,7 +26,7 @@ public interface GoodsSpuService {
 
     public ReturnObject<GoodsSpuRetVo> findSpuById(Long id);
 
-    public ReturnObject<VoObject> insertGoodsSpu(GoodsSpu goodsSpu, Long id);
+    public ReturnObject<GoodsSpuRetVo> insertGoodsSpu(GoodsSpu goodsSpu, Long id);
 
     public ReturnObject<VoObject> updateSpu(GoodsSpu vo,Long shopId,Long id);
 

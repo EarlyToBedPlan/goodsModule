@@ -330,9 +330,8 @@ public class GoodsServiceController {
     })
     @Audit
     @PostMapping("/shops/{id}/spus")
-    public Object insertSku(@Validated @RequestBody GoodsSpuRetVo vo, BindingResult bindingResult,
+    public Object insertSku(@Validated @RequestBody GoodsSpuPostVo vo, BindingResult bindingResult,
                              @LoginUser @ApiIgnore @RequestParam(required = false) Long userId,
-                             @PathVariable("shopId") Long shopId,
                              @PathVariable("id") Long id) {
 
         Object returnObject = Common.processFieldErrors(bindingResult, httpServletResponse);
@@ -344,8 +343,9 @@ public class GoodsServiceController {
 //        goodsSpu.setGmtCreated(LocalDateTime.now());
 //        goodsSpu.setGmtModified(LocalDateTime.now());
         goodsSpu.setDisabled((byte)0);
-
-        ReturnObject<VoObject> retObject = goodsSpuService.insertGoodsSpu(goodsSpu, id);
+        goodsSpu.setGmtCreate(LocalDateTime.now());
+        goodsSpu.setGmtModified(LocalDateTime.now());
+        ReturnObject<GoodsSpuRetVo> retObject = goodsSpuService.insertGoodsSpu(goodsSpu, id);
         if (retObject.getData() != null) {
             httpServletResponse.setStatus(HttpStatus.CREATED.value());
             return Common.decorateReturnObject(retObject);
@@ -368,8 +368,8 @@ public class GoodsServiceController {
     @Audit
     @PutMapping("/shops/{shopId}/spus/{id}")
 
-    public Object changePriv(@PathVariable Long id,
-                             @Validated @RequestBody GoodsSpuRetVo vo,
+    public Object modifyGoodsSpu(@PathVariable Long id,
+                             @Validated @RequestBody GoodsSpuPostVo vo,
                              BindingResult bindingResult,
                              @PathVariable Long shopId,
                              HttpServletResponse httpServletResponse){

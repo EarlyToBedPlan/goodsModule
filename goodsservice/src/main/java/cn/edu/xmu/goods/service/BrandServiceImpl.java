@@ -127,4 +127,13 @@ public class BrandServiceImpl implements BrandService{
     public ReturnObject<Brand> getBrandById(Long id){
         return brandDao.getBrandById(id);
     }
+
+
+
+    @Override
+    @Transactional
+    public ReturnObject<BrandRetVo> addBrand(Brand brand, Long id) {
+        ReturnObject<Brand> ret = brandDao.addBrand(brand);
+        return new ReturnObject<BrandRetVo>(ret.getData().createVo());
+    }
 }

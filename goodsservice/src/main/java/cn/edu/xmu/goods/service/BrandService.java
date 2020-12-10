@@ -2,6 +2,7 @@ package cn.edu.xmu.goods.service;
 
 import cn.edu.xmu.goods.model.bo.Brand;
 import cn.edu.xmu.goods.model.vo.BrandRetVo;
+import cn.edu.xmu.goods.model.vo.UpdateBrandVoBody;
 import cn.edu.xmu.ooad.model.VoObject;
 import cn.edu.xmu.ooad.util.ReturnObject;
 import com.github.pagehelper.PageInfo;
@@ -21,5 +22,7 @@ public interface BrandService {
 
     public ReturnObject<Brand> getBrandById(Long id);
 
-    ReturnObject<VoObject>deleteGoodsBrand(Long spuId,Long id);
+    public ReturnObject<VoObject>deleteGoodsBrand(Long spuId,Long id);
+
+    public ReturnObject<BrandRetVo>addBrand(Brand brand,Long id);
 }
