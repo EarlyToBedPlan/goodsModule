@@ -25,7 +25,7 @@ public interface CouponActivityService {
     /**
      * @description:根据活动id获取活动详情（只能查看本店的）
      */
-    ReturnObject getCouponActivityById(Long id);
+    ReturnObject getCouponActivityById(Long id,Long shopId);
 
     /**
      * @description:创建优惠活动
@@ -58,7 +58,7 @@ public interface CouponActivityService {
     //ReturnObject uploadImg(Long id, MultipartFile multipartFile);
 
     /**
-     * @description:管理员下线优惠活动
+     * @description:管理员删除优惠活动
      */
     ReturnObject deleteCouponActivity(Long shopId,Long id);
 
@@ -81,6 +81,16 @@ public interface CouponActivityService {
      * @description:买家领取活动优惠券
      */
     ReturnObject userGetCoupon(Long userId, Long id);
+
+    /**
+     * @description:管理员上线优惠活动
+     */
+    ReturnObject putCouponActivityOnShelves(Long shopId,Long id);
+
+    /**
+     * @description:管理员下线优惠活动
+     */
+    ReturnObject putCouponActivityOffShelves(Long shopId,Long id);
 
 //    /**
 //     * @description:买家使用自己的优惠券

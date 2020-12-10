@@ -128,16 +128,12 @@ public class CouponController {
     @Audit
     @GetMapping("/shops/{shopId}/couponactivities/{id}")
     public Object getCouponActivity(@PathVariable("shopId") Long shopId, @PathVariable("id") Long id, @Depart Long departId) {
-        if (shopId.equals(departId)) {
-            ReturnObject returnObject = couponActivityService.getCouponActivityById(id);
+            ReturnObject returnObject = couponActivityService.getCouponActivityById(id,shopId);
             if (returnObject.getData() != null) {
                 return ResponseUtil.ok(returnObject.getData());
             } else {
                 return Common.getNullRetObj(new ReturnObject<>(returnObject.getCode(), returnObject.getErrmsg()), httpServletResponse);
             }
-        } else {
-            return Common.getNullRetObj(new ReturnObject<>(ResponseCode.FIELD_NOTVALID, String.format("departId不匹配")), httpServletResponse);
-        }
     }
 
     @ApiOperation(value = "管理员新建己方优惠活动")
