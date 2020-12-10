@@ -21,7 +21,7 @@ public class FlashSaleItemSimpleVo {
 
     public FlashSaleItemSimpleVo(FlashSaleItemPo po) {
         this.id = po.getId();
-        this.gmtCreated = po.getGmtCreated();
+        this.gmtCreated = po.getGmtCreate();
         this.gmtModified = po.getGmtModified();
         this.price = po.getPrice();
         this.quantity = po.getQuantity();

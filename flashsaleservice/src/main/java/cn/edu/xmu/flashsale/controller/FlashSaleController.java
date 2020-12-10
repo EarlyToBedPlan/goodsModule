@@ -2,11 +2,10 @@ package cn.edu.xmu.flashsale.controller;
 
 import cn.edu.xmu.flashsale.model.vo.NewFlashSaleItemVo;
 import cn.edu.xmu.flashsale.model.vo.NewFlashSaleVo;
-import cn.edu.xmu.flashsale.service.FlashSaleService;
+import cn.edu.xmu.flashsale.service.FlashSaleServiceImpl;
 import cn.edu.xmu.ooad.model.VoObject;
 import cn.edu.xmu.ooad.util.Common;
 import cn.edu.xmu.ooad.util.ResponseCode;
-import cn.edu.xmu.ooad.util.ResponseUtil;
 import cn.edu.xmu.ooad.util.ReturnObject;
 import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.*;
@@ -18,10 +17,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
-import javax.validation.executable.ValidateOnExecution;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -35,7 +30,7 @@ public class FlashSaleController {
     private static final Logger logger = LoggerFactory.getLogger(FlashSaleController.class);
 
     @Autowired
-    private FlashSaleService flashSaleService;
+    private FlashSaleServiceImpl flashSaleService;
 
     @Autowired
     private HttpServletResponse httpServletResponse;
