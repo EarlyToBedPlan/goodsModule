@@ -44,8 +44,8 @@ public class GoodsSkuRetVo {
     private Integer price;
     @ApiModelProperty(value = "库存")
     private Integer inventory;
-//    @ApiModelProperty(value = "状态")
-//    private GoodsSku.State state;
+    @ApiModelProperty(value = "状态")
+    private Integer state;
     @ApiModelProperty(value = "配置参数json")
     private String configuration;
     @ApiModelProperty(value = "重量")
@@ -88,6 +88,8 @@ public class GoodsSkuRetVo {
         this.setInventory ( goodsSku.getInventory());
         this.setSkuSn ( goodsSku.getSkuSn());
         this.setWeight (goodsSku.getWeight());
+        StateVo state = new StateVo();
+        this.setState((int)goodsSku.getStatecode());
         //this.setState(goodsSku.getState());
     }
 

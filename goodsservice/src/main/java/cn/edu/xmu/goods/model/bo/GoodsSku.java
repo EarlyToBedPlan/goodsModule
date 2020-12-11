@@ -21,7 +21,8 @@ public class GoodsSku implements VoObject, Serializable {
 
     private GoodsSkuPo goodsSkuPo;
 
-    State state;
+    private Byte statecode;
+//    State state;
     public enum State {
         WAITING(0, "未上架"),
         INVALID(4, "上架"),
@@ -44,7 +45,8 @@ public class GoodsSku implements VoObject, Serializable {
             this.description = description;
         }
 
-        public static GoodsSku.State getTypeByCode(Integer code) {
+
+        public static GoodsSku.State getTypeByCode(Byte code) {
             return stateMap.get(code);
         }
 
@@ -77,23 +79,7 @@ public class GoodsSku implements VoObject, Serializable {
     * @Date: 2020/12/1 19:56
     */
     public GoodsSku(GoodsSkuPo goodsSkuPo) {
-        this.state = State.WAITING;
-//        this.goodsSkuPo = new GoodsSkuPo();
-//        this.goodsSkuPo.setDetail(goodsSkuPo.getDetail());
-//        this.goodsSkuPo.setDisabled(goodsSkuPo.getDisabled());
-//        //this.goodsSkuPo.setDisabled(goodsSkuPo.getDisabled());
-//        this.goodsSkuPo.setId(goodsSkuPo.getId());
-//        this.goodsSkuPo.setImageUrl(goodsSkuPo.getImageUrl());
-//        this.goodsSkuPo.setName(goodsSkuPo.getName());
-//        this.goodsSkuPo.setGoodsSpuId(goodsSkuPo.getGoodsSpuId());
-//        this.goodsSkuPo.setSkuSn(goodsSkuPo.getSkuSn());
-//        setOriginalPrice(goodsSkuPo.getOriginalPrice());
-//        this.goodsSkuPo.setConfiguration(goodsSkuPo.getConfiguration());
-//        this.goodsSkuPo.setWeight(goodsSkuPo.getWeight());
-//        this.goodsSkuPo.setInventory(goodsSkuPo.getInventory());
-//        this.goodsSkuPo.setGmtModified(goodsSkuPo.getGmtModified());
-//        this.goodsSkuPo.setGmtCreate(goodsSkuPo.getGmtCreate());
-//        this.setState(State.getTypeByCode((int)goodsSkuPo.getState()));
+        this.statecode = goodsSkuPo.getState();
         this.goodsSkuPo = goodsSkuPo;
     }
 
@@ -124,7 +110,7 @@ public class GoodsSku implements VoObject, Serializable {
     */
     public GoodsSku(GoodsSkuRetVo goodsSkuRetVo){
         this.goodsSkuPo = new GoodsSkuPo();
-        this.state = State.WAITING;
+        this.statecode = (byte)State.WAITING.getCode();
         this.goodsSkuPo.setDetail(goodsSkuRetVo.getDetail());
         this.goodsSkuPo.setDisabled(goodsSkuRetVo.getDisabled());
         this.goodsSkuPo.setId(goodsSkuRetVo.getId());

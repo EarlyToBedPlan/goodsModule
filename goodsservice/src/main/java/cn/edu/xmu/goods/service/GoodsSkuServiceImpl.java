@@ -94,8 +94,8 @@ public class GoodsSkuServiceImpl implements GoodsSkuService {
     * @Date: 2020/12/2 23:52
     */
     @Transactional
-    public ReturnObject<VoObject> revokeSku(Long id){
-            return goodsSkuDao.revokeSku(id);
+    public ReturnObject<VoObject> revokeSku(Long shopId,Long id){
+            return goodsSkuDao.revokeSku(shopId,id);
 
     }
 
@@ -117,17 +117,8 @@ public class GoodsSkuServiceImpl implements GoodsSkuService {
         //查询spu是否属于该商铺
         GoodsSpuPoExample goodsSpuPoExample = new GoodsSpuPoExample();
         GoodsSpuPoExample.Criteria criteria = goodsSpuPoExample.createCriteria();
-//        GoodsSpuPo goodsSpuPo = goodsSpuDao.getGoodsSpuPoById(id).getData();
-//        logger.info("Service node 1");
-//        if(shopId != goodsSpuPo.getShopId()){
-//            logger.info("Service node 2");
-//            retObj = new ReturnObject<GoodsSkuSimpleRetVo>(ResponseCode.RESOURCE_ID_NOTEXIST, String.format("Insert false: Spu not in shop" + goodsSku.getName()));
-//        } else {
-//            logger.info("Service node 3");
-            goodsSku.setGoodsSpuId(id);
-
-            retObj = goodsSkuDao.insertGoodsSku(goodsSku);
-        //}
+        goodsSku.setGoodsSpuId(id);
+        retObj = goodsSkuDao.insertGoodsSku(goodsSku);
         logger.info("Service node 4");
         return retObj;
     }
@@ -142,11 +133,7 @@ public class GoodsSkuServiceImpl implements GoodsSkuService {
 
     @Transactional
     public ReturnObject<VoObject> updateSku(GoodsSku vo,Long shopId,Long id){
-        if (goodsSkuDao.checkSkuId(shopId,id)) {
-            return goodsSkuDao.updateSku(vo, id);
-        } else {
-            return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
-        }
+            return goodsSkuDao.updateSku(vo,shopId, id);
     }
 
     @Transactional
@@ -162,7 +149,7 @@ public class GoodsSkuServiceImpl implements GoodsSkuService {
     }
 
     @Transactional
-    public ReturnObject uploadSkuImg(Long id, MultipartFile multipartFile){
+    public ReturnObject uploadSkuImg(Long id,Long shopId,MultipartFile multipartFile){
         GoodsSkuPo goodsSkuPo = goodsSkuDao.getSkuById(id).getData();
         ReturnObject<VoObject> goodsSkuReturnObject = new ReturnObject<>(new GoodsSku(goodsSkuPo));
         if(goodsSkuReturnObject.getCode() == ResponseCode.RESOURCE_ID_NOTEXIST) {
@@ -180,7 +167,7 @@ public class GoodsSkuServiceImpl implements GoodsSkuService {
             String oldFilename = goodsSku.getImageUrl();
             goodsSku.setImageUrl(returnObject.getData().toString());
 
-            ReturnObject updateReturnObject = goodsSkuDao.updateSku(goodsSku,goodsSku.getId());
+            ReturnObject updateReturnObject = goodsSkuDao.updateSku(goodsSku,shopId,goodsSku.getId());
             if(updateReturnObject.getCode()==ResponseCode.FIELD_NOTVALID) {
                 ImgHelper.deleteRemoteImg(returnObject.getData().toString(), davUsername, davPassword, baseUrl);
                 return updateReturnObject;
@@ -215,6 +202,7 @@ public class GoodsSkuServiceImpl implements GoodsSkuService {
         GoodsSpuPo goodsSpuPo = goodsSpuDao.getGoodsSpuPoBySkuId(id).getData();
         GoodsSpu goodsSpu = new GoodsSpu(goodsSpuPo);
         GoodsSpuRetVo goodsSpuRetVo = goodsSpu.createVo();
+        retVo.setState((int)goodsSku.getStatecode());
         retVo.setGoodsSpu(goodsSpuRetVo);
         retVo.setPrice(getPriceById(id));
         if(retVo.getGoodsSpu() != null){
@@ -244,12 +232,12 @@ public class GoodsSkuServiceImpl implements GoodsSkuService {
 
     @Transactional
     public ReturnObject<VoObject> updateSkuOnShelves(Long shopId,Long id){
-            return goodsSkuDao.updateSkuOnShelves(id);
+        return goodsSkuDao.updateSkuOnShelves(shopId,id);
     }
 
     @Transactional
     public ReturnObject<VoObject> updateSkuOffShelves(Long shopId,Long id){
-            return goodsSkuDao.updateSkuOffShelves(id);
+            return goodsSkuDao.updateSkuOffShelves(shopId,id);
     }
 
     @Transactional
@@ -302,7 +290,7 @@ public class GoodsSkuServiceImpl implements GoodsSkuService {
 
     @Transactional
     public Boolean checkSkuIdByShopId(Long shopId, Long skuId) {
-        return goodsSkuDao.checkSkuId(shopId,skuId);
+        return goodsSkuDao.checkSkuIdInShop(shopId,skuId);
     }
 
     public List<Long> getSkuIdListByShopId(Long shopId) {
@@ -360,5 +348,15 @@ public class GoodsSkuServiceImpl implements GoodsSkuService {
         vo.setGmtCreate(goodsSkuPo.getGmtCreate());
         vo.setGmtModified(goodsSkuPo.getGmtModified());
         return vo;
+    }
+
+    @Override
+    public boolean checkSkuIdInShop(Long shopId, Long skuId) {
+        return goodsSkuDao.checkSkuIdInShop(shopId,skuId);
+    }
+
+    @Override
+    public boolean checkSkuDisabled(Long skuId) {
+        return goodsSkuDao.checkSkuDisabled(skuId);
     }
 }

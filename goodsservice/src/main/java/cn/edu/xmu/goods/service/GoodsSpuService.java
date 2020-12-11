@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -30,10 +31,18 @@ public interface GoodsSpuService {
 
     public ReturnObject<VoObject> updateSpu(GoodsSpu vo,Long shopId,Long id);
 
-    public ReturnObject<VoObject> revokeSpu(Long id);
+    ReturnObject<VoObject> removeSpuCategory(Long shopId,Long spuId, Long id);
+
+    ReturnObject<VoObject> addSpuCategory(Long shopId,Long spuId, Long id);
+
+    public ReturnObject<VoObject> revokeSpu(Long shopId,Long id);
 
     public ReturnObject<VoObject> setCategoryDefault(Long id,Long defaultValue);
 
     public ReturnObject uploadSpuImg(Long id, MultipartFile multipartFile);
+
+    public boolean checkSpuIdInShop(Long shopId, Long spuId);
+
+    public boolean checkSpuIdDisabled( Long spuId);
 }
 

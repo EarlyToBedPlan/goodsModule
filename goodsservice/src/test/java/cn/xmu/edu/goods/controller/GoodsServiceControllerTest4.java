@@ -133,6 +133,18 @@ public class GoodsServiceControllerTest4 {
     }
 
     @Test
+    public void insertGoodsBrandTest4() throws Exception {
+        String token=creatTestToken(1L, 2L, 100);
+
+        String responseString = this.mvc.perform(post("/goods/shops/2/spus/114514/brands/75")
+                .header("authorization",token))
+                .andExpect(status().isNotFound())
+                .andReturn().getResponse().getContentAsString();
+        String expectedResponse="{\"errno\":503,\"errmsg\":\"操作的资源id不是自己的对象\"}";
+        JSONAssert.assertEquals(expectedResponse, responseString, true);
+    }
+
+    @Test
     public void deleteGoodsBrandTest1() throws Exception {
         String token=creatTestToken(1L, 0L, 100);
 

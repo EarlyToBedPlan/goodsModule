@@ -3,8 +3,6 @@ package cn.xmu.edu.goods.controller;
 import cn.edu.xmu.goods.GoodsServiceApplication;
 import cn.edu.xmu.goods.model.vo.GoodsSkuPostVo;
 import cn.edu.xmu.goods.model.vo.GoodsSpuPostVo;
-import cn.edu.xmu.goods.model.vo.GoodsSpuRetVo;
-import cn.edu.xmu.goods.model.vo.UpdateBrandVoBody;
 import cn.edu.xmu.ooad.util.JacksonUtil;
 import cn.edu.xmu.ooad.util.JwtHelper;
 import com.alibaba.fastjson.JSONException;
@@ -30,11 +28,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = GoodsServiceApplication.class)   //标识本类是一个SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
-public class GoodsServiceControllerTest5 {
+public class postputskusputest {
     @Autowired
     private MockMvc mvc;
 
-    private static final Logger logger = LoggerFactory.getLogger(GoodsServiceControllerTest5.class);
+    private static final Logger logger = LoggerFactory.getLogger(postputskusputest.class);
 
     private final String creatTestToken(Long userId, Long departId, int expireTime) {
         String token = new JwtHelper().createToken(userId, departId, expireTime);
@@ -52,12 +50,12 @@ public class GoodsServiceControllerTest5 {
         goodsSkuPostVo.setOriginalPrice(114514l);
         goodsSkuPostVo.setSn("s_114514");
         goodsSkuPostVo.setWeight(80l);
-        String token = creatTestToken(1L, 0L, 100);
+        String token = creatTestToken(1L, 2L, 100);
         String brandJson = JacksonUtil.toJson(goodsSkuPostVo);
         String expectedResponse = "";
         String responseString = null;
         try {
-            responseString = this.mvc.perform(post("/goods/shops/0/spus/300/skus").header("authorization", token).contentType("application/json;charset=UTF-8").content(brandJson))
+            responseString = this.mvc.perform(post("/goods/shops/2/spus/300/skus").header("authorization", token).contentType("application/json;charset=UTF-8").content(brandJson))
                     .andExpect(status().isCreated())
                     .andExpect(content().contentType("application/json;charset=UTF-8"))
                     .andReturn().getResponse().getContentAsString();
@@ -70,11 +68,7 @@ public class GoodsServiceControllerTest5 {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
-
-
     }
-
     @Test
     public void putSkuTest1() throws Exception {
         GoodsSkuPostVo goodsSkuPostVo = new GoodsSkuPostVo();
@@ -85,12 +79,12 @@ public class GoodsServiceControllerTest5 {
         goodsSkuPostVo.setOriginalPrice(114514l);
         goodsSkuPostVo.setSn("s_114514");
         goodsSkuPostVo.setWeight(80l);
-        String token = creatTestToken(1L, 0L, 100);
+        String token = creatTestToken(1L, 2L, 100);
         String brandJson = JacksonUtil.toJson(goodsSkuPostVo);
         String expectedResponse = "";
         String responseString = null;
         try {
-            responseString = this.mvc.perform(put("/goods/shops/0/skus/300")
+            responseString = this.mvc.perform(put("/goods/shops/2/skus/300")
                     .header("authorization", token).contentType("application/json;charset=UTF-8").content(brandJson))
                     .andExpect(status().isOk())
                     .andExpect(content().contentType("application/json;charset=UTF-8"))
@@ -107,7 +101,7 @@ public class GoodsServiceControllerTest5 {
 
 
         String responseString1 = this.mvc.perform(get("/goods/skus/300"))
-                .andExpect(status().isNotFound())
+                .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json;charset=UTF-8"))
                 .andReturn().getResponse().getContentAsString();
         String expectedResponse1 = "{\"sn\":\"s_114514\",\"name\":\"name\",\"originalPrice\":114514,\"configuration\":\"conf\",\"weight\":80,\"imageUrl\":null,\"inventory\":114514,\"detail\":\"Detail set\"}\n";
@@ -124,12 +118,12 @@ public class GoodsServiceControllerTest5 {
         goodsSpuPostVo.setDescription("DETAIL");
         goodsSpuPostVo.setName("NAME");
         goodsSpuPostVo.setSpecs("{\"id\":0,\"name\":\"string\",\"specItems\":[{\"id\":114514,\"name\":\"string\"},{\"id\":1,\"name\":\"String\"}]}");
-        String token = creatTestToken(1L, 0L, 100);
+        String token = creatTestToken(1L, 2L, 100);
         String brandJson = JacksonUtil.toJson(goodsSpuPostVo);
         String expectedResponse = "";
         String responseString = null;
         try {
-            responseString = this.mvc.perform(post("/goods/shops/0/spus").header("authorization", token).contentType("application/json;charset=UTF-8").content(brandJson))
+            responseString = this.mvc.perform(post("/goods/shops/2/spus").header("authorization", token).contentType("application/json;charset=UTF-8").content(brandJson))
                     .andExpect(status().isCreated())
                     .andExpect(content().contentType("application/json;charset=UTF-8"))
                     .andReturn().getResponse().getContentAsString();

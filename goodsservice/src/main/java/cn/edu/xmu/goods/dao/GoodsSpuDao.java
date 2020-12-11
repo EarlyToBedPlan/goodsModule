@@ -1,6 +1,7 @@
 package cn.edu.xmu.goods.dao;
 
 import cn.edu.xmu.goods.mapper.BrandPoMapper;
+import cn.edu.xmu.goods.mapper.GoodsCategoryPoMapper;
 import cn.edu.xmu.goods.mapper.GoodsSkuPoMapper;
 import cn.edu.xmu.goods.mapper.GoodsSpuPoMapper;
 import cn.edu.xmu.goods.model.bo.GoodsSpu;
@@ -14,7 +15,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
+
 /**
  * SPU Dao
  * @author Yancheng Lai
@@ -36,6 +40,8 @@ public class GoodsSpuDao {
     @Autowired
     private BrandPoMapper brandPoMapper;
 
+    @Autowired
+    private GoodsCategoryPoMapper goodsCategoryPoMapper;
 
     /**
     * @Description:  查询GoodsSpuPo以id
@@ -70,6 +76,14 @@ public class GoodsSpuDao {
     * @Author: Yancheng Lai
     * @Date: 2020/12/3 19:50
     */
+    public boolean checkSpuDisabled(Long spuId){
+        GoodsSpuPo goodsSpuPo = goodsSpuPoMapper.selectByPrimaryKey(spuId);
+        if(goodsSpuPo.getDisabled() == 0 ){
+            return false;
+        }
+        return true;
+    }
+
     public ReturnObject<GoodsSpu> insertGoodsSpu(GoodsSpu goodsSpu) {
         GoodsSpuPo goodsSpuPo = goodsSpu.getGoodsSpuPo();
         GoodsSpuPoExample example = new GoodsSpuPoExample();
@@ -79,6 +93,9 @@ public class GoodsSpuDao {
         criteria.andDetailEqualTo(goodsSpu.getDetail());
         ReturnObject<GoodsSpu> retObj = null;
         try{
+            goodsSpuPo.setGmtModified(LocalDateTime.now());
+            goodsSpuPo.setGmtCreate(LocalDateTime.now());
+
             int ret = goodsSpuPoMapper.insertSelective(goodsSpuPo);
             if (ret == 0) {
                 retObj = new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST, String.format("Insert false：" + goodsSpuPo.getName()));
@@ -125,7 +142,7 @@ public class GoodsSpuDao {
     * @Author: Yancheng Lai
     * @Date: 2020/12/3 19:55
     */
-    public boolean checkSpuId(Long shopId, Long spuId) {
+    public boolean checkSpuIdInShop(Long shopId, Long spuId) {
         GoodsSpuPo goodsSpuPo = goodsSpuPoMapper.selectByPrimaryKey(spuId);
         if (goodsSpuPo == null) {
             return false;
@@ -137,14 +154,22 @@ public class GoodsSpuDao {
     }
 
     public ReturnObject<VoObject> updateSpu(GoodsSpu goodsSpu){
-        //GoodsSpuPo po = goodsSpuPoMapper.selectByPrimaryKey(goodsSpu.getId());
-
-        goodsSpuPoMapper.updateByPrimaryKeySelective(goodsSpu.getGoodsSpuPo());
+        GoodsSpuPo po = goodsSpuPoMapper.selectByPrimaryKey(goodsSpu.getId());
+        if(po == null)
+        {
+            return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
+        }
+        if(goodsSpu.getShopId() != po.getShopId()){
+            return new ReturnObject<>(ResponseCode.RESOURCE_ID_OUTSCOPE);
+        }
+        goodsSpu.setGmtModified(LocalDateTime.now());
+        goodsSpu.setDisabled((byte)0);
+        int res =  goodsSpuPoMapper.updateByPrimaryKeySelective(goodsSpu.getGoodsSpuPo());
         return new ReturnObject<VoObject>();
     }
 
 
-    public ReturnObject<VoObject> revokeSpu( Long id){
+    public ReturnObject<VoObject> revokeSpu(Long shopId, Long id){
         GoodsSpuPoExample goodsSpuPoExample =  new GoodsSpuPoExample();
         GoodsSpuPoExample.Criteria criteria = goodsSpuPoExample.createCriteria();
         criteria.andIdEqualTo(id);
@@ -153,10 +178,13 @@ public class GoodsSpuDao {
         if ( goodsSpuPo == null) {
             return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
         }
-
+        if(checkSpuIdInShop(shopId,id)==false){
+            return new ReturnObject<>(ResponseCode.RESOURCE_ID_OUTSCOPE);
+        }
         try {
             //int state = goodsSkuPoMapper.deleteByPrimaryKey(id);
-            goodsSpuPo.setDisabled((byte)0);
+            goodsSpuPo.setDisabled((byte)1);
+            goodsSpuPo.setGmtModified(LocalDateTime.now());
             int state = goodsSpuPoMapper.updateByPrimaryKeySelective(goodsSpuPo);
             if (state == 0){
                 return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
@@ -172,29 +200,51 @@ public class GoodsSpuDao {
         return new ReturnObject<>();
     }
 
+    /**
+    * @Description:  商品插入品牌
+    * @Param: [shopId, spuId, id]
+    * @return: ReturnObject<VoObject>
+    * @Author: Yancheng Lai
+    * @Date: 2020/12/11 14:36
+    */
 
-
-    public ReturnObject<VoObject>insertGoodsBrand(Long spuId,Long id)
+    public ReturnObject<VoObject>insertGoodsBrand(Long shopId,Long spuId,Long id)
     {
         GoodsSpuPo goodsSpuPo = goodsSpuPoMapper.selectByPrimaryKey(spuId);
             BrandPo brandPo = brandPoMapper.selectByPrimaryKey(id);
-            if(brandPo == null || goodsSpuPo == null){
+            if(brandPo == null || goodsSpuPo == null ||goodsSpuPo.getDisabled()!= 0){
                 return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
             }
-            else goodsSpuPo.setBrandId(id);
+            if(checkSpuIdInShop(shopId,spuId)==false){
+                return new ReturnObject<>(ResponseCode.RESOURCE_ID_OUTSCOPE);
+            }
+            goodsSpuPo.setBrandId(id);
+            goodsSpuPo.setGmtModified(LocalDateTime.now());
             goodsSpuPoMapper.updateByPrimaryKeySelective(goodsSpuPo);
             return new ReturnObject<>();
 
     }
 
-    public ReturnObject<VoObject>deleteGoodsBrand(Long spuId,Long id)
+    /**
+    * @Description: 商品删除品牌
+    * @Param: [shopId, spuId, id]
+    * @return: ReturnObject<VoObject>
+    * @Author: Yancheng Lai
+    * @Date: 2020/12/11 14:36
+    */
+
+    public ReturnObject<VoObject>deleteGoodsBrand(Long shopId,Long spuId,Long id)
     {
         GoodsSpuPo goodsSpuPo = goodsSpuPoMapper.selectByPrimaryKey(spuId);
             BrandPo brandPo = brandPoMapper.selectByPrimaryKey(id);
-            if(brandPo == null || goodsSpuPo == null || goodsSpuPo.getBrandId() != id){
+            if(brandPo == null || goodsSpuPo == null||goodsSpuPo.getBrandId() != id||goodsSpuPo.getDisabled()!= 0){
                 return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
             }
-            else goodsSpuPo.setBrandId(0l);
+            if(checkSpuIdInShop(shopId,spuId)==false){
+                return new ReturnObject<>(ResponseCode.RESOURCE_ID_OUTSCOPE);
+            }
+            goodsSpuPo.setBrandId(0l);
+            goodsSpuPo.setGmtModified(LocalDateTime.now());
             goodsSpuPoMapper.updateByPrimaryKeySelective(goodsSpuPo);
             return new ReturnObject<>();
 
@@ -298,5 +348,38 @@ public class GoodsSpuDao {
             return new ReturnObject(ResponseCode.INTERNAL_SERVER_ERR,
                     String.format("Unknown Exception: %s", e.getMessage()));
         }
+    }
+
+    public ReturnObject<VoObject>insertGoodsCategory(Long shopId,Long spuId,Long id)
+    {
+        GoodsSpuPo goodsSpuPo = goodsSpuPoMapper.selectByPrimaryKey(spuId);
+        GoodsCategoryPo goodsCategoryPo = goodsCategoryPoMapper.selectByPrimaryKey(id);
+        if(goodsCategoryPo == null || goodsSpuPo == null||goodsSpuPo.getDisabled()!= 0){
+            return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
+        }
+        if(checkSpuIdInShop(shopId,spuId)==false){
+            return new ReturnObject<>(ResponseCode.RESOURCE_ID_OUTSCOPE);
+        }
+        goodsSpuPo.setCategoryId(id);
+        goodsSpuPo.setGmtModified(LocalDateTime.now());
+        goodsSpuPoMapper.updateByPrimaryKeySelective(goodsSpuPo);
+        return new ReturnObject<>();
+    }
+
+    public ReturnObject<VoObject>deleteGoodsCategory(Long shopId,Long spuId,Long id)
+    {
+        GoodsSpuPo goodsSpuPo = goodsSpuPoMapper.selectByPrimaryKey(spuId);
+        GoodsCategoryPo goodsCategoryPo = goodsCategoryPoMapper.selectByPrimaryKey(id);
+        if(goodsCategoryPo == null || goodsSpuPo == null || goodsSpuPo.getCategoryId()!=id||goodsSpuPo.getDisabled()!= 0){
+            return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
+        }
+        if(checkSpuIdInShop(shopId,spuId)==false){
+            return new ReturnObject<>(ResponseCode.RESOURCE_ID_OUTSCOPE);
+        }
+        goodsSpuPo.setCategoryId(0l);
+        goodsSpuPo.setGmtModified(LocalDateTime.now());
+        goodsSpuPoMapper.updateByPrimaryKeySelective(goodsSpuPo);
+        return new ReturnObject<>();
+
     }
 }

@@ -24,7 +24,7 @@ public interface GoodsSkuService {
 
     public Boolean deductStock(List<OrderItemVo> vo);
 
-    public ReturnObject<VoObject> revokeSku(Long id);
+    public ReturnObject<VoObject> revokeSku(Long shopId,Long id);
 
     public ReturnObject<PageInfo<GoodsSkuRetVo>> findAllSkus(Long shopId, String skuSn, Long spuId, String spuSn, Integer page, Integer pagesize);
 
@@ -32,7 +32,7 @@ public interface GoodsSkuService {
 
     public ReturnObject<VoObject> updateSku(GoodsSku vo,Long shopId,Long id);
 
-    public ReturnObject uploadSkuImg(Long id, MultipartFile multipartFile);
+    public ReturnObject uploadSkuImg(Long id, Long shopId,MultipartFile multipartFile);
 
     public ReturnObject<List<StateVo>> findSkuStates();
 
@@ -49,4 +49,8 @@ public interface GoodsSkuService {
     public Integer getPriceById(Long goodsSkuId);
 
     public GoodsCartVo getCartByskuId(Long Sku);
+
+    public boolean checkSkuIdInShop(Long shopId,Long goodsSpuId);
+
+    public boolean checkSkuDisabled(Long skuId);
 }

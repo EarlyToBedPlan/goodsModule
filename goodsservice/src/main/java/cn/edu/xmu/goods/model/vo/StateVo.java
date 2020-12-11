@@ -10,10 +10,13 @@ import lombok.Data;
 @Data
 public class StateVo {
 
+
+
     private Byte code;
 
     private String name;
 
+    public StateVo(){}
     public StateVo(Byte code,String name){
         this.code = code;
         this.name = name;

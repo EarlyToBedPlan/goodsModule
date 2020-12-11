@@ -1,6 +1,7 @@
 package cn.edu.xmu.goods.service;
 
 import cn.edu.xmu.goods.dao.BrandDao;
+import cn.edu.xmu.goods.dao.GoodsCategoryDao;
 import cn.edu.xmu.goods.dao.GoodsSkuDao;
 import cn.edu.xmu.goods.dao.GoodsSpuDao;
 import cn.edu.xmu.goods.model.bo.*;
@@ -21,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.CannotCreateTransactionException;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import cn.edu.xmu.shop.service.*;
@@ -57,6 +59,9 @@ public class GoodsSpuServiceImpl implements GoodsSpuService{
     @Autowired
     ShopDao shopDao;
 
+    @Autowired
+    GoodsCategoryDao goodsCategoryDao;
+
     //@Autowired
     //ShopService shopService;
 
@@ -89,22 +94,37 @@ public class GoodsSpuServiceImpl implements GoodsSpuService{
             ShopSimpleVo shopSimpleVo = shop.createSimpleVo();
             goodsSpuRetVo.setShop(shopSimpleVo);
             Brand brand = brandDao.getBrandById(goodsSpuPo.getBrandId()).getData();
-            if(brand == null)
-                logger.info("brand == null");
-            BrandSimpleRetVo brandSimpleRetVo = brand.createSimpleVo();
-            if (brandSimpleRetVo == null){
-                logger.info("simplevo == null");
+            if(brand != null){
+                BrandSimpleRetVo brandSimpleRetVo = brand.createSimpleVo();
+                if (brandSimpleRetVo == null){
+                    logger.info("simplevo == null");
+                }
+                else logger.info("brand!=null");
+                goodsSpuRetVo.setBrand(brandSimpleRetVo);
             }
-            else logger.info("brand!=null");
-            goodsSpuRetVo.setBrand(brandSimpleRetVo);
+
+            GoodsCategory goodsCategory = goodsCategoryDao.getCategoryById(goodsSpuPo.getCategoryId()).getData();
+            if(goodsCategory != null){
+                GoodsCategorySimpleVo goodsCategorySimpleVo = goodsCategory.createSimpleVo();
+                if (goodsCategorySimpleVo == null){
+                    logger.info("simplevo == null");
+                }
+                else logger.info("brand!=null");
+                goodsSpuRetVo.setCategory(goodsCategorySimpleVo);
+            }
+
             goodsSpuRetVo.setFreightId(goodsSpuPo.getFreightId());
             Spec s = new Spec();
             String specJson = goodsSpuPo.getSpec();
-            s.setName(JacksonUtil.parseObject(specJson,"name",String.class));
-            s.setId(JacksonUtil.parseObject(specJson,"id",Long.class));
-            List<SpecItems> l = JacksonUtil.parseObjectList(specJson,"specItems",SpecItems.class);
-            s.setSpecItems(JacksonUtil.parseObjectList(specJson,"specItems",SpecItems.class));
-            goodsSpuRetVo.setSpec(s);
+            if(specJson!=null && (!specJson.contentEquals("default")))
+            {
+                s.setName(JacksonUtil.parseObject(specJson,"name",String.class));
+                s.setId(JacksonUtil.parseObject(specJson,"id",Long.class));
+                List<SpecItems> l = JacksonUtil.parseObjectList(specJson,"specItems",SpecItems.class);
+                s.setSpecItems(JacksonUtil.parseObjectList(specJson,"specItems",SpecItems.class));
+                goodsSpuRetVo.setSpec(s);
+            }
+
 
             List<GoodsSkuPo> Skus = goodsSkuDao.getSkuBySpuId(goodsSpuPo.getId());
             List<GoodsSkuSimpleRetVo> retSkus = new ArrayList<>();
@@ -152,7 +172,7 @@ public class GoodsSpuServiceImpl implements GoodsSpuService{
 
     @Transactional
     public ReturnObject<VoObject> updateSpu(GoodsSpu vo,Long shopId,Long id){
-        if (goodsSpuDao.checkSpuId(shopId,id)) {
+        if (goodsSpuDao.checkSpuIdInShop(shopId,id)) {
             vo.setShopId(shopId);
             vo.setId(id);
             return goodsSpuDao.updateSpu(vo);
@@ -161,17 +181,28 @@ public class GoodsSpuServiceImpl implements GoodsSpuService{
         }
     }
 
-
+    @Transactional
+    @Override
+    public ReturnObject<VoObject> removeSpuCategory(Long shopId,Long spuId, Long id) {
+        return goodsSpuDao.deleteGoodsCategory(shopId,spuId,id);
+    }
 
     @Transactional
-    public ReturnObject<VoObject> revokeSpu(  Long id){
-        ReturnObject<VoObject> ret =  goodsSpuDao.revokeSpu( id);
+    @Override
+    public ReturnObject<VoObject> addSpuCategory(Long shopId,Long spuId, Long id) {
+        return goodsSpuDao.insertGoodsCategory(shopId,spuId,id);
+    }
+
+    @Override
+    @Transactional
+    public ReturnObject<VoObject> revokeSpu( Long shopId, Long id){
+        ReturnObject<VoObject> ret =  goodsSpuDao.revokeSpu(shopId, id);
         if(ret.getCode() == ResponseCode.OK){
             ReturnObject<VoObject> skuret = goodsSkuDao.setSpuNull(id);
                 return skuret;
             }
 
-        return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
+        return ret;
     }
 
 
@@ -221,4 +252,13 @@ public class GoodsSpuServiceImpl implements GoodsSpuService{
         return null;
     }
 
+    @Override
+    public boolean checkSpuIdInShop(Long shopId, Long spuId) {
+        return goodsSpuDao.checkSpuIdInShop(shopId,spuId);
+    }
+
+    @Override
+    public boolean checkSpuIdDisabled(Long spuId) {
+        return goodsSpuDao.checkSpuDisabled(spuId);
+    }
 }

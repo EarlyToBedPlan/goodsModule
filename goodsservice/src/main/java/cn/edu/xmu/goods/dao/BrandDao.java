@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,25 +60,56 @@ public class BrandDao {
         logger.info("get brand by id: "+ brand.getId().toString());
         return new ReturnObject<>(brand);
     }
+    /**
+    * @Description: 更新品牌
+    * @Param: [brand]
+    * @return: cn.edu.xmu.ooad.util.ReturnObject<cn.edu.xmu.ooad.model.VoObject>
+    * @Author: Yancheng Lai
+    * @Date: 2020/12/11 15:28
+    */
     public ReturnObject<VoObject> updateBrand(Brand brand){
         logger.info("Dao:update Brand id = "+brand.getId().toString());
         BrandPo po = brandPoMapper.selectByPrimaryKey(brand.getId());
         if (po != null) {
             logger.info("Brand Po != null"+brand.getId().toString());
+            po.setGmtModified(LocalDateTime.now());
             brandPoMapper.updateByPrimaryKeySelective(brand.getBrandPo());
             return new ReturnObject<VoObject>(ResponseCode.OK);
         }
         return new ReturnObject<VoObject>(ResponseCode.RESOURCE_ID_NOTEXIST);
     }
-
+    /**
+    * @Description: 删除品牌 并且将spu的brandid置为0
+    * @Param: [id]
+    * @return: cn.edu.xmu.ooad.util.ReturnObject<cn.edu.xmu.ooad.model.VoObject>
+    * @Author: Yancheng Lai
+    * @Date: 2020/12/11 15:28
+    */
     public ReturnObject<VoObject> revokeBrand(Long id){
         BrandPo po = brandPoMapper.selectByPrimaryKey(id);
         if (po != null) {
+            po.setGmtModified(LocalDateTime.now());
             brandPoMapper.deleteByPrimaryKey(id);
+            GoodsSpuPoExample example = new GoodsSpuPoExample();
+            GoodsSpuPoExample.Criteria criteria = example.createCriteria();
+            criteria.andBrandIdEqualTo(id);
+            List<GoodsSpuPo> goodsSpuPos = goodsSpuPoMapper.selectByExample(example);
+            for(GoodsSpuPo goodsSpuPo: goodsSpuPos){
+                goodsSpuPo.setBrandId(0l);
+                goodsSpuPoMapper.updateByPrimaryKeySelective(goodsSpuPo);
+            }
             return new ReturnObject<VoObject>();
         }
         return new ReturnObject<VoObject>(ResponseCode.RESOURCE_ID_NOTEXIST);
     }
+
+    /**
+    * @Description: SPU 品牌id置0
+    * @Param: [brandId]
+    * @return: cn.edu.xmu.ooad.util.ReturnObject<cn.edu.xmu.ooad.model.VoObject>
+    * @Author: Yancheng Lai
+    * @Date: 2020/12/11 15:35
+    */
 
     public ReturnObject<VoObject> setSpuBrandNull(Long brandId){
         GoodsSpuPoExample goodsSpuPoExample =  new GoodsSpuPoExample();
@@ -92,12 +124,21 @@ public class BrandDao {
         return new ReturnObject<>(ResponseCode.OK);
     }
 
+    /**
+    * @Description: 增加品牌
+    * @Param: [brand]
+    * @return: cn.edu.xmu.ooad.util.ReturnObject<cn.edu.xmu.goods.model.bo.Brand>
+    * @Author: Yancheng Lai
+    * @Date: 2020/12/11 15:35
+    */
     public ReturnObject<Brand> addBrand(Brand brand){
         BrandPo brandPo = brand.getBrandPo();
+        brandPo.setGmtCreate(LocalDateTime.now());
         int res = brandPoMapper.insertSelective(brandPo);
         if(res == 0){
             return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR);
         }
         return new ReturnObject<>(brand);
     }
+
 }

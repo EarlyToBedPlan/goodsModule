@@ -140,13 +140,14 @@ public class BrandController {
     @ApiResponses({
             @ApiResponse(code = 0, message = "成功"),
             @ApiResponse(code = 504, message = "操作id不存在"),
-            @ApiResponse(code = 503, message = "字段不合法")
+            @ApiResponse(code = 505, message = "超出操作域")
     })
     @Audit
     @DeleteMapping("/shops/{shopId}/brands/{id}")
-    public Object revokeSpu(@PathVariable Long shopId, @PathVariable Long id){
+    public Object revokeSpuBrand(@PathVariable Long shopId, @PathVariable Long id){
         return Common.decorateReturnObject(brandService.revokeBrand(id));
     }
+
 
     @ApiOperation(value = "管理员新增品牌")
     @ApiImplicitParams({
@@ -169,10 +170,8 @@ public class BrandController {
             return o;
         }
         Brand brand = new Brand(vo);
-        brand.setGmtModified(LocalDateTime.now());
-        logger.debug("Brand update c: id = "+id.toString());
+        brand.setGmtCreate(LocalDateTime.now());
         ReturnObject<BrandRetVo> returnObject = brandService.addBrand(brand, id);
-        logger.debug("Brand update c: updateout id = "+id.toString());
         if (returnObject.getCode() == ResponseCode.OK) {
             return Common.decorateReturnObject(returnObject);
         } else {

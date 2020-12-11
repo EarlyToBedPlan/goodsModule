@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 
 
 /**
@@ -68,7 +69,6 @@ public class BrandServiceImpl implements BrandService{
 
     @Transactional
     public ReturnObject<VoObject> revokeBrand(Long id){
-
         ReturnObject<VoObject> ret =  brandDao.revokeBrand(id);
         if(ret.getCode() == ResponseCode.OK){
             return brandDao.setSpuBrandNull(id);
@@ -77,16 +77,16 @@ public class BrandServiceImpl implements BrandService{
     }
 
     @Transactional
-    public ReturnObject<VoObject>insertGoodsBrand(Long spuId,Long id)
+    public ReturnObject<VoObject>insertGoodsBrand(Long shopId,Long spuId,Long id)
     {
 
-        return goodsSpuDao.insertGoodsBrand(spuId,id);
+        return goodsSpuDao.insertGoodsBrand(shopId,spuId,id);
 
     }
 
     @Transactional
-    public  ReturnObject<VoObject>deleteGoodsBrand(Long spuId,Long id){
-        return goodsSpuDao.deleteGoodsBrand(spuId, id);
+    public  ReturnObject<VoObject>deleteGoodsBrand(Long shopId,Long spuId,Long id){
+        return goodsSpuDao.deleteGoodsBrand(shopId, spuId, id);
     }
 
     @Transactional

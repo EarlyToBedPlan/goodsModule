@@ -208,7 +208,7 @@ public class GoodsServiceController {
     @Audit
     @DeleteMapping("/shops/{shopId}/skus/{id}")
     public Object revokeSku(@PathVariable Long shopId, @PathVariable Long id){
-        return Common.decorateReturnObject(goodsSkuService.revokeSku( id));
+        return Common.decorateReturnObject(goodsSkuService.revokeSku(shopId, id));
     }
 
     /**
@@ -234,7 +234,6 @@ public class GoodsServiceController {
     //@Audit
     @PostMapping("/shops/{shopId}/spus/{id}/skus")
     public Object insertSku(@Validated @RequestBody GoodsSkuPostVo vo, BindingResult bindingResult,
-                             @LoginUser @ApiIgnore @RequestParam(required = false) Long userId,
                              @PathVariable("shopId") Long shopId,
                              @PathVariable("id") Long id) {
 
@@ -331,7 +330,6 @@ public class GoodsServiceController {
     @Audit
     @PostMapping("/shops/{id}/spus")
     public Object insertSku(@Validated @RequestBody GoodsSpuPostVo vo, BindingResult bindingResult,
-                             @LoginUser @ApiIgnore @RequestParam(required = false) Long userId,
                              @PathVariable("id") Long id) {
 
         Object returnObject = Common.processFieldErrors(bindingResult, httpServletResponse);
@@ -340,8 +338,6 @@ public class GoodsServiceController {
             return returnObject;
         }
         GoodsSpu goodsSpu = new GoodsSpu(vo);
-//        goodsSpu.setGmtCreated(LocalDateTime.now());
-//        goodsSpu.setGmtModified(LocalDateTime.now());
         goodsSpu.setDisabled((byte)0);
         goodsSpu.setGmtCreate(LocalDateTime.now());
         goodsSpu.setGmtModified(LocalDateTime.now());
@@ -451,7 +447,7 @@ public class GoodsServiceController {
     @Audit
     @DeleteMapping("/shops/{shopId}/spus/{id}")
     public Object revokeSpu(@PathVariable Long shopId, @PathVariable Long id){
-        return Common.decorateReturnObject(goodsSpuService.revokeSpu( id));
+        return Common.decorateReturnObject(goodsSpuService.revokeSpu(shopId, id));
     }
 
 
@@ -504,7 +500,7 @@ public class GoodsServiceController {
         }
     }
     /**
-    * @Description:  SPU新增品牌
+    * @Description:  SPU新增品牌 tested
     * @Param: [shopId, id, skuId]
     * @return: java.lang.Object
     * @Author: Yancheng Lai
@@ -525,13 +521,13 @@ public class GoodsServiceController {
     })
     @Audit
     @PostMapping("/shops/{shopId}/spus/{spuId}/brands/{id}")
-    public Object insertBrand(
+    public Object addSpuBrand(
                              @PathVariable("shopId") Long shopId,
                              @PathVariable("id") Long id,
                              @PathVariable("spuId") Long spuId  ) {
 
 
-        ReturnObject<VoObject> retObject = brandService.insertGoodsBrand(  spuId,id);
+        ReturnObject<VoObject> retObject = brandService.insertGoodsBrand(shopId, spuId,id);
         if (retObject.getData() != null) {
             httpServletResponse.setStatus(HttpStatus.CREATED.value());
             return Common.decorateReturnObject(retObject);
@@ -568,7 +564,7 @@ public class GoodsServiceController {
             @PathVariable("spuId") Long spuId  ) {
 
 
-        ReturnObject<VoObject> retObject = brandService.deleteGoodsBrand( spuId,id);
+        ReturnObject<VoObject> retObject = brandService.deleteGoodsBrand(shopId, spuId,id);
         if (retObject.getData() != null) {
             httpServletResponse.setStatus(HttpStatus.CREATED.value());
             return Common.decorateReturnObject(retObject);
@@ -595,9 +591,11 @@ public class GoodsServiceController {
     public Object uploadSkuImg(@RequestParam("img") MultipartFile multipartFile,
                                @PathVariable("shopId") Long shopId,
                                @PathVariable("id") Long id){
-
-        ReturnObject returnObject = goodsSkuService.uploadSkuImg(id, multipartFile);
-        return Common.getNullRetObj(returnObject, httpServletResponse);
+        if(goodsSkuService.checkSkuIdInShop(shopId,id)==false){
+            return Common.decorateReturnObject(new ReturnObject(ResponseCode.RESOURCE_ID_OUTSCOPE));
+        }
+        ReturnObject returnObject = goodsSkuService.uploadSkuImg(id, shopId,multipartFile);
+        return Common.decorateReturnObject(returnObject);
     }
 
 
@@ -621,8 +619,11 @@ public class GoodsServiceController {
                                @PathVariable("shopId") Long shopId,
                                @PathVariable("id") Long id){
 
+        if(goodsSpuService.checkSpuIdInShop(shopId,id)==false){
+            return Common.decorateReturnObject(new ReturnObject(ResponseCode.RESOURCE_ID_OUTSCOPE));
+        }
         ReturnObject returnObject = goodsSpuService.uploadSpuImg(id, multipartFile);
-        return Common.getNullRetObj(returnObject, httpServletResponse);
+        return Common.decorateReturnObject(returnObject);
     }
 
 
@@ -644,10 +645,82 @@ public class GoodsServiceController {
     public Object uploadBrandImg(@RequestParam("img") MultipartFile multipartFile,
                                @PathVariable("shopId") Long shopId,
                                @PathVariable("id") Long id){
-
         ReturnObject returnObject = brandService.uploadBrandImg(id, multipartFile);
-        return Common.getNullRetObj(returnObject, httpServletResponse);
+        return Common.decorateReturnObject(returnObject);
     }
 
+    /**
+     * @Description:  SPU新增种类
+    * @Param: [shopId, id, skuId]
+     * @return: java.lang.Object
+    * @Author: Yancheng Lai
+    * @Date: 2020/12/4 13:49
+     */
+
+    @ApiOperation(value = "spu增加种类", produces = "application/json")
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "header", dataType = "String", name = "authorization", value = "Token", required = true),
+            @ApiImplicitParam(paramType = "path", dataType = "Long", name = "shopId", value = "店铺id", required = true),
+            @ApiImplicitParam(paramType = "path", dataType = "Long", name = "id", value = "种类Id", required = true),
+            @ApiImplicitParam(paramType = "path", dataType = "Long", name = "spuId", value = "spuId", required = true),
+    })
+    @ApiResponses({
+            @ApiResponse(code = 0, message = "成功"),
+            @ApiResponse(code = 504, message = "操作id不存在"),
+            @ApiResponse(code = 503, message = "字段不合法")
+    })
+    @Audit
+    @PostMapping("/shops/{shopId}/spus/{spuId}/categories/{id}")
+    public Object addSpuCategory(
+            @PathVariable("shopId") Long shopId,
+            @PathVariable("id") Long id,
+            @PathVariable("spuId") Long spuId  ) {
+
+
+        ReturnObject<VoObject> retObject = goodsSpuService.addSpuCategory(shopId,  spuId,id);
+        if (retObject.getData() != null) {
+            httpServletResponse.setStatus(HttpStatus.CREATED.value());
+            return Common.decorateReturnObject(retObject);
+        } else {
+            return Common.getNullRetObj(new ReturnObject<>(retObject.getCode(), retObject.getErrmsg()), httpServletResponse);
+        }
+    }
+
+    /**
+     * @Description: SPU删除种类
+     * @Param: [shopId, id, spuId]
+     * @return: java.lang.Object
+     * @Author: Yancheng Lai
+     * @Date: 2020/12/4 14:02
+     */
+
+    @ApiOperation(value = "Spu删除种类", produces = "application/json")
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "header", dataType = "String", name = "authorization", value = "Token", required = true),
+            @ApiImplicitParam(paramType = "path", dataType = "Long", name = "shopId", value = "店铺id", required = true),
+            @ApiImplicitParam(paramType = "path", dataType = "Long", name = "id", value = "种类Id", required = true),
+            @ApiImplicitParam(paramType = "path", dataType = "Long", name = "spuId", value = "spuId", required = true),
+    })
+    @ApiResponses({
+            @ApiResponse(code = 0, message = "成功"),
+            @ApiResponse(code = 504, message = "操作id不存在"),
+            @ApiResponse(code = 503, message = "字段不合法")
+    })
+    @Audit
+    @DeleteMapping("/shops/{shopId}/spus/{spuId}/categories/{id}")
+    public Object removeSpuCategory(
+            @PathVariable("shopId") Long shopId,
+            @PathVariable("id") Long id,
+            @PathVariable("spuId") Long spuId  ) {
+
+
+        ReturnObject<VoObject> retObject = goodsSpuService.removeSpuCategory(shopId, spuId,id);
+        if (retObject.getData() != null) {
+            httpServletResponse.setStatus(HttpStatus.CREATED.value());
+            return Common.decorateReturnObject(retObject);
+        } else {
+            return Common.getNullRetObj(new ReturnObject<>(retObject.getCode(), retObject.getErrmsg()), httpServletResponse);
+        }
+    }
 
 }
