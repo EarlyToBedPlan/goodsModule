@@ -4,8 +4,13 @@ import cn.edu.xmu.comment.mapper.CommentPoMapper;
 import cn.edu.xmu.comment.model.bo.Comment;
 import cn.edu.xmu.comment.model.po.CommentPo;
 import cn.edu.xmu.comment.model.po.CommentPoExample;
+import cn.edu.xmu.goods.model.vo.StateVo;
+import cn.edu.xmu.ooad.model.VoObject;
 import cn.edu.xmu.ooad.util.ResponseCode;
 import cn.edu.xmu.ooad.util.ReturnObject;
+import cn.edu.xmu.shop.model.bo.Shop;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -15,6 +20,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -125,26 +131,14 @@ public class CommentDao implements InitializingBean{
      * @Description 根据商品skuId获得评论id列表
      * @author Ruzhen Chang
      */
-    public List<CommentPo> getCommentIdListByGoodsSkuId(long goodsSkuId){
+    public PageInfo<CommentPo> getCommentListByGoodsSkuId(Long goodsSkuId, Integer page, Integer pageSize){
+        PageHelper.startPage(page,pageSize);
         CommentPoExample example=new CommentPoExample();
         CommentPoExample.Criteria criteria=example.createCriteria();
         criteria.andGoodsSkuIdEqualTo(goodsSkuId);
         List<CommentPo> commentPos=commentPoMapper.selectByExample(example);
-
-        for(CommentPo commentPo:commentPos) {
-            try {
-                if((byte)commentPo.getState()==Comment.State.NORM.getCode()) {
-                    commentPos.add(commentPo);
-                    logger.debug("getCommentIdListByGoodsSkuId: commentId = " + commentPo.getId());
-                }else {
-                    logger.debug("getCommentIdListByGoodsSkuId: id failed audit = " + commentPo.getGoodsSkuId());
-                }
-            } catch (DataAccessException e) {
-                logger.debug("getCommentIdListByGoodsSkuId:" + e.getMessage());
-            }
-        }
-        return commentPos;
-
+        logger.debug("getCommentIdListByGoodsSkuId:" +goodsSkuId);
+        return new PageInfo<>(commentPos);
     }
 
 
@@ -153,27 +147,17 @@ public class CommentDao implements InitializingBean{
      * @Description 根据用户id获得评论id列表
      * @author Ruzhen Chang
      */
-    public List<CommentPo> getCommentIdListByCustomerId(long customerId){
+    public PageInfo<CommentPo> getCommentIdListByCustomerId(long customerId,Integer page,Integer pageSize){
+
+        PageHelper.startPage(page,pageSize);
         CommentPoExample example=new CommentPoExample();
         CommentPoExample.Criteria criteria=example.createCriteria();
         criteria.andCustomerIdEqualTo(customerId);
         List<CommentPo> commentPos=commentPoMapper.selectByExample(example);
-
-        for(CommentPo commentPo:commentPos) {
-            try {
-                if((byte)commentPo.getState()==Comment.State.NORM.getCode()) {
-                    commentPos.add(commentPo);
-                    logger.debug("getCommentIdListByCustomerId: customerId = " + commentPo.getId());
-                }else {
-                    logger.debug("getCommentIdListByCustomerId: failed by customerId = " + customerId);
-                }
-            } catch (DataAccessException e) {
-                logger.debug("getCommentIdListByCustomerId:" + e.getMessage());
-            }
-        }
-        return commentPos;
-
+        logger.debug("getCommentIdListByCustomerId:" +customerId);
+        return new PageInfo<>(commentPos);
     }
+
 
     /**
      * @Description 修改评论状态
@@ -198,5 +182,18 @@ public class CommentDao implements InitializingBean{
         return returnObject;
     }
 
+
+    /**
+     * @Description 获取评论所有状态
+     * @author Ruzhen Chang
+     */
+    public List<StateVo> findCommentStates(){
+        List<StateVo> stateVos= null;
+        for (int i = 0; i < 3; i++) {
+            StateVo vo=new StateVo((byte) i,Comment.State.getTypeByCode(i).name());
+            stateVos.add(vo);
+        }
+        return stateVos;
+    }
 
 }
