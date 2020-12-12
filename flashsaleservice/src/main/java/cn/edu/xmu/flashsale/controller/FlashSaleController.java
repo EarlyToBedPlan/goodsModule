@@ -6,9 +6,11 @@ import cn.edu.xmu.flashsale.service.FlashSaleServiceImpl;
 import cn.edu.xmu.ooad.model.VoObject;
 import cn.edu.xmu.ooad.util.Common;
 import cn.edu.xmu.ooad.util.ResponseCode;
+import cn.edu.xmu.ooad.util.ResponseUtil;
 import cn.edu.xmu.ooad.util.ReturnObject;
 import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.*;
+import net.bytebuddy.asm.Advice;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -200,6 +202,51 @@ public class FlashSaleController {
             return Common.getListRetObject(retObject);
         } else {
             return Common.getNullRetObj(new ReturnObject<>(retObject.getCode(), retObject.getErrmsg()), httpServletResponse);
+        }
+    }
+
+    @ApiOperation(value = "去掉秒杀中的sku")
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "path", name = "fid", value = "秒杀活动Id", required = true, dataType = "Integer"),
+            @ApiImplicitParam(paramType = "path", name = "id", value = "商品Id", required = true, dataType = "Integer")
+    })
+    @ApiResponses({
+            @ApiResponse(code = 0, message = "成功")
+    })
+    @DeleteMapping("/flashsales/{fid}/flashitems/{id}")
+    public Object deleteSkuFromFlashSale(@PathVariable(required = true) Long fid,
+                                         @PathVariable(required = true) Long id){
+        ReturnObject retObject = flashSaleService.deleteSkuFromFlashSale(fid,id);
+        if (retObject.getCode() == ResponseCode.OK) {
+            return ResponseUtil.ok();
+        } else {
+            return ResponseUtil.fail(retObject.getCode());
+        }
+    }
+
+    /**
+     * @Description:
+     *
+     * @param fid
+     * @param id
+     * @return: java.lang.Object
+     * @Author: LJP_3424
+     * @Date: 2020/12/11 22:22
+     */
+    @ApiOperation(value = "删除秒杀活动")
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "path", name = "id", value = "秒杀活动Id", required = true, dataType = "Integer"),
+    })
+    @ApiResponses({
+            @ApiResponse(code = 0, message = "成功")
+    })
+    @DeleteMapping("/flashsales/{id}")
+    public Object deleteSkuFromFlashSale(@PathVariable(required = true) Long id){
+        ReturnObject retObject = flashSaleService.deleteFlashSale(id);
+        if (retObject.getCode() == ResponseCode.OK) {
+            return ResponseUtil.ok();
+        } else {
+            return ResponseUtil.fail(retObject.getCode());
         }
     }
 

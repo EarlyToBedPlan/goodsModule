@@ -214,6 +214,15 @@ public class FlashSaleServiceImpl implements FlashSaleService{
         }
     }
 
-
-
+    @Transactional
+    public ReturnObject deleteSkuFromFlashSale(Long fid,Long skuId){
+        ReturnObject returnObject = flashSaleItemDao.deleteFlashSaleItem(fid, skuId);
+        return returnObject;
+    }
+    @Transactional
+    public ReturnObject deleteFlashSale(Long id){
+        flashSaleItemDao.deleteFlashSaleItem(id,null);
+        ReturnObject returnObject = flashSaleDao.deleteFlashSale(id);
+        return returnObject;
+    }
 }

@@ -1,7 +1,6 @@
 package cn.edu.xmu.flashsale.model.bo;
 
 import cn.edu.xmu.flashsale.model.po.FlashSaleItemPo;
-import cn.edu.xmu.flashsale.model.vo.FlashSaleItemSimpleVo;
 import cn.edu.xmu.flashsale.model.vo.FlashSaleItemVo;
 import cn.edu.xmu.flashsale.model.vo.FlashSaleRetItemVo;
 import cn.edu.xmu.flashsale.model.vo.FlashSaleVo;

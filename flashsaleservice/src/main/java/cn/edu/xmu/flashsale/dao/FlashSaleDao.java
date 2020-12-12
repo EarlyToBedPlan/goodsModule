@@ -189,6 +189,7 @@ public class FlashSaleDao implements InitializingBean {
         flashSalePo.setFlashDate(vo.getFlashDate());
         flashSalePo.setTimeSegId(id);
         flashSalePo.setGmtCreate(LocalDateTime.now());
+        flashSalePo.setState(FlashSale.State.OFF.getCode());
         flashSalePoMapper.insert(flashSalePo);
         return flashSalePo.getId();
     }
@@ -294,6 +295,14 @@ public class FlashSaleDao implements InitializingBean {
         FlashSalePoExample.Criteria criteria = flashSalePoExample.createCriteria();
         criteria.andTimeSegIdEqualTo(timeSegmentId);
         return flashSalePoMapper.selectByExample(flashSalePoExample);
+    }
+
+    public ReturnObject deleteFlashSale(Long id){
+        int ret = flashSalePoMapper.deleteByPrimaryKey(id);
+        if(ret == 0){
+            return new ReturnObject(ResponseCode.RESOURCE_ID_NOTEXIST);
+        }
+        return new ReturnObject(ResponseCode.OK);
     }
 
 }

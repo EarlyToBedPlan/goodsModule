@@ -10,6 +10,8 @@ import java.time.LocalDateTime;
  */
 public class FlashSaleVo implements VoObject {
 
+    private Byte state;
+
     private Long id;
 
     private LocalDateTime flashDate;
@@ -60,5 +62,13 @@ public class FlashSaleVo implements VoObject {
     @Override
     public Object createSimpleVo() {
         return null;
+    }
+
+    public Byte getState() {
+        return state;
+    }
+
+    public void setState(Byte state) {
+        this.state = state;
     }
 }
