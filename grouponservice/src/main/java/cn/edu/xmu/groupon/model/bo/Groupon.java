@@ -17,11 +17,10 @@ import java.util.Map;
 public class Groupon implements VoObject {
 
     public enum State {
-        RELEASE(0, "发布"),
-        ONLINE(1, "上线"),
-        OFFLINE(2, "下线"),
-        END(3, "未成团"),
-        DELETE(4, "已成团");
+        OFF(0, "已下线"),
+        ON(1, "已上线"),
+        DELETE(2, "已删除");
+
 
         private static final Map<Integer, State> stateMap;
 
@@ -121,11 +120,11 @@ public class Groupon implements VoObject {
         this.strategy = strategy;
     }
 
-    public LocalDateTime getGmtCreated() {
+    public LocalDateTime getGmtCreate() {
         return gmtCreated;
     }
 
-    public void setGmtCreated(LocalDateTime gmtCreated) {
+    public void setGmtCreate(LocalDateTime gmtCreated) {
         this.gmtCreated = gmtCreated;
     }
 
@@ -139,7 +138,7 @@ public class Groupon implements VoObject {
 
     public Groupon(GrouponPo po) {
         this.gmtModified = po.getGmtModified();
-        this.gmtCreated = po.getGmtCreated();
+        this.gmtCreated = po.getGmtCreate();
         this.endTime = po.getEndTime();
         this.beginTime = po.getBeginTime();
         this.name = po.getName();
@@ -153,7 +152,7 @@ public class Groupon implements VoObject {
         GrouponVo grouponVo = new GrouponVo();
         grouponVo.setBeginTime(this.beginTime);
         grouponVo.setEndTime(this.endTime);
-        grouponVo.setGmtCreated(this.gmtCreated);
+        grouponVo.setGmtCreate(this.gmtCreated);
         grouponVo.setGmtModified(this.gmtModified);
         grouponVo.setId(this.id);
         grouponVo.setName(this.name);

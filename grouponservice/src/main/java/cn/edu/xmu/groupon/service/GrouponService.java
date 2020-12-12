@@ -43,6 +43,7 @@ public class GrouponService {
      */
     public ReturnObject<PageInfo<VoObject>> selectAllGroupon(Long shopId, Byte timeline, Long spuId, Integer pageNum, Integer pageSize) {
         List<GrouponPo> grouponPos = grouponDao.selectAllGroupon(shopId, timeline, spuId, pageNum, pageSize);
+
         return changeListIntoPage(grouponPos,pageNum,pageSize);
     }
     
@@ -168,8 +169,8 @@ public class GrouponService {
         * @Date: 2020/12/5 1:06
     */
     @Transactional
-    public ReturnObject<Object> deleteGroupon(Long id) {
-        return grouponDao.changeGrouponState(id,Groupon.State.END.getCode());
+    public ReturnObject<Object> changeGrouponState(Long id,byte state) {
+        return grouponDao.changeGrouponState(id,state);
     }
 
 

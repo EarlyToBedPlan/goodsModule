@@ -118,8 +118,8 @@ public class GrouponController {
             @PathVariable Long id,
             @RequestParam(required = false) Byte state,
             @RequestParam(required = false) Long spuId,
-            @RequestParam(required = false, defaultValue = "2000-01-01 18:00:00") String beginTime,
-            @RequestParam(required = false, defaultValue = "2099-01-01 18:00:00") String endTime,
+            @RequestParam(required = false, defaultValue = "1900-01-01 18:00:00") String beginTime,
+            @RequestParam(required = false, defaultValue = "2999-01-01 18:00:00") String endTime,
             @RequestParam(required = false, defaultValue = "1") Integer page,
             @RequestParam(required = false, defaultValue = "10") Integer pageSize
     ) {
@@ -255,7 +255,64 @@ public class GrouponController {
         if (logger.isDebugEnabled()) {
             logger.debug("deleteUser: id = " + id);
         }
-        ReturnObject returnObject = grouponService.deleteGroupon(id);
+        ReturnObject returnObject = grouponService.changeGrouponState(id,Groupon.State.DELETE.getCode());
         return Common.decorateReturnObject(returnObject);
+    }
+
+
+    /**
+     * 上线团购活动
+     */
+    @ApiOperation(value = "上线团购活动")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "authorization", value = "Token", required = true, dataType = "String", paramType = "header"),
+            @ApiImplicitParam(name = "id", required = true, dataType = "Integer", paramType = "path"),
+            @ApiImplicitParam(name = "shopId", required = true, dataType = "Integer", paramType = "path")
+    })
+    @ApiResponses({
+            @ApiResponse(code = 0, message = "成功"),
+            @ApiResponse(code = 906, message = "优惠活动禁止")
+    })
+    //@Audit // 需要认证
+    @DeleteMapping("/shops/{shopId}/groupons/{id}/onshelves")
+    public Object grouponOn(@PathVariable Long id, @PathVariable Long shopId) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("deleteUser: id = " + id);
+        }
+        ReturnObject retObject = grouponService.changeGrouponState(id,Groupon.State.ON.getCode());
+        if (retObject.getCode() == ResponseCode.OK) {
+            return ResponseUtil.ok();
+        } else {
+            return ResponseUtil.fail(retObject.getCode());
+        }
+    }
+
+
+
+    /**
+     * 下线团购活动
+     */
+    @ApiOperation(value = "下线团购活动")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "authorization", value = "Token", required = true, dataType = "String", paramType = "header"),
+            @ApiImplicitParam(name = "id", required = true, dataType = "Integer", paramType = "path"),
+            @ApiImplicitParam(name = "shopId", required = true, dataType = "Integer", paramType = "path")
+    })
+    @ApiResponses({
+            @ApiResponse(code = 0, message = "成功"),
+            @ApiResponse(code = 906, message = "优惠活动禁止")
+    })
+    //@Audit // 需要认证
+    @PutMapping("/shops/{shopId}/groupons/{id}/offshelves")
+    public Object grouponOFF(@PathVariable Long id, @PathVariable Long shopId) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("deleteUser: id = " + id);
+        }
+        ReturnObject retObject = grouponService.changeGrouponState(id,Groupon.State.OFF.getCode());
+        if (retObject.getCode() == ResponseCode.OK) {
+            return ResponseUtil.ok();
+        } else {
+            return ResponseUtil.fail(retObject.getCode());
+        }
     }
 }

@@ -2,7 +2,6 @@ package cn.edu.xmu.groupon.mapper;
 
 import cn.edu.xmu.groupon.model.po.GrouponPo;
 import cn.edu.xmu.groupon.model.po.GrouponPoExample;
-
 import java.util.List;
 
 public interface GrouponPoMapper {

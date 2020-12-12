@@ -134,7 +134,18 @@ public class GrouponDao implements InitializingBean {
         if (spuId != null) criteria.andGoodsSpuIdEqualTo(spuId);
         if (beginTime != null) criteria.andBeginTimeGreaterThanOrEqualTo(beginTime);
         if (endTime != null) criteria.andEndTimeLessThanOrEqualTo(endTime);
-        return selectByExample(example, pageNum, pageSize);
+        List<GrouponPo> grouponPos = null;
+        try {
+            grouponPos = selectByExample(example, pageNum, pageSize);
+        } catch (DataAccessException e) {
+            logger.error("selectAllGroupon: DataAccessException:" + e.getMessage());
+            //return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR, String.format("数据库错误：%s", e.getMessage()));
+        } catch (Exception e) {
+            // 其他Exception错误
+            logger.error("other exception : " + e.getMessage());
+            //return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR, String.format("发生了严重的数据库错误：%s", e.getMessage()));
+        }
+        return grouponPos;
     }
 
     /**
@@ -167,8 +178,8 @@ public class GrouponDao implements InitializingBean {
         GrouponPo grouponPo = vo.createGrouponPo();
         grouponPo.setGoodsSpuId(id);
         grouponPo.setShopId(id);
-        grouponPo.setGmtCreated(LocalDateTime.now());
-        grouponPo.setState(Groupon.State.RELEASE.getCode());
+        grouponPo.setGmtCreate(LocalDateTime.now());
+        grouponPo.setState(Groupon.State.ON.getCode());
         grouponPoMapper.insertSelective(grouponPo);
         return grouponPo.getId();
     }
@@ -205,24 +216,27 @@ public class GrouponDao implements InitializingBean {
      * @Author: LJP_3424
      * @Date: 2020/12/5 23:22
      */
-    public ReturnObject<Object> changeGrouponState( Long id,byte state) {
+    public ReturnObject<Object> changeGrouponState(Long id,byte state) {
         GrouponPo po = grouponPoMapper.selectByPrimaryKey(id);
-        if (po == null) {
+
+        // 不存在或删除态拒绝
+        if (po == null || po.getState() == Groupon.State.DELETE.getCode()) {
             logger.info("活动不存在或已被删除：id = " + id);
             return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
         }
-        if (po.getBeginTime().compareTo(LocalDateTime.now()) < 0 && po.getEndTime().compareTo(LocalDateTime.now()) > 0) {
-            return new ReturnObject<>(ResponseCode.GROUPON_STATENOTALLOW);
+        // 状态重复或者 上线态转删除
+        if (po.getState() == state || (state == Groupon.State.DELETE.getCode() && po.getState() == Groupon.State.ON.getCode())) {
+            return new ReturnObject<>(ResponseCode.PRESALE_STATENOTALLOW);
         }
-        po.setState(state);
+        // po.setState(state);
+        // 这里采用部分更新,防止数据更改
+        GrouponPo grouponPo = new GrouponPo();
+        grouponPo.setId(po.getId());
+        grouponPo.setState(state);
         ReturnObject<Object> retObj = new ReturnObject<>(ResponseCode.OK);
-        int ret;
+        int ret = 0;
         try {
-            ret = grouponPoMapper.updateByPrimaryKey(po);
-            if (ret == 0) {
-                logger.info("活动不存在或已被删除：id = " + id);
-                retObj = new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
-            }
+            ret = grouponPoMapper.updateByPrimaryKeySelective(grouponPo);
         } catch (DataAccessException e) {
             // 数据库错误
             logger.error("数据库错误：" + e.getMessage());
@@ -233,6 +247,10 @@ public class GrouponDao implements InitializingBean {
             logger.error("严重错误：" + e.getMessage());
             retObj = new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR,
                     String.format("发生了严重的未知错误：%s", e.getMessage()));
+        }
+        if (ret == 0) {
+            logger.info("活动不存在或已被删除：id = " + id);
+            retObj = new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
         }
         return retObj;
     }

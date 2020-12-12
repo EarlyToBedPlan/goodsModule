@@ -78,11 +78,11 @@ public class GrouponVo implements VoObject {
         this.strategy = strategy;
     }
 
-    public LocalDateTime getGmtCreated() {
+    public LocalDateTime getGmtCreate() {
         return gmtCreated;
     }
 
-    public void setGmtCreated(LocalDateTime gmtCreated) {
+    public void setGmtCreate(LocalDateTime gmtCreated) {
         this.gmtCreated = gmtCreated;
     }
 
