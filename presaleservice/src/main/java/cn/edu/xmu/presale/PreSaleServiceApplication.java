@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 /**
  * @author Ming Qiu
  **/
-@SpringBootApplication(scanBasePackages = {"cn.edu.xmu.ooad", "cn.edu.xmu.presale"})
+@SpringBootApplication(scanBasePackages = {"cn.edu.xmu.ooad", "cn.edu.xmu.presale","cn.edu.xmu.goods"})
 @MapperScan("cn.edu.xmu.presale.mapper")
 public class PreSaleServiceApplication {
     public static void main(String[] args) {

@@ -1,8 +1,14 @@
 package cn.edu.xmu.presale.model.bo;
 
+import cn.edu.xmu.goods.model.bo.GoodsSku;
+import cn.edu.xmu.goods.model.po.GoodsSkuPo;
+import cn.edu.xmu.goods.model.vo.GoodsSkuSimpleRetVo;
 import cn.edu.xmu.ooad.model.VoObject;
 import cn.edu.xmu.presale.model.po.PreSalePo;
 import cn.edu.xmu.presale.model.vo.PreSaleVo;
+import cn.edu.xmu.shop.model.bo.Shop;
+import cn.edu.xmu.shop.model.po.ShopPo;
+import cn.edu.xmu.shop.model.vo.ShopSimpleVo;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -16,11 +22,9 @@ public class PreSale implements VoObject {
      */
 
     public enum State {
-        NEW(0, "已新建"),
-        ADVANCE(1, "定金"),
-        REST(2, "尾款"),
-        END(3, "已下线"),
-        DELETE(4, "活动结束");
+        OFF(0,"已下线"),
+        ON(1,"已上线"),
+        DELETE(2,"已删除");
 
         private static final Map<Integer, State> stateMap;
 
@@ -52,7 +56,7 @@ public class PreSale implements VoObject {
         }
     }
 
-    public PreSale(PreSalePo po) {
+    public PreSale(PreSalePo po, GoodsSkuPo goodsSkuPo, ShopPo shopPo) {
         this.id = po.getId();
         this.name = po.getName();
         this.beginTime = po.getBeginTime();
@@ -62,8 +66,14 @@ public class PreSale implements VoObject {
         this.quantity = po.getQuantity();
         this.advancePayPrice = po.getAdvancePayPrice();
         this.restPayPrice = po.getRestPayPrice();
-        this.gmtCreated = po.getGmtCreated();
+        this.gmtCreate = po.getGmtCreate();
         this.gmtModified = po.getGmtModified();
+        if(goodsSkuPo != null){
+            this.goodsSku = new GoodsSku(goodsSkuPo).createSimpleVo();
+        }
+        if(shopPo != null){
+            this.shop = new Shop(shopPo).createSimpleVo();
+        }
 /*        this.goodsSpuId = po.getGoodsSpuId();
         this.shopId = po.getShopId();*/
     }
@@ -86,6 +96,9 @@ public class PreSale implements VoObject {
 
     private Long goodsSpuId;*/
 
+    private GoodsSkuSimpleRetVo goodsSku;
+
+    private ShopSimpleVo shop;
 
     private Integer quantity;
 
@@ -94,7 +107,7 @@ public class PreSale implements VoObject {
     private Long restPayPrice;
 
 
-    private LocalDateTime gmtCreated;
+    private LocalDateTime gmtCreate;
 
 
     private LocalDateTime gmtModified;
@@ -171,12 +184,12 @@ public class PreSale implements VoObject {
         this.restPayPrice = restPayPrice;
     }
 
-    public LocalDateTime getGmtCreated() {
-        return gmtCreated;
+    public LocalDateTime getGmtCreate() {
+        return gmtCreate;
     }
 
-    public void setGmtCreated(LocalDateTime gmtCreated) {
-        this.gmtCreated = gmtCreated;
+    public void setGmtCreate(LocalDateTime gmtCreate) {
+        this.gmtCreate = gmtCreate;
     }
 
     public LocalDateTime getGmtModified() {

@@ -34,7 +34,7 @@ public class PreSaleVo {
     private Long restPayPrice;
 
 
-    private LocalDateTime gmtCreated;
+    private LocalDateTime gmtCreate;
 
 
     private LocalDateTime gmtModified;
@@ -112,12 +112,12 @@ public class PreSaleVo {
     }
 
 
-    public LocalDateTime getGmtCreated() {
-        return gmtCreated;
+    public LocalDateTime getGmtCreate() {
+        return gmtCreate;
     }
 
-    public void setGmtCreated(LocalDateTime gmtCreated) {
-        this.gmtCreated = gmtCreated;
+    public void setGmtCreate(LocalDateTime gmtCreate) {
+        this.gmtCreate = gmtCreate;
     }
 
     public LocalDateTime getGmtModified() {
@@ -138,7 +138,7 @@ public class PreSaleVo {
         this.quantity = preSale.getQuantity();
         this.advancePayPrice = preSale.getAdvancePayPrice();
         this.restPayPrice = preSale.getRestPayPrice();
-        this.gmtCreated = preSale.getGmtCreated();
+        this.gmtCreate = preSale.getGmtCreate();
         this.gmtModified = preSale.getGmtModified();
     }
 }

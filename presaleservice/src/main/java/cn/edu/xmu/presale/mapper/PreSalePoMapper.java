@@ -2,7 +2,6 @@ package cn.edu.xmu.presale.mapper;
 
 import cn.edu.xmu.presale.model.po.PreSalePo;
 import cn.edu.xmu.presale.model.po.PreSalePoExample;
-
 import java.util.List;
 
 public interface PreSalePoMapper {

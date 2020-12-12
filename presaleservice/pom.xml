@@ -15,7 +15,16 @@
             <groupId>cn.edu.xmu.ooad</groupId>
             <artifactId>core</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>org.example</groupId>
+            <artifactId>shopservice</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.example</groupId>
+            <artifactId>goodsservice</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -140,12 +149,6 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.jetbrains</groupId>-->
-<!--            <artifactId>annotations</artifactId>-->
-<!--            <version>1.0-SNAPSHOT</version>-->
-<!--            <scope>compile</scope>-->
-<!--        </dependency>-->
 
     </dependencies>
 

@@ -61,13 +61,12 @@ public class PreSaleController {
 
 
     /**
-     * @Description:  筛选查询所有预售活动
-     *
      * @param shopId
      * @param timeline
      * @param spuId
      * @param page
      * @param pageSize
+     * @Description: 筛选查询所有预售活动
      * @return: java.lang.Object
      * @Author: LJP_3424
      * @Date: 2020/12/7 10:36
@@ -111,7 +110,7 @@ public class PreSaleController {
     @ApiImplicitParams({
             @ApiImplicitParam(paramType = "header", dataType = "String", name = "authorization", value = "Token", required = true),
             @ApiImplicitParam(name = "shopId", value = "店铺id", required = true, dataType = "Integer", paramType = "path"),
-            @ApiImplicitParam(name = "id", value = "商品id", required = true, dataType = "Integer", paramType = "path"),
+            @ApiImplicitParam(name = "id", value = "商品skuId", required = true, dataType = "Integer", paramType = "path"),
             @ApiImplicitParam(paramType = "query", dataType = "Integer", name = "state", value = "活动所处阶段", required = false)
     })
     @ApiResponses({
@@ -125,7 +124,7 @@ public class PreSaleController {
             @RequestParam(required = false) Byte state) {
         //
         if (logger.isDebugEnabled()) {
-            logger.debug("PreSaleInfo: spuId = " + id + " shopId = " + shopId);
+            logger.debug("PreSaleInfo: skuId = " + id + " shopId = " + shopId);
         }
 
         ReturnObject<List> returnObject = preSaleService.getPreSaleById(id, state);
@@ -138,14 +137,12 @@ public class PreSaleController {
     }
 
 
-
-
     /**
-     * @Description:新增预售活动
      * @param shopId
      * @param id
      * @param vo
      * @param bindingResult
+     * @Description:新增预售活动
      * @return: java.lang.Object
      * @Author: LJP_3424
      * @Date: 2020/12/7 12:19
@@ -154,20 +151,20 @@ public class PreSaleController {
     @ApiImplicitParams({
             @ApiImplicitParam(paramType = "header", dataType = "String", name = "authorization", value = "Token", required = true),
             @ApiImplicitParam(name = "shopId", value = "商铺id", required = true, dataType = "Integer", paramType = "path"),
-            @ApiImplicitParam(name = "id", value = "商品SPUId", required = true, dataType = "Integer", paramType = "path"),
+            @ApiImplicitParam(name = "id", value = "商品SkuId", required = true, dataType = "Integer", paramType = "path"),
             @ApiImplicitParam(paramType = "body", dataType = "NewPreSaleVo", name = "vo", value = "可修改的活动信息", required = true)
     })
     @ApiResponses({
             @ApiResponse(code = 0, message = "成功")
     })
     //@Audit
-    @PostMapping("/shops/{shopId}/spus/{id}/presales")
+    @PostMapping("/shops/{shopId}/skus/{id}/presales")
     public Object insertPreSale(
             @PathVariable Long shopId,
             @PathVariable Long id,
             @Validated @RequestBody NewPreSaleVo vo,
             BindingResult bindingResult) {
-        logger.debug("insert insertPreSale by shopId:" + shopId + " and spuId: " + id + " and PreSaleVo: " + vo.toString());
+        logger.debug("insert insertPreSale by shopId:" + shopId + " and skuId: " + id + " and PreSaleVo: " + vo.toString());
         //校验前端数据
         Object returnObject = Common.processFieldErrors(bindingResult, httpServletResponse);
         if (null != returnObject) {
@@ -182,18 +179,17 @@ public class PreSaleController {
     }
 
     /**
-     *
      * @param shopId
      * @param id
      * @param vo
      * @param bindingResult
      * @return
      */
-    @ApiOperation(value = "新增预售活动", produces = "application/json")
+    @ApiOperation(value = "修改预售活动", produces = "application/json")
     @ApiImplicitParams({
             @ApiImplicitParam(paramType = "header", dataType = "String", name = "authorization", value = "Token", required = true),
             @ApiImplicitParam(name = "shopId", value = "商铺id", required = true, dataType = "Integer", paramType = "path"),
-            @ApiImplicitParam(name = "id", value = "商品SPUId", required = true, dataType = "Integer", paramType = "path"),
+            @ApiImplicitParam(name = "id", value = "活动skuId", required = true, dataType = "Integer", paramType = "path"),
             @ApiImplicitParam(paramType = "body", dataType = "NewPreSaleVo", name = "vo", value = "可修改的活动信息", required = true)
     })
     @ApiResponses({
@@ -232,16 +228,70 @@ public class PreSaleController {
             @ApiResponse(code = 906, message = "优惠活动禁止")
     })
     //@Audit // 需要认证
-    @DeleteMapping("/shops/{shopId}/spus/{id}/presales")
+    @DeleteMapping("/shops/{shopId}/presales/{id}")
     public Object deletePreSale(@PathVariable Long id, @PathVariable Long shopId) {
         if (logger.isDebugEnabled()) {
             logger.debug("deleteUser: id = " + id);
         }
-        ReturnObject returnObject = preSaleService.deletePreSale(id);
-        return Common.decorateReturnObject(returnObject);
+        ReturnObject retObject = preSaleService.changePreSaleState(id, PreSale.State.DELETE.getCode());
+        if (retObject.getCode() == ResponseCode.OK) {
+            return ResponseUtil.ok();
+        } else {
+            return ResponseUtil.fail(retObject.getCode());
+        }
     }
 
+    /**
+     * 上线优惠活动
+     */
+    @ApiOperation(value = "上线优惠活动")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "authorization", value = "Token", required = true, dataType = "String", paramType = "header"),
+            @ApiImplicitParam(name = "id", required = true, dataType = "Integer", paramType = "path"),
+            @ApiImplicitParam(name = "shopId", required = true, dataType = "Integer", paramType = "path")
+    })
+    @ApiResponses({
+            @ApiResponse(code = 0, message = "成功"),
+            @ApiResponse(code = 906, message = "优惠活动禁止")
+    })
+    //@Audit // 需要认证
+    @PutMapping("/shops/{shopId}/presales/{id}/onshelves")
+    public Object preSaleOn(@PathVariable Long id, @PathVariable Long shopId) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("deleteUser: id = " + id);
+        }
+        ReturnObject retObject = preSaleService.changePreSaleState(id, PreSale.State.ON.getCode());
+        if (retObject.getCode() == ResponseCode.OK) {
+            return ResponseUtil.ok();
+        } else {
+            return ResponseUtil.fail(retObject.getCode());
+        }
+    }
 
-
-
+    /**
+     * 下线优惠活动
+     */
+    @ApiOperation(value = "下线优惠活动")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "authorization", value = "Token", required = true, dataType = "String", paramType = "header"),
+            @ApiImplicitParam(name = "id", required = true, dataType = "Integer", paramType = "path"),
+            @ApiImplicitParam(name = "shopId", required = true, dataType = "Integer", paramType = "path")
+    })
+    @ApiResponses({
+            @ApiResponse(code = 0, message = "成功"),
+            @ApiResponse(code = 906, message = "优惠活动禁止")
+    })
+    //@Audit // 需要认证
+    @PutMapping("/shops/{shopId}/presales/{id}/offshelves")
+    public Object preSaleOff(@PathVariable Long id, @PathVariable Long shopId) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("deleteUser: id = " + id);
+        }
+        ReturnObject retObject = preSaleService.changePreSaleState(id, PreSale.State.OFF.getCode());
+        if (retObject.getCode() == ResponseCode.OK) {
+            return ResponseUtil.ok();
+        } else {
+            return ResponseUtil.fail(retObject.getCode());
+        }
+    }
 }

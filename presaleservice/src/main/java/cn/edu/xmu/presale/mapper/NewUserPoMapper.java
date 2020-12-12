@@ -2,7 +2,6 @@ package cn.edu.xmu.presale.mapper;
 
 import cn.edu.xmu.presale.model.po.NewUserPo;
 import cn.edu.xmu.presale.model.po.NewUserPoExample;
-
 import java.util.List;
 
 public interface NewUserPoMapper {
