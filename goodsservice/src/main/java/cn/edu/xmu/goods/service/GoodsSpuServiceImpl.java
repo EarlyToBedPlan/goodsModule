@@ -206,7 +206,7 @@ public class GoodsSpuServiceImpl implements GoodsSpuService{
     }
 
 
-
+    @Override
     @Transactional
     public ReturnObject uploadSpuImg(Long id, MultipartFile multipartFile){
         ReturnObject<GoodsSpu> goodsSpuReturnObject = new ReturnObject<>(new GoodsSpu(goodsSpuDao.getGoodsSpuPoById(id).getData()));
@@ -260,5 +260,27 @@ public class GoodsSpuServiceImpl implements GoodsSpuService{
     @Override
     public boolean checkSpuIdDisabled(Long spuId) {
         return goodsSpuDao.checkSpuDisabled(spuId);
+    }
+
+    @Override
+    @Transactional
+    public ReturnObject setSkuDisabledByShopId(Long shopId){
+        List<Long> spuIds = goodsSpuDao.setAllSpuDisabledByShopId(shopId);
+        for(Long spuId : spuIds){
+            goodsSkuDao.setSkuDisabledBySpuId(spuId);
+        }
+        return new ReturnObject<>();
+    }
+
+    @Override
+    @Transactional
+    public ReturnObject setAllSkuOnShelvesByShopId(Long shopId){
+        return goodsSkuDao.setAllSkuOnShelvesByShopId(shopId);
+    }
+
+    @Override
+    @Transactional
+    public ReturnObject setAllSkuOffShelvesByShopId(Long shopId){
+        return goodsSkuDao.setAllSkuOffShelvesByShopId(shopId);
     }
 }

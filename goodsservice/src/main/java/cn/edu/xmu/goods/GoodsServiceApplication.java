@@ -10,9 +10,10 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
  * @author Feiyan Liu
  * @date Created at 2020/11/28 23:30
  */
-@SpringBootApplication(scanBasePackages = {"cn.edu.xmu.ooad","cn.edu.xmu.goods","cn.edu.xmu.shop","cn.edu.xmu.coupon"})
+
 @MapperScan("cn.edu.xmu.goods.mapper")
 @EnableAutoConfiguration(exclude = {DataSourceAutoConfiguration.class})
+@SpringBootApplication(scanBasePackages = {"cn.edu.xmu.ooad","cn.edu.xmu.goods","cn.edu.xmu.shop","cn.edu.xmu.coupon"})
 public class GoodsServiceApplication {
     public static void main(String[] args) {
         SpringApplication.run(GoodsServiceApplication.class, args);

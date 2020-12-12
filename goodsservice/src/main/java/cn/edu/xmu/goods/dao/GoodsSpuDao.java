@@ -16,6 +16,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -249,7 +250,13 @@ public class GoodsSpuDao {
             return new ReturnObject<>();
 
     }
-
+    /** 
+    * @Description: 改变运费模板 
+    * @Param: [FreightId, defaultFreightId] 
+    * @return: ReturnObject 
+    * @Author: Yancheng Lai
+    * @Date: 2020/12/11 21:10
+    */
     public ReturnObject changeGoodsFreightWeight(Long FreightId, Long defaultFreightId){
         GoodsSpuPoExample example = new GoodsSpuPoExample();
         GoodsSpuPoExample.Criteria criteria = example.createCriteria();
@@ -289,6 +296,13 @@ public class GoodsSpuDao {
         return new ReturnObject<>(ResponseCode.OK);
     }
 
+    /** 
+    * @Description: 种类清空 
+    * @Param: [CategoryId, defaultId] 
+    * @return: ReturnObject 
+    * @Author: Yancheng Lai
+    * @Date: 2020/12/11 21:10
+    */
     public ReturnObject setCategoryIdDefault(Long CategoryId, Long defaultId){
         GoodsSpuPoExample example = new GoodsSpuPoExample();
         GoodsSpuPoExample.Criteria criteria = example.createCriteria();
@@ -327,8 +341,14 @@ public class GoodsSpuDao {
 
         return new ReturnObject<>(ResponseCode.OK);
     }
-
-    public ReturnObject<List<GoodsSpuPo>> getGoodsSpuPosByCaItegoryId(Long id){
+    /** 
+    * @Description:  种类id查商品SPU
+    * @Param: [id] 
+    * @return: ReturnObject<List<GoodsSpuPo>> 
+    * @Author: Yancheng Lai
+    * @Date: 2020/12/11 21:09
+    */
+    public ReturnObject<List<GoodsSpuPo>> getGoodsSpuPosByCategoryId(Long id){
         GoodsSpuPoExample example = new GoodsSpuPoExample();
         GoodsSpuPoExample.Criteria criteria = example.createCriteria();
         criteria.andCategoryIdEqualTo(id);
@@ -349,7 +369,13 @@ public class GoodsSpuDao {
                     String.format("Unknown Exception: %s", e.getMessage()));
         }
     }
-
+    /** 
+    * @Description: 新增商品种类 
+    * @Param: [shopId, spuId, id] 
+    * @return: ReturnObject<VoObject> 
+    * @Author: Yancheng Lai
+    * @Date: 2020/12/11 21:09
+    */
     public ReturnObject<VoObject>insertGoodsCategory(Long shopId,Long spuId,Long id)
     {
         GoodsSpuPo goodsSpuPo = goodsSpuPoMapper.selectByPrimaryKey(spuId);
@@ -365,7 +391,13 @@ public class GoodsSpuDao {
         goodsSpuPoMapper.updateByPrimaryKeySelective(goodsSpuPo);
         return new ReturnObject<>();
     }
-
+    /** 
+    * @Description: 删除商品种类 
+    * @Param: [shopId, spuId, id] 
+    * @return: ReturnObject<VoObject> 
+    * @Author: Yancheng Lai
+    * @Date: 2020/12/11 21:09
+    */
     public ReturnObject<VoObject>deleteGoodsCategory(Long shopId,Long spuId,Long id)
     {
         GoodsSpuPo goodsSpuPo = goodsSpuPoMapper.selectByPrimaryKey(spuId);
@@ -381,5 +413,28 @@ public class GoodsSpuDao {
         goodsSpuPoMapper.updateByPrimaryKeySelective(goodsSpuPo);
         return new ReturnObject<>();
 
+    }
+    /** 
+    * @Description: shop里面的spu置disabled=1返回list 
+    * @Param: [shopId] 
+    * @return: java.util.List<java.lang.Long> 
+    * @Author: Yancheng Lai
+    * @Date: 2020/12/12 22:33
+    */
+
+    public List<Long> setAllSpuDisabledByShopId(Long shopId){
+        GoodsSpuPoExample example = new GoodsSpuPoExample();
+        GoodsSpuPoExample.Criteria criteria = example.createCriteria();
+        criteria.andShopIdEqualTo(shopId);
+        List<Long> ret = new ArrayList<>();
+        List<GoodsSpuPo> goodsSpuPos = goodsSpuPoMapper.selectByExample(example);
+        for(GoodsSpuPo goodsSpuPo: goodsSpuPos){
+            if(goodsSpuPo.getDisabled()==0){
+                goodsSpuPo.setDisabled((byte)1);
+                goodsSpuPoMapper.updateByPrimaryKeySelective(goodsSpuPo);
+                ret.add(goodsSpuPo.getId());
+            }
+        }
+        return ret;
     }
 }

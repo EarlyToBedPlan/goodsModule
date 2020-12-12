@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -104,7 +105,13 @@ public class GoodsSkuDao {
         }
         return true;
     }
-
+    /**
+    * @Description: 确认是否被删除
+    * @Param: [skuId]
+    * @return: boolean
+    * @Author: Yancheng Lai
+    * @Date: 2020/12/11 20:59
+    */
     public boolean checkSkuDisabled(Long  skuId){
         GoodsSkuPo goodsSkuPo = goodsSkuPoMapper.selectByPrimaryKey(skuId);
         if(goodsSkuPo.getDisabled() == 0 ){
@@ -239,6 +246,13 @@ public class GoodsSkuDao {
         return new  ReturnObject<> (goodsSkuPo);
     }
 
+    /** 
+    * @Description: SPUID查SKU 
+    * @Param: [id] 
+    * @return: java.util.List<GoodsSkuPo> 
+    * @Author: Yancheng Lai
+    * @Date: 2020/12/11 21:01
+    */
     public List<GoodsSkuPo> getSkuBySpuId(Long id){
         logger.debug("dao: get Sku by Spu id: "+ id);
         GoodsSkuPoExample example = new GoodsSkuPoExample();
@@ -249,6 +263,13 @@ public class GoodsSkuDao {
         return goodsSkuPos;
     }
 
+    /** 
+    * @Description: SKU上架 
+    * @Param: [shopId, id] 
+    * @return: ReturnObject<VoObject> 
+    * @Author: Yancheng Lai
+    * @Date: 2020/12/11 21:01
+    */
     public ReturnObject<VoObject> updateSkuOnShelves(Long shopId,Long id){
         GoodsSkuPo po = goodsSkuPoMapper.selectByPrimaryKey(id);
         if(po == null){
@@ -264,6 +285,13 @@ public class GoodsSkuDao {
         return new ReturnObject<VoObject>();
     }
 
+    /** 
+    * @Description: SKU下架 
+    * @Param: [shopId, id] 
+    * @return: ReturnObject<VoObject> 
+    * @Author: Yancheng Lai
+    * @Date: 2020/12/11 21:01
+    */
     public ReturnObject<VoObject> updateSkuOffShelves(Long shopId,Long id){
         GoodsSkuPo po = goodsSkuPoMapper.selectByPrimaryKey(id);
         if(po == null){
@@ -279,6 +307,13 @@ public class GoodsSkuDao {
         return new ReturnObject<VoObject>();
     }
 
+    /**
+    * @Description: SKU将SPU设置为null
+    * @Param: [skuId]
+    * @return: ReturnObject<VoObject>
+    * @Author: Yancheng Lai
+    * @Date: 2020/12/11 21:02
+    */
     public ReturnObject<VoObject> setSpuNull(Long skuId){
         GoodsSkuPoExample example = new GoodsSkuPoExample();
         GoodsSkuPoExample.Criteria criteria = example.createCriteria();
@@ -291,7 +326,13 @@ public class GoodsSkuDao {
         }
         return new ReturnObject<>(ResponseCode.OK);
     }
-
+    /**
+    * @Description:  删除订单库存
+    * @Param: [skuId, quantity]
+    * @return: ReturnObject
+    * @Author: Yancheng Lai
+    * @Date: 2020/12/11 21:02
+    */
     public ReturnObject deductStock(Long skuId,Integer quantity) {
         GoodsSkuPo goodsSkuPo = goodsSkuPoMapper.selectByPrimaryKey(skuId);
         logger.info("ddfor "+skuId+" quan = "+quantity);
@@ -313,7 +354,13 @@ public class GoodsSkuDao {
             }
         return new ReturnObject<>(ResponseCode.OK);
     }}
-
+    /**
+    * @Description: 确认订单库存是否足够
+    * @Param: [skuId, quantity]
+    * @return: ReturnObject<Boolean>
+    * @Author: Yancheng Lai
+    * @Date: 2020/12/11 21:04
+    */
     public ReturnObject<Boolean> checkStock(Long skuId,Integer quantity) {
         GoodsSkuPo goodsSkuPo = goodsSkuPoMapper.selectByPrimaryKey(skuId);
         logger.info("checkfor "+skuId+" quan = "+quantity+"inv = "+goodsSkuPo.getInventory());
@@ -331,10 +378,18 @@ public class GoodsSkuDao {
         return new ReturnObject<>(true);
     }
 
+    /**
+     * @Description: shop查sku
+     * @Param: [shopId]
+     * @return: java.util.List<java.lang.Long>
+     * @Author: Yancheng Lai
+     * @Date: 2020/12/11 21:03
+     */
     public List<GoodsSku> getSkuListByShopId(Long shopId){
         GoodsSpuPoExample example = new GoodsSpuPoExample();
         GoodsSpuPoExample.Criteria criteria = example.createCriteria();
         criteria.andShopIdEqualTo(shopId);
+        criteria.andDisabledEqualTo((byte)0);
         List<GoodsSpuPo> goodsSpuPos = goodsSpuPoMapper.selectByExample(example);
 
         List<GoodsSku> goodsSkus = new ArrayList<>();
@@ -344,6 +399,7 @@ public class GoodsSkuDao {
             criteria1.andGoodsSpuIdEqualTo(goodsSpuPo.getId());
             List<GoodsSkuPo> goodsSkuPos = goodsSkuPoMapper.selectByExample(goodsSkuPoExample);
             for(GoodsSkuPo goodsSkuPo : goodsSkuPos ){
+                if(goodsSkuPo.getDisabled()==0 && goodsSkuPo.getState()==0)
                 goodsSkus.add(new GoodsSku(goodsSkuPo));
             }
 
@@ -355,20 +411,100 @@ public class GoodsSkuDao {
         GoodsSpuPoExample example = new GoodsSpuPoExample();
         GoodsSpuPoExample.Criteria criteria = example.createCriteria();
         criteria.andShopIdEqualTo(shopId);
+        criteria.andDisabledEqualTo((byte)0);
         List<GoodsSpuPo> goodsSpuPos = goodsSpuPoMapper.selectByExample(example);
-
-        List<Long> goodsSkuids = new ArrayList<>();
+        List<Long> ret = new ArrayList<>();
+        List<GoodsSku> goodsSkus = new ArrayList<>();
         for(GoodsSpuPo goodsSpuPo:goodsSpuPos){
             GoodsSkuPoExample goodsSkuPoExample = new GoodsSkuPoExample();
             GoodsSkuPoExample.Criteria criteria1 = goodsSkuPoExample.createCriteria();
             criteria1.andGoodsSpuIdEqualTo(goodsSpuPo.getId());
             List<GoodsSkuPo> goodsSkuPos = goodsSkuPoMapper.selectByExample(goodsSkuPoExample);
             for(GoodsSkuPo goodsSkuPo : goodsSkuPos ){
-                goodsSkuids.add(goodsSkuPo.getId());
+                if(goodsSkuPo.getDisabled()==0 && goodsSkuPo.getState()==0)
+                    ret.add(goodsSkuPo.getId());
             }
 
         }
-        return goodsSkuids;
+        return ret;
     }
+    /**
+    * @Description: spu查sku并且逻辑删除
+    * @Param: [shopId]
+    * @return: java.util.List<java.lang.Long>
+    * @Author: Yancheng Lai
+    * @Date: 2020/12/11 21:03
+    */
+    @Transactional
+    public ReturnObject setSkuDisabledBySpuId(Long spuId){
+            GoodsSkuPoExample goodsSkuPoExample = new GoodsSkuPoExample();
+            GoodsSkuPoExample.Criteria criteria1 = goodsSkuPoExample.createCriteria();
+            criteria1.andGoodsSpuIdEqualTo(spuId);
+            List<GoodsSkuPo> goodsSkuPos = goodsSkuPoMapper.selectByExample(goodsSkuPoExample);
+            for(GoodsSkuPo goodsSkuPo : goodsSkuPos ) {
+                goodsSkuPo.setDisabled((byte) 1);
+                goodsSkuPoMapper.updateByPrimaryKeySelective(goodsSkuPo);
+            }
+        return new ReturnObject<>();
+    }
+    /**
+    * @Description: 店里面没被删掉的上架
+    * @Param: [shopId]
+    * @return: cn.edu.xmu.ooad.util.ReturnObject
+    * @Author: Yancheng Lai
+    * @Date: 2020/12/12 22:30
+    */
+
+    public ReturnObject setAllSkuOnShelvesByShopId(Long shopId){
+        GoodsSpuPoExample example = new GoodsSpuPoExample();
+        GoodsSpuPoExample.Criteria criteria = example.createCriteria();
+        criteria.andShopIdEqualTo(shopId);
+        criteria.andDisabledEqualTo((byte)0);
+        List<GoodsSpuPo> goodsSpuPos = goodsSpuPoMapper.selectByExample(example);
+        for(GoodsSpuPo goodsSpuPo:goodsSpuPos){
+            GoodsSkuPoExample goodsSkuPoExample = new GoodsSkuPoExample();
+            GoodsSkuPoExample.Criteria criteria1 = goodsSkuPoExample.createCriteria();
+            criteria1.andGoodsSpuIdEqualTo(goodsSpuPo.getId());
+            List<GoodsSkuPo> goodsSkuPos = goodsSkuPoMapper.selectByExample(goodsSkuPoExample);
+            for(GoodsSkuPo goodsSkuPo : goodsSkuPos ){
+                if(goodsSkuPo.getDisabled()==0){
+                    goodsSkuPo.setState((byte)GoodsSku.State.INVALID.getCode());
+                    goodsSkuPoMapper.updateByPrimaryKeySelective(goodsSkuPo);
+                }
+            }
+
+        }
+        return new ReturnObject<>();
+    }
+    /**
+    * @Description: 店里面没被删掉的下架
+    * @Param: [shopId]
+    * @return: cn.edu.xmu.ooad.util.ReturnObject
+    * @Author: Yancheng Lai
+    * @Date: 2020/12/12 22:32
+    */
+    public ReturnObject setAllSkuOffShelvesByShopId(Long shopId){
+        GoodsSpuPoExample example = new GoodsSpuPoExample();
+        GoodsSpuPoExample.Criteria criteria = example.createCriteria();
+        criteria.andShopIdEqualTo(shopId);
+        criteria.andDisabledEqualTo((byte)0);
+        List<GoodsSpuPo> goodsSpuPos = goodsSpuPoMapper.selectByExample(example);
+        for(GoodsSpuPo goodsSpuPo:goodsSpuPos){
+            GoodsSkuPoExample goodsSkuPoExample = new GoodsSkuPoExample();
+            GoodsSkuPoExample.Criteria criteria1 = goodsSkuPoExample.createCriteria();
+            criteria1.andGoodsSpuIdEqualTo(goodsSpuPo.getId());
+            List<GoodsSkuPo> goodsSkuPos = goodsSkuPoMapper.selectByExample(goodsSkuPoExample);
+            for(GoodsSkuPo goodsSkuPo : goodsSkuPos ){
+                if(goodsSkuPo.getDisabled()==0){
+                    goodsSkuPo.setState((byte)GoodsSku.State.WAITING.getCode());
+                    goodsSkuPoMapper.updateByPrimaryKeySelective(goodsSkuPo);
+                }
+            }
+
+        }
+        return new ReturnObject<>();
+    }
+
+
 
 }

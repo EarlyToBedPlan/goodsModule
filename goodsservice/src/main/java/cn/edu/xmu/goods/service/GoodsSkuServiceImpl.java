@@ -107,6 +107,7 @@ public class GoodsSkuServiceImpl implements GoodsSkuService {
     * @Date: 2020/12/3 15:27
     */
 
+
     @Transactional
     public ReturnObject<GoodsSkuSimpleRetVo> insertGoodsSku(GoodsSku goodsSku, Long shopId, Long id) {
 
@@ -132,10 +133,19 @@ public class GoodsSkuServiceImpl implements GoodsSkuService {
     */
 
     @Transactional
+    @Override
     public ReturnObject<VoObject> updateSku(GoodsSku vo,Long shopId,Long id){
             return goodsSkuDao.updateSku(vo,shopId, id);
     }
 
+    /**
+    * @Description: 返回所有SKU状态
+    * @Param: []
+    * @return: ReturnObject<List<StateVo>>
+    * @Author: Yancheng Lai
+    * @Date: 2020/12/11 20:24
+    */
+    @Override
     @Transactional
     public ReturnObject<List<StateVo>>findSkuStates(){
         List<StateVo> lst = new ArrayList<StateVo>();
@@ -148,7 +158,15 @@ public class GoodsSkuServiceImpl implements GoodsSkuService {
         return new ReturnObject<>( lst);
     }
 
+    /**
+    * @Description: 上传SKU图片
+    * @Param: [id, shopId, multipartFile]
+    * @return: ReturnObject
+    * @Author: Yancheng Lai
+    * @Date: 2020/12/11 20:25
+    */
     @Transactional
+    @Override
     public ReturnObject uploadSkuImg(Long id,Long shopId,MultipartFile multipartFile){
         GoodsSkuPo goodsSkuPo = goodsSkuDao.getSkuById(id).getData();
         ReturnObject<VoObject> goodsSkuReturnObject = new ReturnObject<>(new GoodsSku(goodsSkuPo));
@@ -189,6 +207,8 @@ public class GoodsSkuServiceImpl implements GoodsSkuService {
     * @Author: Yancheng Lai
     * @Date: 2020/12/6 16:36
     */
+    @Override
+    @Transactional
     public ReturnObject<GoodsSkuRetVo> getSkuById(Long id){
         logger.debug("service: get Sku by id: "+ id);
         ReturnObject<GoodsSkuPo> goodsSkuReturnObject = goodsSkuDao.getSkuById(id);
@@ -211,7 +231,15 @@ public class GoodsSkuServiceImpl implements GoodsSkuService {
         return new ReturnObject<GoodsSkuRetVo> (retVo);
 
     }
-
+    /** 
+    * @Description:  用SPU得到SKUid
+    * @Param: [id] 
+    * @return: java.util.List<VoObject> 
+    * @Author: Yancheng Lai
+    * @Date: 2020/12/11 20:25
+    */
+    @Override
+    @Transactional
     public List<VoObject> getSkuBySpuId(Long id){
         List<GoodsSkuPo> goodsSkuPos = goodsSkuDao.getSkuBySpuId(id);
         List<VoObject> goodsSkus = new ArrayList<>();
@@ -221,6 +249,15 @@ public class GoodsSkuServiceImpl implements GoodsSkuService {
         return goodsSkus;
     }
 
+    /** 
+    * @Description:  用SPUid得到SKU的简单Vo
+    * @Param: [id] 
+    * @return: java.util.List<cn.edu.xmu.goods.model.vo.GoodsSkuSimpleRetVo> 
+    * @Author: Yancheng Lai
+    * @Date: 2020/12/11 20:26
+    */
+    @Transactional
+    @Override
     public List<GoodsSkuSimpleRetVo> getSkuSimpleVoBySpuId(Long id){
         List<GoodsSkuPo> goodsSkuPos = goodsSkuDao.getSkuBySpuId(id);
         List<GoodsSkuSimpleRetVo> goodsSkuSimpleRetVos = new ArrayList<>();
@@ -230,16 +267,39 @@ public class GoodsSkuServiceImpl implements GoodsSkuService {
         return goodsSkuSimpleRetVos;
     }
 
+    /** 
+    * @Description: 商品上架 
+    * @Param: [shopId, id] 
+    * @return: ReturnObject<VoObject> 
+    * @Author: Yancheng Lai
+    * @Date: 2020/12/11 20:26
+    */
     @Transactional
+    @Override
     public ReturnObject<VoObject> updateSkuOnShelves(Long shopId,Long id){
         return goodsSkuDao.updateSkuOnShelves(shopId,id);
     }
 
+    /** 
+    * @Description: 商品下架 
+    * @Param: [shopId, id] 
+    * @return: ReturnObject<VoObject> 
+    * @Author: Yancheng Lai
+    * @Date: 2020/12/11 20:27
+    */
     @Transactional
+    @Override
     public ReturnObject<VoObject> updateSkuOffShelves(Long shopId,Long id){
             return goodsSkuDao.updateSkuOffShelves(shopId,id);
     }
 
+    /** 
+    * @Description: 对对应的vo减少库存 先查后减 
+    * @Param: [vo] 
+    * @return: java.lang.Boolean 
+    * @Author: Yancheng Lai
+    * @Date: 2020/12/11 20:37
+    */
     @Transactional
     public Boolean deductStock(List<OrderItemVo> vo) {
         for(OrderItemVo itemVo: vo){

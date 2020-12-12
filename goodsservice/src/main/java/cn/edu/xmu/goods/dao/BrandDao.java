@@ -36,6 +36,13 @@ public class BrandDao {
     @Autowired
     GoodsSpuPoMapper goodsSpuPoMapper;
 
+    /** 
+    * @Description: 得到所有的品牌 
+    * @Param: [page, pagesize] 
+    * @return: com.github.pagehelper.PageInfo<VoObject> 
+    * @Author: Yancheng Lai
+    * @Date: 2020/12/11 20:48
+    */
     public PageInfo<VoObject> getAllBrands(Integer page, Integer pagesize) {
 
         BrandPoExample brandPoExample = new BrandPoExample();
@@ -51,6 +58,13 @@ public class BrandDao {
         return new PageInfo<>(brands);
     }
 
+    /** 
+    * @Description: ID查询品牌 
+    * @Param: [id] 
+    * @return: ReturnObject<Brand> 
+    * @Author: Yancheng Lai
+    * @Date: 2020/12/11 20:52
+    */
     public ReturnObject<Brand> getBrandById(Long id) {
         Brand brand = new Brand(brandPoMapper.selectByPrimaryKey(id));
         if(brand == null){

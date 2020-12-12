@@ -4,7 +4,6 @@ import cn.edu.xmu.goods.GoodsServiceApplication;
 import cn.edu.xmu.goods.model.vo.UpdateBrandVoBody;
 import cn.edu.xmu.ooad.util.JacksonUtil;
 import cn.edu.xmu.ooad.util.JwtHelper;
-import com.alibaba.fastjson.JSONException;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.slf4j.Logger;

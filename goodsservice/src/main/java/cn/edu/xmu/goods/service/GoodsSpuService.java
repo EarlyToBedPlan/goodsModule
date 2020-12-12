@@ -44,5 +44,11 @@ public interface GoodsSpuService {
     public boolean checkSpuIdInShop(Long shopId, Long spuId);
 
     public boolean checkSpuIdDisabled( Long spuId);
+
+    public ReturnObject setSkuDisabledByShopId(Long shopId);
+
+    public ReturnObject setAllSkuOnShelvesByShopId(Long shopId);
+
+    public ReturnObject setAllSkuOffShelvesByShopId(Long shopId);
 }
 
