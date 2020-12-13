@@ -57,6 +57,9 @@ public class GoodsSkuServiceImpl implements GoodsSkuService {
     FloatPriceDao floatPriceDao;
 
     @Autowired
+    GoodsSpuService goodsSpuService;
+
+    @Autowired
     ShopService shopService;
     @Value("${goodsservice.dav.username}")
     private String davUsername;
@@ -220,8 +223,8 @@ public class GoodsSkuServiceImpl implements GoodsSkuService {
         }
         GoodsSkuRetVo retVo = goodsSku.createVo();
         GoodsSpuPo goodsSpuPo = goodsSpuDao.getGoodsSpuPoBySkuId(id).getData();
-        GoodsSpu goodsSpu = new GoodsSpu(goodsSpuPo);
-        GoodsSpuRetVo goodsSpuRetVo = goodsSpu.createVo();
+        //GoodsSpu goodsSpu = new GoodsSpu(goodsSpuPo);
+        GoodsSpuRetVo goodsSpuRetVo = goodsSpuService.findSpuById(goodsSpuPo.getId()).getData();
         retVo.setState((int)goodsSku.getStatecode());
         retVo.setGoodsSpu(goodsSpuRetVo);
         retVo.setPrice(getPriceById(id));

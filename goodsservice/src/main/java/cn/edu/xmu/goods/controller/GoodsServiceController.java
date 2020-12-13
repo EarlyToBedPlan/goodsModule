@@ -243,9 +243,6 @@ public class GoodsServiceController {
             return returnObject;
         }
         GoodsSku goodsSku = new GoodsSku(vo);
-        goodsSku.setDisabled((byte)0);
-        goodsSku.setGmtCreate(LocalDateTime.now());
-        goodsSku.setGmtModified(LocalDateTime.now());
         ReturnObject<GoodsSkuSimpleRetVo> retObject = goodsSkuService.insertGoodsSku(goodsSku, shopId, id);
         if (retObject.getData() != null) {
             httpServletResponse.setStatus(HttpStatus.CREATED.value());

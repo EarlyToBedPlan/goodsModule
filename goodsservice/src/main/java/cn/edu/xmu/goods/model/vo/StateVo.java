@@ -1,5 +1,6 @@
 package cn.edu.xmu.goods.model.vo;
 
+import cn.edu.xmu.goods.model.bo.GoodsSku;
 import lombok.Data;
 
 /**
@@ -20,5 +21,9 @@ public class StateVo {
     public StateVo(Byte code,String name){
         this.code = code;
         this.name = name;
+    }
+    public StateVo(Byte code){
+        this.code = code;
+        this.name = GoodsSku.State.getTypeByCode(code).getDescription();
     }
 }

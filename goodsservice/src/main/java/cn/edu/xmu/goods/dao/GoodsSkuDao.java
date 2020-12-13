@@ -9,6 +9,7 @@ import cn.edu.xmu.goods.model.po.GoodsSpuPo;
 import cn.edu.xmu.goods.model.po.GoodsSpuPoExample;
 import cn.edu.xmu.goods.model.vo.GoodsSkuRetVo;
 import cn.edu.xmu.goods.model.vo.GoodsSkuSimpleRetVo;
+import cn.edu.xmu.goods.model.vo.GoodsSpuRetVo;
 import cn.edu.xmu.ooad.model.VoObject;
 import cn.edu.xmu.ooad.util.ResponseCode;
 import cn.edu.xmu.ooad.util.ReturnObject;
@@ -61,7 +62,7 @@ public class GoodsSkuDao {
         GoodsSkuPo goodsSkuPo = null;
         List<GoodsSkuPo> goodsSkuPos = null;
         List<GoodsSkuRetVo> goodsSkuRetVos = null;
-        if(goodsSpuPos.size() == 1) {
+        if(goodsSpuPos.size() > 0) {
             for (GoodsSpuPo goodsSpuPo : goodsSpuPos) {
                 if(skuSn != null) {
                     ccriteria.andSkuSnEqualTo(skuSn);
@@ -70,7 +71,7 @@ public class GoodsSkuDao {
                 goodsSkuPos = goodsSkuPoMapper.selectByExample(skuPoExample);
 
             }
-        } else if(goodsSkuPos.size() == 0){
+        } else if(goodsSpuPos.size() == 0){
             goodsSkuPos = null;
         } else {
             if(skuSn != null) {
@@ -80,6 +81,8 @@ public class GoodsSkuDao {
         }
 
         for(GoodsSkuPo goodsSkuRetPo: goodsSkuPos){
+            GoodsSkuRetVo goodsSkuRetVo = new GoodsSku(goodsSkuPo).createVo();
+            GoodsSpuRetVo goodsSpuRetVo = new GoodsSpuRetVo();
             goodsSkuRetVos.add(new GoodsSku(goodsSkuPo).createVo());
         }
 

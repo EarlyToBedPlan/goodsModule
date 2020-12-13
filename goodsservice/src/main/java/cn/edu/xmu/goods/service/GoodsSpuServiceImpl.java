@@ -88,7 +88,7 @@ public class GoodsSpuServiceImpl implements GoodsSpuService{
         if(goodsSpuPo != null) {
             logger.info("findSpuById : " + returnObject);
             GoodsSpuRetVo goodsSpuRetVo = new GoodsSpuRetVo(new GoodsSpu(goodsSpuPo));
-            goodsSpuRetVo.setCategory(categoryService.findCategorySimpleVoById(goodsSpuPo.getCategoryId()).getData());
+            //goodsSpuRetVo.setCategory(categoryService.findCategorySimpleVoById(goodsSpuPo.getCategoryId()).getData());
             ShopPo shopPo = shopDao.getShopById(goodsSpuPo.getShopId());
             Shop shop = new Shop(shopPo);
             ShopSimpleVo shopSimpleVo = shop.createSimpleVo();
