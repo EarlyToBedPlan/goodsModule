@@ -120,7 +120,7 @@ public class BrandServiceImpl implements BrandService{
         catch (IOException e){
             return new ReturnObject(ResponseCode.FILE_NO_WRITE_PERMISSION);
         }
-        return returnObject;
+        return new ReturnObject<>();
     }
 
     @Override

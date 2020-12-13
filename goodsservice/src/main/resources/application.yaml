@@ -86,7 +86,7 @@ goodsservice:
   dav:
     username: hellobaby
     password: hello
-    baseUrl: http://192.168.233.128/webdav
+    baseUrl: http://192.168.233.128/webdav/
 
 
 #pagehelper分页插件配置

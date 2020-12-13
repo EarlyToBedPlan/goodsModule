@@ -238,7 +238,7 @@ public class GoodsSpuServiceImpl implements GoodsSpuService{
         catch (IOException e){
             return new ReturnObject(ResponseCode.FILE_NO_WRITE_PERMISSION);
         }
-        return returnObject;
+        return new ReturnObject<>();
     }
 
 
