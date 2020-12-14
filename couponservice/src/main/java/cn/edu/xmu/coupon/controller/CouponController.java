@@ -397,7 +397,7 @@ public class CouponController {
     @Audit
     @PostMapping("/couponactivities/{id}/usercoupons")
     public Object userGetCoupon(@PathVariable Long id, @LoginUser Long userId) {
-        ReturnObject returnObject = couponActivityService.userGetCoupon(userId,id);
+        ReturnObject returnObject = couponActivityService.getCoupon(userId,id);
         if (returnObject.getData() != null) {
             return Common.getRetObject(returnObject);
         } else {
@@ -446,6 +446,48 @@ public class CouponController {
 //            return Common.decorateReturnObject(new ReturnObject(ResponseCode.RESOURCE_ID_OUTSCOPE));
 //        }
         ReturnObject returnObject = couponActivityService.uploadImg(id, multipartFile);
+        return Common.decorateReturnObject(returnObject);
+    }
+
+
+    @ApiOperation(value = "上线优惠活动",  produces="application/json")
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "header", dataType = "String", name = "authorization", value = "Token", required = true),
+            @ApiImplicitParam(paramType = "path",dataType = "Long",name = "shopId",value = "店铺id"),
+            @ApiImplicitParam(paramType = "path",dataType = "Long",name = "id",value = "活动id"),
+    })
+    @ApiResponses({
+    })
+    @Audit
+    @PutMapping("/shops/{shopId}/couponactivities/{id}/onshelves")
+    public Object putCouponActivityOnShelves(@PathVariable("shopId") Long shopId,
+                            @PathVariable("id") Long id){
+
+//        if(goodsSpuService.checkSpuIdInShop(shopId,id)==false){
+//            return Common.decorateReturnObject(new ReturnObject(ResponseCode.RESOURCE_ID_OUTSCOPE));
+//        }
+        ReturnObject returnObject = couponActivityService.putCouponActivityOnShelves(shopId, id);
+        return Common.decorateReturnObject(returnObject);
+    }
+
+
+    @ApiOperation(value = "下线优惠活动",  produces="application/json")
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "header", dataType = "String", name = "authorization", value = "Token", required = true),
+            @ApiImplicitParam(paramType = "path",dataType = "Long",name = "shopId",value = "店铺id"),
+            @ApiImplicitParam(paramType = "path",dataType = "Long",name = "id",value = "活动id"),
+    })
+    @ApiResponses({
+    })
+    @Audit
+    @PutMapping("/shops/{shopId}/couponactivities/{id}/offshelves")
+    public Object putCouponActivityOffShelves(@PathVariable("shopId") Long shopId,
+                            @PathVariable("id") Long id){
+
+//        if(goodsSpuService.checkSpuIdInShop(shopId,id)==false){
+//            return Common.decorateReturnObject(new ReturnObject(ResponseCode.RESOURCE_ID_OUTSCOPE));
+//        }
+        ReturnObject returnObject = couponActivityService.putCouponActivityOffShelves(shopId, id);
         return Common.decorateReturnObject(returnObject);
     }
 }
