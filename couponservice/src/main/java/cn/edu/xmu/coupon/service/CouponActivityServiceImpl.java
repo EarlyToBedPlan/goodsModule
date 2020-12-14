@@ -448,7 +448,7 @@ public class CouponActivityServiceImpl implements CouponActivityService {
      */
     @Override
     @Transactional
-    public ReturnObject userGetCoupon(Long userId, Long id) {
+    public ReturnObject getCoupon(Long userId, Long id) {
         CouponActivityPo couponActivityPo = couponActivityDao.getCouponActivityById(id);
         //检测活动是否存在
         if (couponActivityPo == null)

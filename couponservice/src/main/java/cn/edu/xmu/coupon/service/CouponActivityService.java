@@ -80,7 +80,7 @@ public interface CouponActivityService {
     /**
      * @description:买家领取活动优惠券
      */
-    ReturnObject userGetCoupon(Long userId, Long id);
+    ReturnObject getCoupon(Long userId, Long id);
 
     /**
      * @description:管理员上线优惠活动

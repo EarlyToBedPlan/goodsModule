@@ -395,7 +395,7 @@ public class CouponController {
     @Audit
     @PostMapping("/couponactivities/{id}/usercoupons")
     public Object userGetCoupon(@PathVariable Long id, @LoginUser Long userId) {
-        ReturnObject returnObject = couponActivityService.userGetCoupon(userId,id);
+        ReturnObject returnObject = couponActivityService.getCoupon(userId,id);
         if (returnObject.getData() != null) {
             return Common.getRetObject(returnObject);
         } else {
@@ -420,4 +420,8 @@ public class CouponController {
             return Common.getNullRetObj(new ReturnObject<>(returnObject.getCode(), returnObject.getErrmsg()), httpServletResponse);
         }
     }
+
+
+
+
 }
