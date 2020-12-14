@@ -57,7 +57,7 @@ public class CouponActivityServiceImpl implements CouponActivityService {
     CouponDao couponDao;
     private Logger logger = LoggerFactory.getLogger(CouponActivityServiceImpl.class);
 
-    @Autowired
+    //@Autowired
     GoodsSkuService goodsSkuService;
 
     /** @author 24320182203218
@@ -65,7 +65,7 @@ public class CouponActivityServiceImpl implements CouponActivityService {
     @Value("${couponservice.imglocation}")
     private String imgLocation;
 
-    @Value("${couponservice.dav.sername}")
+    @Value("${couponservice.dav.username}")
     private String davUserName;
 
     @Value("${couponservice.dav.password}")
@@ -128,51 +128,51 @@ public class CouponActivityServiceImpl implements CouponActivityService {
             return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR);
         }
     }
-//    /**
-//     * @param id
-//     * @param multipartFile
-//     * @description: 优惠活动上传图片
-//     * @return: cn.edu.xmu.ooad.util.ReturnObject
-//     * @author: Feiyan Liu
-//     * @date: Created at 2020/12/1 13:39
-//     */
-//    @Transactional
-//    @Override
-//    public ReturnObject uploadImg(Long id, MultipartFile multipartFile) {
-//        CouponActivity couponActivity = new CouponActivity(couponActivityDao.getCouponActivityById(id));
-//        if (couponActivity == null) {
-//            return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST, String.format("查询的优惠活动不存在 id：" + id));
-//        }
-//        ReturnObject returnObject = new ReturnObject();
-//        try {
-//            returnObject = ImgHelper.remoteSaveImg(multipartFile, 2, davUserName, davPassword, baseUrl);
-//
-//            //文件上传错误
-//            if (returnObject.getCode() != ResponseCode.OK) {
-//                logger.debug(returnObject.getErrmsg());
-//                return returnObject;
-//            }
-//            String oldFileName = couponActivity.getImg();
-//
-//            couponActivity.setImg(returnObject.getData().toString());
-//            ReturnObject updateReturnObject = couponActivityDao.updateCouponActivityImg(couponActivity);
-//
-//            //数据库更新失败，需删除新增的图片
-//            if (updateReturnObject.getCode() == ResponseCode.RESOURCE_ID_NOTEXIST) {
-//                ImgHelper.deleteRemoteImg(returnObject.getData().toString(), davUserName, davPassword, baseUrl);
-//                return updateReturnObject;
-//            }
-//
-//            //数据库更新成功需删除旧图片，未设置则不删除
-//            if (oldFileName != null) {
-//                ImgHelper.deleteRemoteImg(oldFileName, davUserName, davPassword, baseUrl);
-//            }
-//        } catch (IOException e) {
-//            logger.debug("uploadImg: I/O Error:" + baseUrl);
-//            return new ReturnObject(ResponseCode.FILE_NO_WRITE_PERMISSION);
-//        }
-//        return returnObject;
-//    }
+    /**
+     * @param id
+     * @param multipartFile
+     * @description: 优惠活动上传图片
+     * @return: cn.edu.xmu.ooad.util.ReturnObject
+     * @author: Feiyan Liu
+     * @date: Created at 2020/12/1 13:39
+     */
+    @Transactional
+    @Override
+    public ReturnObject uploadImg(Long id, MultipartFile multipartFile) {
+        CouponActivity couponActivity = new CouponActivity(couponActivityDao.getCouponActivityById(id));
+        if (couponActivity == null) {
+            return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST, String.format("查询的优惠活动不存在 id：" + id));
+        }
+        ReturnObject returnObject = new ReturnObject();
+        try {
+            returnObject = ImgHelper.remoteSaveImg(multipartFile, 2, davUserName, davPassword, baseUrl);
+
+            //文件上传错误
+            if (returnObject.getCode() != ResponseCode.OK) {
+                logger.debug(returnObject.getErrmsg());
+                return returnObject;
+            }
+            String oldFileName = couponActivity.getImg();
+
+            couponActivity.setImg(returnObject.getData().toString());
+            ReturnObject updateReturnObject = couponActivityDao.updateCouponActivityImg(couponActivity);
+
+            //数据库更新失败，需删除新增的图片
+            if (updateReturnObject.getCode() == ResponseCode.RESOURCE_ID_NOTEXIST) {
+                ImgHelper.deleteRemoteImg(returnObject.getData().toString(), davUserName, davPassword, baseUrl);
+                return updateReturnObject;
+            }
+
+            //数据库更新成功需删除旧图片，未设置则不删除
+            if (oldFileName != null) {
+                ImgHelper.deleteRemoteImg(oldFileName, davUserName, davPassword, baseUrl);
+            }
+        } catch (IOException e) {
+            logger.debug("uploadImg: I/O Error:" + baseUrl);
+            return new ReturnObject(ResponseCode.FILE_NO_WRITE_PERMISSION);
+        }
+        return new ReturnObject<>();
+    }
 
     /**
      * @param page

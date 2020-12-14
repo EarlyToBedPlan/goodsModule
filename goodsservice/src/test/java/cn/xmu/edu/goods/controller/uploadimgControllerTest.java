@@ -55,4 +55,21 @@ public class uploadimgControllerTest {
         JSONAssert.assertEquals(expectedResponse, responseString, true);
     }
 
+    @Test
+    public void uploadFileSuccess1() throws Exception{
+        String token = creatTestToken(1L,0L,100);
+        File file = new File("."+File.separator + "src" + File.separator + "test" + File.separator+ "resources" + File.separator+"index1.jpg");
+        MockMultipartFile firstFile = new MockMultipartFile("img", "index1.jpg" , "multipart/form-data", new FileInputStream(file));
+        String responseString = mvc.perform(MockMvcRequestBuilders
+                .multipart("/coupon/shops/0/couponactivities/1/uploadImg")
+                .file(firstFile)
+                .header("authorization", token)
+                .contentType(MediaType.MULTIPART_FORM_DATA_VALUE))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        String expectedResponse = "{\"errno\":0,\"errmsg\":\"成功\"}";
+        JSONAssert.assertEquals(expectedResponse, responseString, true);
+    }
 }
