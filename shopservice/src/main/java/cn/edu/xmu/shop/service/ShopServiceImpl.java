@@ -1,5 +1,7 @@
 package cn.edu.xmu.shop.service;
 
+import cn.edu.xmu.goods.dao.GoodsSkuDao;
+import cn.edu.xmu.goods.model.bo.GoodsSku;
 import cn.edu.xmu.ooad.model.VoObject;
 import cn.edu.xmu.ooad.util.ResponseCode;
 import cn.edu.xmu.ooad.util.ReturnObject;
@@ -16,19 +18,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 /**
  * @author Ruzhen Chang
  */
 @Service
 public class ShopServiceImpl implements ShopService {
+
+    private Logger logger =  LoggerFactory.getLogger(ShopServiceImpl.class);
+
     @Autowired
     ShopDao shopDao;
-    private Logger logger =  LoggerFactory.getLogger(ShopServiceImpl.class);
+    @Autowired
+    GoodsSkuDao goodsSkuDao;
 
 
     /**
-     * @param shop
-     * @return
      * @description 新建店铺
      * @author Ruzhen Chang
      */
@@ -45,6 +52,7 @@ public class ShopServiceImpl implements ShopService {
                 return new ReturnObject<>(ResponseCode.USER_HASSHOP);
             }
             ShopPo newShopPo=shopDao.insertShop(shop);
+
             VoObject returnVo=(VoObject)shop.createVo();
             return new ReturnObject<VoObject>(returnVo);
 
@@ -88,13 +96,12 @@ public class ShopServiceImpl implements ShopService {
             if (shopDao.getShopById(shopId) == null) {
                 return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST, String.format("店铺 id：" + shopId));
             }
-            shopDao.closeShop(shopId);
+
+            return shopDao.closeShop(shopId);
         } catch (Exception e) {
             logger.error("发生了严重的服务器内部错误：" + e.getMessage());
             return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR);
         }
-
-        return new ReturnObject();
     }
 
 
@@ -106,14 +113,13 @@ public class ShopServiceImpl implements ShopService {
             if (shopDao.getShopById(shopId) == null) {
                 return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST, String.format("店铺 id：" + shopId));
             }
-            shopDao.auditShop(shopId,conclusion);
+            return shopDao.auditShop(shopId,conclusion);
         } catch (Exception e) {
             logger.error("发生了严重的服务器内部错误：" + e.getMessage());
             return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR);
         }
-
-        return new ReturnObject();
     }
+
 
     /**
      * @description 上线店铺
@@ -128,13 +134,11 @@ public class ShopServiceImpl implements ShopService {
             if (shopDao.getShopById(shopId) == null) {
                 return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST, String.format("店铺 id：" + shopId));
             }
-            shopDao.onShelvesShop(shopId);
+            return shopDao.onShelvesShop(shopId);
         } catch (Exception e) {
             logger.error("发生了严重的服务器内部错误：" + e.getMessage());
             return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR);
         }
-
-        return new ReturnObject();
     }
 
 
@@ -151,12 +155,10 @@ public class ShopServiceImpl implements ShopService {
             if (shopDao.getShopById(shopId) == null) {
                 return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST, String.format("店铺 id：" + shopId));
             }
-            shopDao.offShelvesShop(shopId);
+            return shopDao.offShelvesShop(shopId);
         } catch (Exception e) {
             logger.error("发生了严重的服务器内部错误：" + e.getMessage());
             return new ReturnObject<>(ResponseCode.INTERNAL_SERVER_ERR);
         }
-
-        return new ReturnObject();
     }
 }

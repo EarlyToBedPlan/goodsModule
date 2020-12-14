@@ -44,7 +44,7 @@ public class ShopDao implements InitializingBean{
      * 由店铺id获得店铺
      * @author Ruzhen Chang
      */
-    public ShopPo getShopById(long shopId){
+    public ShopPo getShopById(Long shopId){
         ShopPo po=new ShopPo();
         try{
             po = shopPoMapper.selectByPrimaryKey(shopId);
@@ -56,22 +56,6 @@ public class ShopDao implements InitializingBean{
 
     }
 
-    /**
-     * 获得店铺所有状态
-     * @author Ruzhen Chang
-     */
-    public Byte getShopState(long shopId){
-        ShopPo po=new ShopPo();
-        Byte shopState=0;
-        try{
-            po=shopPoMapper.selectByPrimaryKey(shopId);
-            shopState= po.getState();
-        }catch (DataAccessException e){
-            StringBuilder message=new StringBuilder().append("getShopById:").append(e.getMessage());
-            logger.debug(message.toString());
-        }
-        return shopState;
-    }
 
     /**
      * @Description 检查店铺名是否重复
@@ -127,11 +111,9 @@ public class ShopDao implements InitializingBean{
      * 关闭店铺
      * @author Ruzhen Chang
      */
-    public ReturnObject closeShop(long shopId){
+    public ReturnObject closeShop(Long shopId){
         ReturnObject returnObject = null;
-        ShopPo shopPo = new ShopPo();
-        shopPo.setId(shopId);
-
+        ShopPo shopPo = getShopById(shopId);
         try {
             int ret;
             if(shopPo.getState()==Shop.State.UNAUDITED.getCode()) {
@@ -159,7 +141,7 @@ public class ShopDao implements InitializingBean{
      * 审核店铺信息
      * @author Ruzhen Chang
      */
-    public ReturnObject<Object> auditShop(long shopId,boolean conclusion){
+    public ReturnObject<Object> auditShop(Long shopId,Boolean conclusion){
         ReturnObject returnObject = null;
         ShopPo shopPo = new ShopPo();
         shopPo.setId(shopId);
@@ -184,11 +166,12 @@ public class ShopDao implements InitializingBean{
 
     }
 
+
     /**
      * 上线店铺
      * @author Ruzhen Chang
      */
-    public ReturnObject onShelvesShop(long shopId){
+    public ReturnObject onShelvesShop(Long shopId){
         ReturnObject returnObject = null;
         ShopPo shopPo = new ShopPo();
         shopPo.setId(shopId);
@@ -213,7 +196,7 @@ public class ShopDao implements InitializingBean{
      * 下线店铺
      * @author Ruzhen Chang
      */
-    public ReturnObject offShelvesShop(long shopId){
+    public ReturnObject offShelvesShop(Long shopId){
         ReturnObject returnObject = null;
         ShopPo shopPo = new ShopPo();
         shopPo.setId(shopId);

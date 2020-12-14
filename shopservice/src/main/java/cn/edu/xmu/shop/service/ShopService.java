@@ -36,8 +36,5 @@ public interface ShopService {
     @Transactional
     ReturnObject offShelvesShop(Long shopId);
 
-    /**
-     *
-     */
 
 }

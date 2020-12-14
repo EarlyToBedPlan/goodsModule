@@ -4,6 +4,8 @@ import cn.edu.xmu.shop.model.bo.Shop;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 /**
  * @author Yancheng Lai
  * createdBy Yancheng Lai 2020/12/9 17:59
@@ -19,6 +21,14 @@ public class ShopSimpleVo {
     public ShopSimpleVo(Shop shop){
         setId(shop.getId());
         setShopName(shop.getShopName());
+    }
+
+    public Shop createShop(){
+        Shop shop=new Shop();
+        shop.setId(this.id);
+        shop.setShopName(this.shopName);
+        shop.setGmtModified(LocalDateTime.now());
+        return shop;
     }
 
 }

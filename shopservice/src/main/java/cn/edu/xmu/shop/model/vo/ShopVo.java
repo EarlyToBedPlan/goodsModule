@@ -9,8 +9,6 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-@ApiModel(description = "管理员用户信息视图对象")
-
 public class ShopVo {
     @ApiModelProperty(value = "店铺名字")
     String shopName;
