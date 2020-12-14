@@ -1,18 +1,9 @@
 package cn.edu.xmu.comment.model.bo;
 
-import cn.edu.xmu.comment.dao.CommentDao;
 import cn.edu.xmu.comment.model.po.CommentPo;
-import cn.edu.xmu.comment.model.po.CommentPoExample;
 import cn.edu.xmu.ooad.model.VoObject;
-import cn.edu.xmu.ooad.util.Common;
-import cn.edu.xmu.ooad.util.encript.AES;
-import cn.edu.xmu.ooad.util.encript.SHA256;
 import lombok.Data;
-import cn.edu.xmu.ooad.model.VoObject;
-import cn.edu.xmu.ooad.util.Common;
-import cn.edu.xmu.ooad.util.encript.AES;
-import cn.edu.xmu.ooad.util.encript.SHA256;
-import java.time.LocalDateTime;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,6 +12,14 @@ import java.util.Map;
  */
 @Data
 public class Comment implements VoObject{
+
+    public Comment() {
+
+    }
+
+    /**
+     * @author Ruzhen Chang
+     */
 
     public enum State {
         NEW(0, "未审核"),
@@ -63,9 +62,10 @@ public class Comment implements VoObject{
 
     private long goodsSkuId;
 
-    private long orderitemId;
+    private long orderItemId;
 
-    private int type;//评价等级 0好评1中评2差评
+    private int type;
+    /*评价等级 0好评1中评2差评*/
 
     private String content;
 
@@ -75,7 +75,7 @@ public class Comment implements VoObject{
         this.id=po.getId();
         this.customerId= po.getCustomerId();
         this.goodsSkuId= po.getGoodsSkuId();
-        this.orderitemId= po.getOrderitemId();
+        this.orderItemId= po.getOrderitemId();
         this.type= po.getType();
         this.content= po.getContent();
         if(null!=po.getState()){
@@ -89,7 +89,7 @@ public class Comment implements VoObject{
     }
 
     @Override
-    public Object createSimpleVo() {
+    public VoObject createSimpleVo() {
         return null;
     }
 }

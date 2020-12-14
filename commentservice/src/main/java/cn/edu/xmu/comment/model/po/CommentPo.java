@@ -1,7 +1,11 @@
 package cn.edu.xmu.comment.model.po;
 
+
 import java.time.LocalDateTime;
 
+/**
+ * @author Ruzhen Chang
+ */
 public class CommentPo {
     /**
      *
@@ -299,4 +303,5 @@ public class CommentPo {
     public void setGmtModified(LocalDateTime gmtModified) {
         this.gmtModified = gmtModified;
     }
+
 }

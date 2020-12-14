@@ -7,7 +7,9 @@ package cn.edu.xmu.comment.service;
 import cn.edu.xmu.comment.dao.CommentDao;
 import cn.edu.xmu.comment.model.bo.Comment;
 import cn.edu.xmu.comment.model.po.CommentPo;
+import cn.edu.xmu.goods.model.vo.GoodsSkuRetVo;
 import cn.edu.xmu.goods.model.vo.StateVo;
+import cn.edu.xmu.goods.service.GoodsSkuService;
 import cn.edu.xmu.ooad.model.VoObject;
 import cn.edu.xmu.ooad.util.ResponseCode;
 import cn.edu.xmu.ooad.util.ReturnObject;
@@ -28,6 +30,8 @@ import java.util.stream.Collectors;
 public class CommentServiceImpl implements CommentService{
     @Autowired
     CommentDao commentDao;
+    @Autowired
+    GoodsSkuService goodsSkuService;
 
     private Logger logger= LoggerFactory.getLogger(CommentServiceImpl.class);
 
@@ -35,23 +39,21 @@ public class CommentServiceImpl implements CommentService{
     /**
      * @Description 新增sku评论
      */
-    public ReturnObject newGoodsSkuComment(long goodsSkuId, long customerId, long orderItemId, byte type, String content) {
-
-        return null;
-    }
 
 
     @Override
-    public ReturnObject newGoodsSkuComment(Long goodsSkuId, Long customerId, Long orderItemId, byte type, String content) {
-        return null;
+    public ReturnObject newGoodsSkuComment(Long orderItemId, Comment comment) {
+        ReturnObject ret = new ReturnObject();
+        return ret;
     }
 
     /**
      * @Description 由商品id获得评论列表
      */
+    @Override
     public ReturnObject<PageInfo<VoObject>> getGoodsSkuCommentsList(Long goodsSkuId, Integer page, Integer pageSize){
         try {
-            PageInfo<CommentPo> couponActivitiesPos = commentDao.getCommentListByGoodsSkuId(goodsSkuId,page,pageSize);
+               PageInfo<CommentPo> couponActivitiesPos = commentDao.getCommentListByGoodsSkuId(goodsSkuId,page,pageSize);
             List<VoObject> couponActivities = couponActivitiesPos.getList().stream().map(Comment::new).collect(Collectors.toList());
             PageInfo<VoObject> returnObject = new PageInfo<>(couponActivities);
             returnObject.setPages(couponActivitiesPos.getPages());
@@ -65,17 +67,13 @@ public class CommentServiceImpl implements CommentService{
         }
     }
 
-    @Override
-    public ReturnObject auditComment(Comment comment) {
-        return null;
-    }
-
 
     /**
      * @Description 管理员审核评论
      * @author Ruzhen Chang
      */
-    public ReturnObject auditComment(Comment comment,String conclusion) {
+    @Override
+    public ReturnObject auditComment(Comment comment) {
         ReturnObject returnObject=null;
         try{
             CommentPo commentPo=commentDao.getCommentById(comment.getId());
@@ -95,6 +93,7 @@ public class CommentServiceImpl implements CommentService{
     /**
      * @Description 查看自己的评论
      */
+    @Override
     public ReturnObject<PageInfo<VoObject>> getSelfCommentList(Long customerId, Integer page, Integer pageSize) {
         try {
             PageInfo<CommentPo> commentPoPageInfo = commentDao.getCommentIdListByCustomerId(customerId,page,pageSize);
@@ -115,6 +114,7 @@ public class CommentServiceImpl implements CommentService{
     /**
      * @Description 查看已审核/未审核评论列表
      */
+    @Override
     public ReturnObject<PageInfo<VoObject>> getCommentListByShopId(Long shopId, Integer page, Integer pageSize) {
         try {
             /*
@@ -143,6 +143,7 @@ public class CommentServiceImpl implements CommentService{
      * @author Ruzhen Chang
      * @return
      */
+    @Override
     public ReturnObject<List<StateVo>> findCommentStates(){
         try{
             return new ReturnObject<>(commentDao.findCommentStates());

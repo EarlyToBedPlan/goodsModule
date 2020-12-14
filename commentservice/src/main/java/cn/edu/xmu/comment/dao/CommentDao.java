@@ -4,11 +4,13 @@ import cn.edu.xmu.comment.mapper.CommentPoMapper;
 import cn.edu.xmu.comment.model.bo.Comment;
 import cn.edu.xmu.comment.model.po.CommentPo;
 import cn.edu.xmu.comment.model.po.CommentPoExample;
-import cn.edu.xmu.ooad.util.Common;
+import cn.edu.xmu.goods.model.vo.StateVo;
+import cn.edu.xmu.ooad.model.VoObject;
 import cn.edu.xmu.ooad.util.ResponseCode;
 import cn.edu.xmu.ooad.util.ReturnObject;
-import cn.edu.xmu.ooad.util.encript.SHA256;
-import io.netty.util.concurrent.ImmediateEventExecutor;
+import cn.edu.xmu.shop.model.bo.Shop;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -18,9 +20,13 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 
+/**
+ * @author Ruzhen Chang
+ */
 @Repository
 public class CommentDao implements InitializingBean{
     @Autowired
@@ -28,7 +34,7 @@ public class CommentDao implements InitializingBean{
 
     private static final Logger logger=LoggerFactory.getLogger(CommentDao.class);
 
-    @Value("${privilegeservice.initialization}")
+    @Value("${commentservice.initialization}")
     private Boolean initialization;
 
     @Override
@@ -37,28 +43,26 @@ public class CommentDao implements InitializingBean{
     }
 
     /**
-     * @Description 获得评论的所有状态
+     * @Description 获得评论详细信息
      * @author Ruzhen Chang
      */
-    public byte getCommentState(long commentId){
+    public CommentPo getCommentById(Long commentId){
         CommentPo commentPo=new CommentPo();
-        Byte commentState=0;
         try{
             commentPo=commentPoMapper.selectByPrimaryKey(commentId);
-            commentState= commentPo.getState();
-        }catch (DataAccessException e){
-            logger.debug("getCommentState" + e.getMessage());
+        } catch (Exception e){
+            StringBuilder message=new StringBuilder().append("getCommentById:").append(e.getMessage());
+            logger.debug(message.toString());
         }
-        return commentState;
+        return commentPo;
     }
+
 
     /**
      * @Description 新增sku评论
      * @author Ruzhen Chang
-     *
-     *
      */
-    public ReturnObject applyGoodsSkuComment(long goodsSkuId,long customerId,long orderItemId,byte type,String content){
+    public ReturnObject newGoodsSkuComment(long goodsSkuId,long customerId,long orderItemId,byte type,String content){
         ReturnObject retobj=null;
         CommentPo commentPo=new CommentPo();
         try {
@@ -84,10 +88,11 @@ public class CommentDao implements InitializingBean{
      * @Param shopId
      * @author Ruzhen Chang
      */
-    public List<CommentPo> getGoodsSkuCommentList(long goodsSkuId){
+    public List<CommentPo> getGoodsSkuAllCommentList(long goodsSkuId,byte state){
         CommentPoExample example=new CommentPoExample();
         CommentPoExample.Criteria criteria=example.createCriteria();
         criteria.andGoodsSkuIdEqualTo(goodsSkuId);
+        criteria.andStateEqualTo(state);
         List<CommentPo> commentPos=commentPoMapper.selectByExample(example);
 
         for(CommentPo commentPo:commentPos) {
@@ -107,88 +112,72 @@ public class CommentDao implements InitializingBean{
 
 
     /**
-     * @Description 管理员审核评论
+     * @Description 根据商品skuId获得评论id列表
      * @author Ruzhen Chang
      */
-    public ReturnObject<Object> auditComment(long commentId,boolean conclusion){
-        ReturnObject returnObject=null;
+    public PageInfo<CommentPo> getCommentListByGoodsSkuId(Long goodsSkuId, Integer page, Integer pageSize){
+        PageHelper.startPage(page,pageSize);
+        CommentPoExample example=new CommentPoExample();
+        CommentPoExample.Criteria criteria=example.createCriteria();
+        criteria.andGoodsSkuIdEqualTo(goodsSkuId);
+        List<CommentPo> commentPos=commentPoMapper.selectByExample(example);
+        logger.debug("getCommentIdListByGoodsSkuId:" +goodsSkuId);
+        return new PageInfo<>(commentPos);
+    }
+
+
+
+    /**
+     * @Description 根据用户id获得评论id列表
+     * @author Ruzhen Chang
+     */
+    public PageInfo<CommentPo> getCommentIdListByCustomerId(long customerId,Integer page,Integer pageSize){
+
+        PageHelper.startPage(page,pageSize);
+        CommentPoExample example=new CommentPoExample();
+        CommentPoExample.Criteria criteria=example.createCriteria();
+        criteria.andCustomerIdEqualTo(customerId);
+        List<CommentPo> commentPos=commentPoMapper.selectByExample(example);
+        logger.debug("getCommentIdListByCustomerId:" +customerId);
+        return new PageInfo<>(commentPos);
+    }
+
+
+    /**
+     * @Description 修改评论状态
+     * @author Ruzhen Chang
+     */
+    public ReturnObject updateCommentState(Comment comment){
         CommentPo commentPo=new CommentPo();
-        commentPo.setId(commentId);
-        if(conclusion)
-            commentPo.setState((byte)Comment.State.NORM.getCode().intValue());
-        else
-            commentPo.setState((byte)Comment.State.FORBID.getCode().intValue());
-
-        CommentPoExample commentPoExample=new CommentPoExample();
-        CommentPoExample.Criteria criteria=commentPoExample.createCriteria();
-
-        criteria.andIdEqualTo(commentId);
+        commentPo.setState((byte)comment.getState().getCode().intValue());
+        ReturnObject returnObject=null;
         try{
-            int ret=commentPoMapper.deleteByPrimaryKey(commentId);
+            int ret=commentPoMapper.updateByPrimaryKeySelective(commentPo);
             if(ret==0){
-                logger.debug("auditComment: id not exist ="+commentId);
-                returnObject=new ReturnObject(ResponseCode.RESOURCE_ID_NOTEXIST,String.format("操作的评论id不存在"+commentId));
-            }else {
-                logger.debug("auditShop: audited comment id ="+commentId);
+                logger.debug("updateCommentState: update faild. comment id:"+commentPo.getId());
+                returnObject=new ReturnObject(ResponseCode.RESOURCE_ID_NOTEXIST);
+            } else {
+                logger.debug("updateCommentState: update success:"+commentPo.getId());
                 returnObject=new ReturnObject();
             }
-        }catch (Exception e){
-            logger.error("发生了严重的内部错误："+e.getMessage());
+        } catch (Exception e) {
+            logger.error("发生了严重的服务器内部错误：" + e.getMessage());
         }
         return returnObject;
     }
 
-    /**
-     * @Description 查看自己的评论
-     * @author Ruzhen Chang
-     */
-    public List<CommentPo> getSelfCommentList(long userId){
-        CommentPoExample example=new CommentPoExample();
-        CommentPoExample.Criteria criteria=example.createCriteria();
-        criteria.andCustomerIdEqualTo(userId);
-        List<CommentPo> commentPos=commentPoMapper.selectByExample(example);
-
-        for(CommentPo commentPo:commentPos) {
-            try {
-                if((byte)commentPo.getState()==Comment.State.NORM.getCode()) {
-                    commentPos.add(commentPo);
-                    logger.debug("getSelfCommentList: goodsSkuId = " + commentPo.getGoodsSkuId());
-                }else {
-                    logger.debug("getSelfCommentList: id not exist = " + commentPo.getGoodsSkuId());
-                }
-            } catch (DataAccessException e) {
-                logger.debug("getSelfCommentList:" + e.getMessage());
-            }
-        }
-        return commentPos;
-    }
-
 
     /**
-     * @Description 查看已审核/未审核评论列表
+     * @Description 获取评论所有状态
      * @author Ruzhen Chang
      */
-    public List<CommentPo> getAllStateComment(){
-        CommentPoExample example=new CommentPoExample();
-        CommentPoExample.Criteria criteria=example.createCriteria();
-        criteria.andStateNotEqualTo((byte) Comment.State.FORBID.getCode().intValue());
-        List<CommentPo> commentPos=commentPoMapper.selectByExample(example);
-
-        for(CommentPo commentPo:commentPos) {
-            try {
-                if((byte)commentPo.getState()==Comment.State.NORM.getCode()) {
-                    commentPos.add(commentPo);
-                    logger.debug("getAllStateComment: goodsSkuId = " + commentPo.getGoodsSkuId());
-                }else {
-                    logger.debug("getAllStateComment: id not exist = " + commentPo.getGoodsSkuId());
-                }
-            } catch (DataAccessException e) {
-                logger.debug("getAllStateComment:" + e.getMessage());
-            }
+    public List<StateVo> findCommentStates(){
+        List<StateVo> stateVos= null;
+        for (int i = 0; i < 3; i++) {
+            StateVo vo=new StateVo((byte) i,Comment.State.getTypeByCode(i).name());
+            stateVos.add(vo);
         }
-        return commentPos;
+        return stateVos;
     }
-
-
 
 }

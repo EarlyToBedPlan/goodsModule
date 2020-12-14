@@ -21,7 +21,7 @@ public interface CommentService {
     /**
      * @Description 新增sku评论
      */
-    public ReturnObject newGoodsSkuComment(Long goodsSkuId, Long customerId, Long orderItemId, byte type, String content);
+    ReturnObject newGoodsSkuComment(Long orderItemId, Comment comment);
 
     /**
      * @Description 由商品id获得评论列表
