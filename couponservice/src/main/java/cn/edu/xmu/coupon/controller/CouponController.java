@@ -4,6 +4,7 @@ import cn.edu.xmu.coupon.model.bo.CouponActivity;
 import cn.edu.xmu.coupon.model.vo.CouponActivityVo;
 import cn.edu.xmu.coupon.service.CouponActivityService;
 import cn.edu.xmu.coupon.service.CouponActivityServiceImpl;
+import cn.edu.xmu.goods.service.GoodsSpuService;
 import cn.edu.xmu.ooad.annotation.Audit;
 import cn.edu.xmu.ooad.annotation.Depart;
 import cn.edu.xmu.ooad.annotation.LoginUser;
@@ -21,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
@@ -395,7 +397,7 @@ public class CouponController {
     @Audit
     @PostMapping("/couponactivities/{id}/usercoupons")
     public Object userGetCoupon(@PathVariable Long id, @LoginUser Long userId) {
-        ReturnObject returnObject = couponActivityService.getCoupon(userId,id);
+        ReturnObject returnObject = couponActivityService.userGetCoupon(userId,id);
         if (returnObject.getData() != null) {
             return Common.getRetObject(returnObject);
         } else {
@@ -421,7 +423,29 @@ public class CouponController {
         }
     }
 
+    @ApiOperation(value = "SPU上传图片",  produces="application/json")
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "header", dataType = "String", name = "authorization", value = "Token", required = true),
+            @ApiImplicitParam(paramType = "formData", dataType = "file", name = "img", value ="文件", required = true),
+            @ApiImplicitParam(paramType = "path",dataType = "Long",name = "shopId",value = "店铺id"),
+            @ApiImplicitParam(paramType = "path",dataType = "Long",name = "id",value = "spuid"),
+    })
+    @ApiResponses({
+            @ApiResponse(code = 0, message = "成功"),
+            @ApiResponse(code = 506, message = "该目录文件夹没有写入的权限"),
+            @ApiResponse(code = 508, message = "图片格式不正确"),
+            @ApiResponse(code = 509, message = "图片大小超限")
+    })
+    @Audit
+    @PostMapping("/shops/{shopId}/couponactivities/{id}/uploadImg")
+    public Object uploadImg(@RequestParam("img") MultipartFile multipartFile,
+                               @PathVariable("shopId") Long shopId,
+                               @PathVariable("id") Long id){
 
-
-
+//        if(goodsSpuService.checkSpuIdInShop(shopId,id)==false){
+//            return Common.decorateReturnObject(new ReturnObject(ResponseCode.RESOURCE_ID_OUTSCOPE));
+//        }
+        ReturnObject returnObject = couponActivityService.uploadImg(id, multipartFile);
+        return Common.decorateReturnObject(returnObject);
+    }
 }

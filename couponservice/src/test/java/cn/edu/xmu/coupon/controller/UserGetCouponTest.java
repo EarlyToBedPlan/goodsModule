@@ -10,8 +10,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.io.File;
+import java.io.FileInputStream;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -49,6 +56,24 @@ public class UserGetCouponTest {
 
         //id是自增的 所以测试会失败 然后因为返回的gmtCreate是创建时间 所以vo对象里暂时注释了 不然测试过不了
         String expectedResponse = "{\"errno\":0,\"data\":{\"id\":12,\"name\":\"618大促\",\"state\":0,\"quantity\":1,\"quantityType\":0,\"validTerm\":0,\"imageUrl\":null,\"beginTime\":null,\"endTime\":null,\"couponTime\":null,\"strategy\":\"1\",\"createdBy\":{\"id\":null,\"name\":\"哈哈哈\"},\"modifiedBy\":{\"id\":null,\"name\":\"哈哈\"},\"gmtModified\":null},\"errmsg\":\"成功\"}";
+        JSONAssert.assertEquals(expectedResponse, responseString, true);
+    }
+
+    @Test
+    public void uploadFileSuccess1() throws Exception{
+        String token = creatTestToken(1L,0L,100);
+        File file = new File("."+File.separator + "src" + File.separator + "test" + File.separator+ "resources" + File.separator+"index1.jpg");
+        MockMultipartFile firstFile = new MockMultipartFile("img", "index1.jpg" , "multipart/form-data", new FileInputStream(file));
+        String responseString = mvc.perform(MockMvcRequestBuilders
+                .multipart("/coupon/shops/0/couponactivities/1/uploadImg")
+                .file(firstFile)
+                .header("authorization", token)
+                .contentType(MediaType.MULTIPART_FORM_DATA_VALUE))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        String expectedResponse = "{\"errno\":0,\"errmsg\":\"成功\"}";
         JSONAssert.assertEquals(expectedResponse, responseString, true);
     }
 }

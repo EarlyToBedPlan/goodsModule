@@ -55,7 +55,7 @@ public interface CouponActivityService {
     /**
      * @description:上传图片
      */
-    //ReturnObject uploadImg(Long id, MultipartFile multipartFile);
+    ReturnObject uploadImg(Long id, MultipartFile multipartFile);
 
     /**
      * @description:管理员删除优惠活动
